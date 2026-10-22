@@ -1283,7 +1283,8 @@ const STEPS = [
  <div class="note"><b>So geht es:</b> Durchtippen und nur das bewerten, was zählt. Alles, was leer bleibt,
  erscheint im PDF nicht. Die orangen und grauen Hinweiskästen sind nur für dich – sie werden nicht gedruckt.</div>
  <div class="note blue"><b>Fortschreibung:</b> Ein früher gesicherter Plan lässt sich oben rechts über
- <b>Plan laden</b> wieder öffnen. Dann sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</div>
+ <b>Plan laden</b> wieder öffnen. Dafür brauchst du die zugehörige <b>.json-Datei</b>, die beim <b>Plan sichern</b>
+ entstanden ist – ein PDF lässt sich nicht hochladen. Dann sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</div>
  <div class="note green"><b>Datenschutz:</b> Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts
  ins Internet hoch und speichert nichts im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.
  Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Plan sichern</b> oder als PDF
@@ -1434,7 +1435,7 @@ const STEPS = [
   ${feld("f_besp","Besprochen am","fm","date")}
  </div>
  <div class="sum" id="summary"></div>
- <div class="note"><b>Plan sichern</b> legt eine kleine Datei ab (Dateien-App, IServ, Ordner deiner Wahl).
+ <div class="note"><b>Plan sichern</b> legt eine kleine .json-Datei ab (Dateien-App, IServ, Ordner deiner Wahl).
  Beim nächsten Förderplan lädst du sie oben rechts wieder – dann ist alles vorbelegt und die heutigen Ziele
  erscheinen als Rückblick. Die Datei enthält Schülerdaten und gehört in die Schülerakte bzw. in einen
  geschützten Ordner, nicht in eine private Cloud.</div>`}
@@ -2619,6 +2620,9 @@ function loadState(s){
 $("btnLoad").onclick = ()=>$("fileIn").click();
 $("fileIn").onchange = ev=>{
   const f=ev.target.files && ev.target.files[0]; if(!f) return;
+  if(/\.pdf$/i.test(f.name) || f.type==="application/pdf"){
+    toast("Ein PDF lässt sich nicht laden – bitte die zugehörige .json-Datei wählen."); ev.target.value=""; return;
+  }
   const r=new FileReader();
   r.onload = ()=>{ try{ loadState(JSON.parse(r.result)); }
     catch(err){ toast("Die Datei konnte nicht gelesen werden."); } };
