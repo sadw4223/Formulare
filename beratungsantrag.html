@@ -233,6 +233,13 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 .imp small{display:block;color:var(--grey);font-size:13px;margin-top:3px;line-height:1.4}
 .imp .btn-add{margin-top:0}
 .imp b .hl{font-style:normal;color:var(--orange-d)}
+.imp small a{color:var(--blue);font-weight:600}
+.fsj{flex:0 0 auto}
+.sjpair{display:flex;align-items:center;gap:6px}
+.sjpair input{width:84px;text-align:center}
+.sjpair input[readonly]{color:var(--grey);border-style:dashed}
+.sjpair>span{color:var(--grey);font-weight:700}
+.sjpair input.ungueltig{border-color:var(--rot);box-shadow:0 0 0 1px var(--rot)}
 /* offene Angaben nach dem Laden */
 .field.offen input:not([type=hidden]),.field.offen textarea,.field.offen .seg button{background:#fde6cf}
 .cols2.offen{background:#fde6cf;box-shadow:0 0 0 6px #fde6cf;border-radius:6px}
@@ -716,10 +723,11 @@ function sammeln(){
   return {
     stempel: [],                                   /* Kasten bleibt frei für den Stempel */
     name: vollname(), geb: fmtDate(val("s_gebdat")), einsch: val("s_einsch"), vorkl: val("s_vorkl"),
-    sj: val("s_sj"), klasse: val("s_klasse"), sbj: val("s_sbj"), kl: val("s_kl"), schule: val("s_schule"),
+    sj: val("s_sj"), klasse: val("s_klasse"), sbj: sbjVorschlag(),   /* aus Einschulung und Schuljahr */ kl: val("s_kl"), schule: SCHULE,   /* immer die Schule an der Wascherde */
     bfz: val("s_bfz"), eltern: val("e_name"), anschrift: val("e_anschrift"), tel: val("e_tel"),
     sys: on("b_sys"), diag: on("b_diag"), lernen: on("b_lernen"), sprache: on("b_sprache"), ese: on("b_ese"),
-    sonst: on("b_sonst"), sonstT: val("b_sonst_t"),
+    sonst: FSP_ART.some(f=>!FSP_FORM.includes(f[0]) && on(f[0])),
+    sonstT: FSP_ART.filter(f=>!FSP_FORM.includes(f[0]) && on(f[0])).map(f=>f[1]).join(", "),
     frage: $("t_frage").value, hilfe: $("t_hilfe").value,
     mass: MASS.map(m=>({label:m[1], on:on(m[0]),
       text: IMP[m[0]].concat([$(m[0]+"_t").value.trim()]).filter(Boolean).join("; ")})),
@@ -762,32 +770,19 @@ function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on")
 const SCHULE = "Schule an der Wascherde";
 
 /* Kästchen des Formulars (Reihenfolge wie in der Vorlage) */
-const FSP_IDS = ["b_lernen","b_sprache","b_ese"];   /* Förderschwerpunkte im Ankreuzfeld */
-const BART = [["b_sys","Systemische Beratung"],["b_diag","Diagnostische Beratung"],
-              ["b_lernen","Lernen"],["b_sprache","Sprache"],
-              ["b_ese","Emotional-soziale Entwicklung"]];
+/* Förderschwerpunkte zum Ankreuzen: [Kennung, Beschriftung, Kennung im Förderplan].
+   Lernen, Sprache und emotional-soziale Entwicklung haben im Formular ein eigenes Kästchen,
+   alle anderen erscheinen im PDF bei „sonst:“. */
+const FSP_ART = [["b_lernen","Lernen","lernen"],["b_sprache","Sprache","sprache"],
+  ["b_ese","Emotional-soziale Entwicklung","ese"],["b_geistig","Geistige Entwicklung","geistig"],
+  ["b_kme","Körperliche und motorische Entwicklung","kme"],["b_sehen","Sehen","sehen"],
+  ["b_hoeren","Hören","hoeren"],["b_krank","Kranke Schülerinnen und Schüler","krank"]];
+const FSP_IDS = FSP_ART.map(f=>f[0]);
+const FSP_FORM = ["b_lernen","b_sprache","b_ese"];
 const MASS = [["m_binn","Binnendifferenzierung"],
               ["m_ber","Beratung des Schülers/ der Erziehungsberechtigten"],
               ["m_stuetz","Stütz- und Fördermaßnahmen"],
               ["m_zus","Zusammenarbeit mit Beratungsdiensten/ Fördereinrichtungen"]];
-/* Satzbausteine für die erwartete Hilfe: [Kurzform auf dem Knopf, Satz im Antrag] */
-const HILFE = [
- ["Beratung", [
-  ["Unterrichtsgestaltung", "Wir bitten um Beratung der Klassenlehrkraft zur Gestaltung des Unterrichts."],
-  ["Differenzierung und Material", "Wir wünschen uns Unterstützung bei der Differenzierung und bei der Auswahl passenden Lernmaterials."],
-  ["Umgang mit Verhalten", "Wir bitten um Beratung im Umgang mit dem herausfordernden Verhalten."],
-  ["Nachteilsausgleich", "Wir bitten um Beratung, ob und in welcher Form ein Nachteilsausgleich sinnvoll ist."],
-  ["Elterngespräch", "Wir wünschen uns ein gemeinsames Gespräch mit den Eltern."]]],
- ["Diagnostik", [
-  ["Lesen und Rechtschreiben", "Wir bitten um Förderdiagnostik im Bereich Lesen und Rechtschreiben."],
-  ["Mathematik", "Wir bitten um Förderdiagnostik im Bereich Mathematik."],
-  ["Unterrichtsbeobachtung", "Wir bitten um eine Beobachtung im Unterricht mit anschließender Rückmeldung."],
-  ["Anspruch klären", "Wir bitten um Klärung, ob ein Anspruch auf sonderpädagogische Förderung in Betracht kommt."]]],
- ["Förderung und Planung", [
-  ["Förderplan", "Wir wünschen uns Unterstützung bei der Erstellung bzw. Fortschreibung des Förderplans."],
-  ["Förderung in der Kleingruppe", "Wir bitten um eine zeitlich begrenzte Förderung in der Kleingruppe."],
-  ["Außerschulische Hilfen", "Wir bitten um Unterstützung bei der Vermittlung außerschulischer Hilfen (z. B. Jugendhilfe, Therapie)."]]]
-];
 const ANL  = [["a_zeugnis","Kopie des letzten Zeugnisses"],["a_akte","Kopie des Aktendeckels"],
               ["a_fp","Förderplan"],["a_einv","Einverständniserklärung der Eltern (nach\u00a0§\u00a04\u00a0VOSB)"]];
 
@@ -805,8 +800,10 @@ const STEPS = [
 {t:"Start", h:()=>`
  <h2>Beratungsantrag an das rBFZ</h2>
  <div class="imp">
-  <div><b>Willst du die Angaben aus dem <em class="hl">Förderplan</em> übernehmen?</b><small>Die Sicherungsdatei (.json) aus dem Förderplangenerator füllt Name, Geburtsdatum,
-  Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.</small></div>
+  <div><b>Willst du die Angaben aus dem <em class="hl">Förderplan</em> übernehmen?</b><small>Um einen Beratungsantrag an das rBFZ zu stellen, musst du einen Förderplan geschrieben haben.
+  Nutze dazu am besten den <a href="https://sadw4223.github.io/Formulare/foerderplan.html" target="_blank" rel="noopener">Förderplan-Assistenten</a>,
+  denn dann kannst du die meisten Angaben aus dem Förderplan direkt übernehmen. Die Sicherungsdatei (.json) aus dem
+  Förderplangenerator füllt nämlich Name, Geburtsdatum, Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.</small></div>
   <button type="button" class="btn-add" onclick="pickFp()">Förderplan-Datei wählen</button>
  </div>`},
 
@@ -827,15 +824,16 @@ const STEPS = [
  </div>
  <div class="row">
   ${feld("s_klasse","Klasse","fs","text","5a")}
-  ${feld("s_sj","Schuljahr","fm","text","2026/27")}
-  ${feld("s_sbj","Schulbesuchsjahr","fm","text","7")}
+  <div class="field fsj"><span>Schuljahr</span>
+   <div class="sjpair"><input type="text" id="sj_a" inputmode="numeric" maxlength="4" placeholder="JJJJ" autocomplete="off"
+     aria-label="Schuljahr – erstes Jahr" oninput="setSj()" onblur="pruefSj()">
+    <span>/</span><input type="text" id="sj_b" readonly tabindex="-1" aria-label="Schuljahr – zweites Jahr" placeholder="JJJJ"></div>
+   <input type="hidden" id="s_sj"></div>
  </div>
- <p class="hint" id="sbjHint" style="margin:-2px 0 8px"></p>
  <div class="row">
   ${feld("s_kl","Klassenlehrer/in","f1","text","Frau Weber")}
   ${feld("s_bfz","Förderschullehrkraft BFZ","f1","text","Herr Klein")}
- </div>
- <div class="row">${feld("s_schule","Schule","f1","text")}</div>`},
+ </div>`},
 
 {t:"Eltern", h:()=>`
  <h2>Eltern bzw. Sorgeberechtigte</h2>
@@ -846,34 +844,29 @@ const STEPS = [
 {t:"Anliegen", h:()=>`
  <h2>Worum geht es?</h2>
  <div class="sublabel">Art der Unterstützung</div>
+ <div class="note blue">Voraussetzung für eine Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
+ Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte dürfen sich trotzdem beraten lassen.
+ Das dazu nötige Formular befindet sich in <span class="pfad"><a href="https://schuleanderwascherde.eu/iserv/file/-" target="_blank" rel="noopener">Dateien</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups" target="_blank" rel="noopener">Gruppen</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer" target="_blank" rel="noopener">Lehrer</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung" target="_blank" rel="noopener">Inklusive Beschulung</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung/1.%20Formulare" target="_blank" rel="noopener">1. Formulare</a></span>.</div>
  <div class="cols2" id="grpBer">
   ${chk("b_sys","Systemische Beratung","Einverständniserklärung der Eltern wurde verweigert")}
   ${chk("b_diag","Diagnostische Beratung","Einverständniserklärung der Eltern liegt vor")}
  </div>
- <div class="glabel">Förderschwerpunkt</div>
+ <div class="sublabel">Förderschwerpunkt</div>
  <div class="note hidden" id="bartNote">Aus dem Förderplan vorgeschlagen – bitte prüfen.</div>
- <div class="cols2" id="grpFsp">${BART.filter(b=>FSP_IDS.includes(b[0])).map(b=>chk(b[0],b[1])).join("")}
-  <div class="chkx"><input type="checkbox" id="b_sonst" aria-label="Anderer Förderschwerpunkt"><input type="text" id="b_sonst_t" placeholder="Anderer Förderschwerpunkt"></div>
+ <div class="cols2" id="grpFsp">${FSP_ART.map(f=>chk(f[0],f[1])).join("")}
  </div>
- <div class="note blue">Voraussetzung für eine Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
- Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte dürfen sich trotzdem beraten lassen.
- Das dazu nötige Formular befindet sich in <span class="pfad"><a href="https://schuleanderwascherde.eu/iserv/file/-" target="_blank" rel="noopener">Dateien</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups" target="_blank" rel="noopener">Gruppen</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer" target="_blank" rel="noopener">Lehrer</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung" target="_blank" rel="noopener">Inklusive Beschulung</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung/1.%20Formulare" target="_blank" rel="noopener">1. Formulare</a></span>.</div>
  <div class="sublabel">Fragestellung / Schilderung der Situation bzw. des Anliegens</div>
  ${area("t_frage","","Was fällt auf? Seit wann? In welchen Situationen?","big")}`},
 
 {t:"Bisherige Maßnahmen", h:()=>`
  <h2>Bisherige vorbeugende Maßnahmen <small>der allgemeinen Schule</small></h2>
- <p class="hint">Maßnahmen aus dem Förderplan stehen als Kärtchen da – mit × entfernen.
+ <p class="hint hidden" id="impHint">Maßnahmen aus dem Förderplan stehen als Kärtchen da – mit × entfernen.
  Darunter ist Platz für weitere Maßnahmen.</p>
  ${MASS.map(m=>`<div class="mrow">${chk(m[0],m[1])}<div class="tags" id="${m[0]}_imp"></div>
    <textarea id="${m[0]}_t" placeholder="Weitere Maßnahmen – was genau, seit wann?"></textarea></div>`).join("")}`},
 
 {t:"Erwartete Hilfe", h:()=>`
  <h2>Welche Hilfestellung erwarten Sie vom rBFZ?</h2>
- <p class="hint">Bausteine antippen – sie kommen als ganzer Satz ins Feld. Nochmal antippen nimmt den Satz wieder heraus.
- Eigener Text geht jederzeit dazu.</p>
- ${HILFE.map((g,gi)=>`<div class="glabel">${esc(g[0])}</div><div class="chips">${g[1].map((b,bi)=>
-   `<button type="button" class="chip" data-g="${gi}" data-b="${bi}" onclick="baustein(${gi},${bi})">${esc(b[0])}</button>`).join("")}</div>`).join("")}
  ${area("t_hilfe","","Was erwarten Sie vom rBFZ?","big")}`},
 
 {t:"Abschluss", h:()=>`
@@ -883,6 +876,7 @@ const STEPS = [
  <p class="hint">Im PDF sind alle Anlagen angekreuzt, Ort und Datum stehen schon drin. Klassenlehrkraft und
  Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</p>
  <div class="sublabel">Nur für das Sekretariat</div>
+ <div class="note" id="lusdNote"></div>
  <div class="row">${feld("f_lusd","Datenerfassung in der LUSD erfolgt am","f2","date")}</div>
  <div class="sum" id="summary"></div>`}
 ];
@@ -890,9 +884,19 @@ const STEPS = [
 /* ---- Aufbau und Navigation --------------------------------------- */
 $("steps").innerHTML = STEPS.map((s,i)=>`<div class="step" id="st${i}">${s.h()}</div>`).join("");
 let cur = 0;
+/* Hinweis fürs Sekretariat – nennt die angekreuzten Förderschwerpunkte */
+function paintLusd(){
+  const el=$("lusdNote"); if(!el) return;
+  const fs = FSP_ART.filter(f=>on(f[0])).map(f=>f[1]);
+  const wo = fs.length ? (fs.length===1 ? "im Förderschwerpunkt <b>"+esc(fs[0])+"</b>"
+                                        : "in den Förderschwerpunkten <b>"+esc(fs.join(", "))+"</b>")
+                       : "im gewählten Förderschwerpunkt";
+  el.innerHTML = "<b>Wichtig:</b> Ab diesem Datum wird die Schülerin bzw. der Schüler offiziell als vorbeugende Maßnahme "
+    + wo + " geführt. Das ist zwingend nötig – bitte im Sekretariat an der entsprechenden Stelle in der LUSD eintragen lassen.";
+}
 function show(p){
   cur = Math.max(0, Math.min(STEPS.length-1, p));
-  buildSummary(); paintVk(); sbjHint();
+  buildSummary(); paintVk(); paintLusd();
   document.querySelectorAll(".step").forEach((el,j)=>el.classList.toggle("active", j===cur));
   growAll();
   $("progress").innerHTML = STEPS.map((s,j)=>`<div class="${j<cur?"done":j===cur?"curr":""}"></div>`).join("");
@@ -911,10 +915,10 @@ function paintStepname(){
    Erst nach „Antrag laden“ oder der Übernahme aus dem Förderplan: Was dann
    noch leer ist, bekommt einen orangen Hintergrund, der beim Ausfüllen verschwindet. */
 let MARK = false, OFFEN = {};
-const OFFEN_FELDER = ["s_vorname","s_nachname","s_gebdat","s_einsch","s_vorkl","s_klasse","s_sj","s_sbj",
-  "s_kl","s_bfz","s_schule","e_name","e_anschrift","e_tel","t_frage","t_hilfe","f_lusd"];
+const OFFEN_FELDER = ["s_vorname","s_nachname","s_gebdat","s_einsch","s_vorkl","s_klasse","s_sj",
+  "s_kl","s_bfz","e_name","e_anschrift","e_tel","t_frage","t_hilfe","f_lusd"];
 const OFFEN_GRP = [["grpBer", ()=>on("b_sys")||on("b_diag")],
-                   ["grpFsp", ()=>FSP_IDS.some(on)||on("b_sonst")]];
+                   ["grpFsp", ()=>FSP_IDS.some(on)]];
 function markOffen(){
   OFFEN = {};
   const zaehl = el=>{ const st=el.closest(".step"); if(st){ const i=+st.id.slice(2); OFFEN[i]=(OFFEN[i]||0)+1; } };
@@ -947,26 +951,14 @@ const IMP = {}; MASS.forEach(m=>IMP[m[0]]=[]);
 function renderImp(k){
   $(k+"_imp").innerHTML = IMP[k].map((t,i)=>
     `<span class="tag">${esc(t)}<button type="button" aria-label="entfernen" onclick="dropImp('${k}',${i})">×</button></span>`).join("");
+  /* der Hinweis zu den Kärtchen erscheint nur, wenn Maßnahmen aus einem Förderplan da sind */
+  $("impHint").classList.toggle("hidden", !MASS.some(m=>(IMP[m[0]]||[]).length));
 }
 function dropImp(k,i){ IMP[k].splice(i,1); renderImp(k); }
 
-/* Bausteine: Satz einfügen bzw. wieder herausnehmen */
-function baustein(gi,bi){
-  const satz = HILFE[gi][1][bi][1], ta = $("t_hilfe");
-  let t = ta.value;
-  if(t.indexOf(satz) >= 0) t = t.replace(satz,"").replace(/[ \t]{2,}/g," ").replace(/ *\n */g,"\n").trim();
-  else t = (t.trim() ? t.trim()+" " : "") + satz;
-  ta.value = t; grow(ta); paintChips();
-}
-function paintChips(){
-  const t = $("t_hilfe").value;
-  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", t.indexOf(HILFE[c.dataset.g][1][c.dataset.b][1]) >= 0));
-}
-$("t_hilfe").addEventListener("input", paintChips);
 
 /* Kästchen setzen sich selbst, sobald daneben etwas steht */
 MASS.forEach(m=>$(m[0]+"_t").addEventListener("input", ()=>{ if(val(m[0]+"_t")) $(m[0]).checked = true; }));
-$("b_sonst_t").addEventListener("input", ()=>{ if(val("b_sonst_t")) $("b_sonst").checked = true; });
 /* Systemisch = ohne Einverständnis, diagnostisch = mit Einverständnis – schließt sich aus */
 [["b_sys","b_diag"],["b_diag","b_sys"]].forEach(([a,b])=>
   $(a).addEventListener("change", ()=>{ if(on(a)) $(b).checked = false; }));
@@ -985,11 +977,32 @@ function sbjVorschlag(){
   if(m && parseInt(m[1],10) < 8) n += 1;
   return (n>=1 && n<=13) ? String(n) : "";
 }
-function sbjHint(){
-  const v=sbjVorschlag(), h=$("sbjHint");
-  h.innerHTML = (v && val("s_sbj")!==v) ? `Rechnerisch ${esc(v)}. Schulbesuchsjahr – <a href="#" onclick="$('s_sbj').value='${v}';sbjHint();return false">übernehmen</a>` : "";
+/* Das Schulbesuchsjahr steht nicht im Formular – es wird fürs PDF aus Einschulung und Schuljahr berechnet. */
+
+/* Schuljahr wie im Förderplan-Assistenten: erstes Jahr vierstellig, das zweite steht von selbst */
+function sjStart(t){ const m=String(t||"").match(/\d{2,4}/); if(!m) return ""; const n=+m[0]; return String(m[0].length<=2 ? 2000+n : n); }
+const sjText = y => y ? y+"/"+String((+y+1)%100).padStart(2,"0") : "";
+const sjOk = d => /^20\d\d$/.test(d);
+function setSj(){
+  const e=$("sj_a"), d=e.value.replace(/\D/g,"").slice(0,4);
+  if(e.value!==d) e.value=d;
+  const ok=sjOk(d);
+  if(ok || !d) e.classList.remove("ungueltig");
+  $("s_sj").value = ok ? sjText(d) : "";
+  $("sj_b").value = ok ? String(+d+1) : "";
+  $("s_sj").dispatchEvent(new Event("input", {bubbles:true}));
 }
-["s_einsch","s_sj","s_sbj"].forEach(id=>$(id).addEventListener("input", sbjHint));
+function pruefSj(){
+  const e=$("sj_a"), d=e.value;
+  e.classList.toggle("ungueltig", !!d && !sjOk(d));
+  if(d && !sjOk(d)) toast("Bitte das Jahr vierstellig eingeben, z. B. 2026.");
+}
+function paintSj(){
+  const e=$("sj_a"), y=sjStart(val("s_sj"));
+  e.value = y || ""; e.classList.remove("ungueltig");
+  $("sj_b").value = y ? String(+y+1) : "";
+  $("s_sj").value = sjText(y);
+}
 
 /* ---- Kurzübersicht ------------------------------------------------ */
 function vollname(){ return [val("s_vorname"),val("s_nachname")].filter(Boolean).join(" "); }
@@ -1002,7 +1015,7 @@ function buildSummary(){
   if(!val("s_kl")) w("Es fehlt die Klassenlehrkraft.");
   if(!val("e_name")) w("Es fehlen die Namen der Eltern.");
   if(!on("b_sys") && !on("b_diag")) w("Es ist weder systemische noch diagnostische Beratung angekreuzt.");
-  if(!FSP_IDS.some(on) && !on("b_sonst")) w("Es ist kein Förderschwerpunkt angekreuzt.");
+  if(!FSP_IDS.some(on)) w("Es ist kein Förderschwerpunkt angekreuzt.");
   if(!val("t_frage")) w("Die Fragestellung ist leer.");
   if(!MASS.some(m=>on(m[0]))) w("Es ist keine bisherige Maßnahme angekreuzt.");
   if(!val("t_hilfe")) w("Es steht nicht drin, welche Hilfe erwartet wird.");
@@ -1057,11 +1070,7 @@ function importFoerderplan(s){
   const fsp = KAT.fspListe.filter(x=>sop && c["fsp_"+x[0]]).map(x=>x[0]);
   let vorschlag = false;
   const tick = id=>{ if(!on(id)){ $(id).checked=true; vorschlag=true; } };
-  if(fsp.includes("lernen")) tick("b_lernen");
-  if(fsp.includes("sprache")) tick("b_sprache");
-  if(fsp.includes("ese")) tick("b_ese");
-  const rest = KAT.fspListe.filter(x=>fsp.includes(x[0]) && !["lernen","sprache","ese"].includes(x[0])).map(x=>x[1]);
-  if(rest.length && !val("b_sonst_t")){ $("b_sonst_t").value = rest.join(", "); tick("b_sonst"); }
+  FSP_ART.forEach(f=>{ if(fsp.includes(f[2])) tick(f[0]); });
   if(!fsp.length){
     if(c.on_sv) tick("b_ese");
     if(c.on_lav || c.on_de || c.on_ma || c.on_en) tick("b_lernen");
@@ -1080,7 +1089,7 @@ function importFoerderplan(s){
     $(m[0]).checked = true; n += add.length;
   });
 
-  sbjHint();
+  paintSj();
   return n;
 }
 
@@ -1116,7 +1125,12 @@ function loadAntrag(s){
   Object.entries(s.c||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.checked=!!v; });
   Object.entries(s.f||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.value=v; });
   MASS.forEach(m=>{ IMP[m[0]] = ((s.imp||{})[m[0]]||[]).slice(); renderImp(m[0]); });
-  paintChips();
+  /* ältere Anträge: freies Feld „anderer Förderschwerpunkt“ den Kästchen zuordnen */
+  const alt = (s.f||{}).b_sonst_t || "";
+  if(alt) [["b_geistig",/geistig/i],["b_kme",/motor|körper/i],["b_sehen",/sehen/i],["b_hoeren",/hören|hoer/i],
+    ["b_krank",/krank/i],["b_lernen",/lernen/i],["b_sprache",/sprach/i],["b_ese",/emotional|sozial/i]]
+    .forEach(([id,re])=>{ if(re.test(alt)) $(id).checked = true; });
+  paintSj();
 }
 /* Zwei getrennte Wege: oben rechts nur gesicherte Anträge,
    im Start-Schritt nur die Förderplan-Datei. */
@@ -1171,7 +1185,6 @@ $("hilfe").addEventListener("click", e=>{ if(e.target.id==="hilfe") hilfeZu(); }
 $("hilfe").querySelector(".ov-x").onclick = hilfeZu;
 document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("hilfe").classList.contains("hidden")) hilfeZu(); });
 
-$("s_schule").value = SCHULE;
 show(0);
 
 </script>
