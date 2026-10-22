@@ -238,6 +238,9 @@ textarea.big{min-height:190px}
 .field>span:empty{display:none}
 .hint a{color:var(--blue);font-weight:600}
 .note.green{background:var(--gruen-b);border-left-color:var(--gruen);color:#1f6b3d}
+.chkx{display:flex;align-items:center;gap:10px;padding:3px 4px}
+.chkx input[type=checkbox]{margin:0;accent-color:var(--blue);width:21px;height:21px;flex:none}
+.chkx input[type=text]{padding:8px 10px;font-size:15px}
 </style>
 </head>
 <body>
@@ -652,7 +655,7 @@ function download(bytes, name, type){
 /* ---- Daten einsammeln und erzeugen ------------------------------- */
 function sammeln(){
   return {
-    stempel: [1,2,3,4].map(i=>val("st_"+i)),
+    stempel: [],                                   /* Kasten bleibt frei für den Stempel */
     name: vollname(), geb: fmtDate(val("s_gebdat")), einsch: val("s_einsch"), vorkl: val("s_vorkl"),
     sj: val("s_sj"), klasse: val("s_klasse"), sbj: val("s_sbj"), kl: val("s_kl"), schule: val("s_schule"),
     bfz: val("s_bfz"), eltern: val("e_name"), anschrift: val("e_anschrift"), tel: val("e_tel"),
@@ -660,9 +663,9 @@ function sammeln(){
     sonst: on("b_sonst"), sonstT: val("b_sonst_t"),
     frage: $("t_frage").value, hilfe: $("t_hilfe").value,
     mass: MASS.map(m=>({label:m[1], on:on(m[0]), text:$(m[0]+"_t").value})),
-    anl: ANL.map(a=>({label:a[1], on:on(a[0])})),
+    anl: ANL.map(a=>({label:a[1], on:true})),        /* Anlagen liegen immer bei */
     lusd: fmtDate(val("f_lusd")),
-    ortDatum: [val("f_ort"), fmtDate(val("f_datum"))].filter(Boolean).join(", ")
+    ortDatum: "Lauterbach, " + fmtDate(heute())
   };
 }
 function makePdf(){
@@ -695,8 +698,8 @@ const heute = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.ge
 function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(el._t);
   el._t=setTimeout(()=>el.classList.remove("on"),3200); }
 
-/* Angaben der Schule für den Stempelkasten – vorbelegt, änderbar */
-const SCHULE = ["Schule an der Wascherde", "An der Wascherde 26", "36341 Lauterbach", "Tel. 06641 96690"];
+/* Schule im Feld „Schule“ – vorbelegt, änderbar. Der Stempelkasten bleibt frei. */
+const SCHULE = "Schule an der Wascherde";
 
 /* Kästchen des Formulars (Reihenfolge wie in der Vorlage) */
 const BART = [["b_sys","Systemische Beratung"],["b_diag","Diagnostische Beratung"],
@@ -726,7 +729,7 @@ const STEPS = [
  Was leer bleibt, bleibt auch im PDF leer und kann von Hand ergänzt werden.</p>
  <div class="imp">
   <div><b>Förderplan übernehmen</b><small>Die Sicherungsdatei (.json) aus dem Förderplangenerator füllt Name, Geburtsdatum,
-  Klasse, Schuljahr, Lehrkräfte, die bisherigen Maßnahmen und einen Entwurf des Anliegens vor.</small></div>
+  Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen vor.</small></div>
   <button type="button" class="btn-add" onclick="pickFile()">Förderplan-Datei wählen</button>
  </div>
  <div class="note blue"><b>Antrag weiterbearbeiten:</b> Ein gesicherter Antrag lässt sich oben rechts über
@@ -763,22 +766,18 @@ const STEPS = [
  </div>
  <div class="row">${feld("s_schule","Schule","f1","text")}</div>`},
 
-{t:"Eltern und Schule", h:()=>`
+{t:"Eltern", h:()=>`
  <h2>Eltern / Sorgeberechtigte</h2>
  <div class="row">${feld("e_name","Name der Eltern / Sorgeberechtigten","f1","text","Anna und Peter Müller")}</div>
  <div class="row">${feld("e_anschrift","Anschrift der Eltern","f1","text","Musterstraße 3, 36341 Lauterbach")}</div>
- <div class="row">${feld("e_tel","Telefonnummer (Eltern)","f1","text","06641 12345")}</div>
- <hr class="sep">
- <div class="sublabel">Stempel der Schule / Angaben Antragsteller</div>
- <p class="hint">Steht oben links im Kasten. Wer lieber stempelt, leert die Zeilen.</p>
- ${[1,2,3,4].map(i=>`<div class="row" style="margin:6px 0">${feld("st_"+i,"Zeile "+i,"f1","text")}</div>`).join("")}`},
+ <div class="row">${feld("e_tel","Telefonnummer (Eltern)","f1","text","06641 12345")}</div>`},
 
 {t:"Anliegen", h:()=>`
  <h2>Worum geht es?</h2>
  <div class="sublabel">Art der Unterstützung</div>
  <div class="note hidden" id="bartNote">Aus dem Förderplan vorgeschlagen – bitte prüfen.</div>
  <div class="cols2">${BART.map(b=>chk(b[0],b[1])).join("")}
-  <div>${chk("b_sonst","sonst:")}<div class="field" style="margin:-2px 0 6px 35px"><input type="text" id="b_sonst_t" placeholder="z. B. Hören"></div></div>
+  <div class="chkx"><input type="checkbox" id="b_sonst" aria-label="weitere Art der Unterstützung"><input type="text" id="b_sonst_t" placeholder="weitere Art der Unterstützung"></div>
  </div>
  <div class="note blue">Voraussetzung für eine Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
  Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte dürfen sich trotzdem beraten lassen.</div>
@@ -796,15 +795,9 @@ const STEPS = [
  ${area("t_hilfe","","z. B. Beratung der Lehrkräfte, Diagnostik im Bereich Lesen und Schreiben, Gespräch mit den Eltern","big")}`},
 
 {t:"Abschluss", h:()=>`
- <h2>Anlagen und Unterschrift</h2>
- <div class="sublabel">Anlagen</div>
- <div class="cols2">${ANL.map(a=>chk(a[0],a[1])).join("")}</div>
- <div class="row">
-  ${feld("f_ort","Ort","f1","text","Lauterbach")}
-  ${feld("f_datum","Datum","fm","date")}
- </div>
- <p class="hint">Unterschreiben Klassenlehrkraft und Schulleitung auf dem Ausdruck oder im PDF am iPad.</p>
- <hr class="sep">
+ <h2>Fertig zum Ausdrucken</h2>
+ <p class="hint">Im PDF sind alle Anlagen angekreuzt, Ort und Datum stehen schon drin. Klassenlehrkraft und
+ Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</p>
  <div class="sublabel">Nur für das Sekretariat</div>
  <div class="row">${feld("f_lusd","Datenerfassung in der LUSD erfolgt am","f2","date")}</div>
  <div class="sum" id="summary"></div>`}
@@ -873,7 +866,6 @@ function buildSummary(){
   if(!val("t_frage")) w("Die Fragestellung ist leer.");
   if(!MASS.some(m=>on(m[0]))) w("Es ist keine bisherige Maßnahme angekreuzt.");
   if(!val("t_hilfe")) w("Es steht nicht drin, welche Hilfe erwartet wird.");
-  if(!on("a_einv")) w("Die Einverständniserklärung der Eltern ist nicht als Anlage angekreuzt – sie ist Voraussetzung.");
   const ok = li.length===0;
   el.innerHTML = `<h4>${ok?"Alles Wichtige ist ausgefüllt.":"Vor dem Abschicken prüfen"}</h4>` + (ok?"":`<ul>${li.join("")}</ul>`);
 }
@@ -881,13 +873,20 @@ function buildSummary(){
 /* ==================================================================
    ÜBERNAHME AUS DEM FÖRDERPLAN
    ================================================================== */
-/* Maßnahmen des Förderplans den vier Feldern der Vorlage zuordnen */
+/* Maßnahmen des Förderplans den vier Feldern der Vorlage zuordnen.
+   Zuerst feste Zuordnungen für Fälle, die die Stichwörter falsch treffen würden. */
+const FEST = {
+ "Materialcheck zu Stundenbeginn mit der Lernbegleitung": "m_stuetz",
+ "reduzierter Stundenplan nach ärztlicher Empfehlung": "m_stuetz",
+ "feste Ansprechperson für Aufgaben und Material": "m_stuetz",
+ "tägliche Kurzrückmeldung am Stundenende (Ampelbogen)": "m_stuetz"
+};
 const SORT = [
  ["m_zus",  /Schulsozialarbeit|Logopädie|Teilhabeassistenz|überregionale BFZ|Mediation|Jugendhilfe|Therap|Ergotherap/i],
- ["m_ber",  /Lerngespräch|Beratung mit|Rückmeldung an die Eltern|mit Kind und Eltern|Rechtschreibgespräch|Erfolgsrückmeldung|Elterngespräch|Kurzrückmeldung/i],
+ ["m_ber",  /Lerngespräch|Beratung mit|Rückmeldung an die Eltern|mit Kind und Eltern|Rechtschreibgespräch|Erfolgsrückmeldung|Elterngespräch/i],
  ["m_binn", /differen|Niveau|Aufgabenmenge|Aufgabenanzahl|reduz|vergrößert|Leichter Sprache|gekürzt|Anschauungs|Material|Merkblatt|Hilfekarte|Wortliste|Satzbausteine|Formelsammlung|Operatorenliste|Wortschatzliste|Arbeitsanweisungen|Aufgabenstellungen|Bild- und Wortkarten|zusätzlich schriftlich|digital bereitstellen|Hörtexte|Kontrollbogen|Wochenübersicht|Zeitvorgabe|Arbeitszeit|Lernpläne|Wörterbuch|Rechtschreibhilfe/i]
 ];
-function sortiere(t){ for(const [k,re] of SORT) if(re.test(t)) return k; return "m_stuetz"; }
+function sortiere(t){ if(FEST[t]) return FEST[t]; for(const [k,re] of SORT) if(re.test(t)) return k; return "m_stuetz"; }
 
 function fpMassnahmen(s){
   const c=s.c||{}, f=s.f||{}, M=s.MULTI||{}, out=[];
@@ -942,17 +941,6 @@ function importFoerderplan(s){
     $(m[0]).checked = true; n += add.length;
   });
 
-  /* Entwurf des Anliegens aus Anlass und Förderbereichen */
-  if(!val("t_frage")){
-    const anl = KAT.anlass.filter((a,i)=>c["a_"+i]);
-    const ber = aktiv.map(b=>b.name.replace(/^Förderschwerpunkt /,""));
-    const teile = [];
-    if(anl.length) teile.push("Anlass laut Förderplan: " + anl.join("; ") + ".");
-    if(sop) teile.push("Es besteht ein Anspruch auf sonderpädagogische Förderung.");
-    if(ber.length) teile.push("Förderbereiche: " + ber.join(", ") + ".");
-    if(teile.length) $("t_frage").value = teile.join(" ") + "\n";
-  }
-  $("a_fp").checked = true;
   sbjHint();
   return n;
 }
@@ -976,7 +964,7 @@ function namensTeil(s){
 }
 function dateiname(endung){
   const name = [namensTeil(val("s_vorname")), namensTeil(val("s_nachname"))].filter(Boolean);
-  return [val("f_datum")||heute(), "Beratungsantrag"].concat(name.length ? name : ["ohne-Namen"]).join("-") + endung;
+  return [heute(), "Beratungsantrag"].concat(name.length ? name : ["ohne-Namen"]).join("-") + endung;
 }
 function saveAntrag(){
   download(new TextEncoder().encode(JSON.stringify(dumpState(),null,1)), dateiname(".json"), "application/json");
@@ -1010,10 +998,7 @@ $("btnSave").onclick = saveAntrag;
 $("btnPdf").onclick = ()=>{ try{ makePdf(); }catch(e){ console.error(e); toast("Fehler beim Erstellen: "+e.message); } };
 
 /* ---- Start -------------------------------------------------------- */
-SCHULE.forEach((t,i)=>$("st_"+(i+1)).value = t);
-$("s_schule").value = SCHULE[0];
-$("f_ort").value = "Lauterbach";
-$("f_datum").value = heute();
+$("s_schule").value = SCHULE;
 show(0);
 
 </script>
