@@ -313,11 +313,14 @@ textarea.big{min-height:190px}
   <div class="ov-body">
    <h4 id="hl_so">So geht es</h4>
    <ol>
-    <li>Willst du Angaben aus dem Förderplan übernehmen, wähle am Anfang die Förderplan-Datei (.json).
-     Name, Klasse, Lehrkräfte und die bisherigen Maßnahmen sind dann schon ausgefüllt.</li>
-    <li>Geh die Schritte durch. Nach dem Laden einer Datei sind fehlende Angaben orange hinterlegt.</li>
-    <li>Im letzten Schritt erstellt <b>PDF erstellen</b> den Antrag im Formular des rBFZ. Klassenlehrkraft und
-     Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</li>
+    <li>Für einen Beratungsantrag muss bereits ein Förderplan geschrieben sein. Hast du die Sicherungsdatei (.json)
+     aus dem Förderplan-Assistenten, wähle sie am Anfang – dann sind Name, Geburtsdatum, Klasse, Schuljahr,
+     Lehrkräfte und die bisherigen Maßnahmen schon ausgefüllt. Sonst geht es einfach mit Weiter los.</li>
+    <li>Geh die Schritte durch. Nach der Übernahme aus dem Förderplan sind fehlende Angaben orange hinterlegt.</li>
+    <li>Im letzten Schritt erstellt <b>PDF erstellen</b> den Antrag im Formular des rBFZ. Alle Anlagen sind angekreuzt,
+     Ort und Datum stehen schon drin. Klassenlehrkraft und Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</li>
+    <li>Das Sekretariat trägt das Datum in der LUSD ein – ab dann wird die Schülerin bzw. der Schüler als vorbeugende
+     Maßnahme geführt.</li>
    </ol>
    <h4 id="hl_ds">Datenschutz</h4>
    <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert
@@ -467,7 +470,7 @@ function seite1(ops, d){
   /* Anschrift */
   T(ops,TX,228.0,"An das","R",10);
   const ac=195.4;
-  [["Beratungs- und Förderzentrum","B",253.0],["Lauterbach","B",265.0],
+  [["Beratungs- und Förderzentrum","B",253.0],["Wartenberg-Angersbach","B",265.0],
    ["Schillerstraße 1","R",278.0],["36367 Wartenberg-Angersbach","R",290.0]]
    .forEach(([t,f,y])=>T(ops,ac-tw(t,f,11)/2,y,t,f,11));
 
@@ -738,7 +741,7 @@ function makePdf(){
   fusszeilen(pages);
   const bytes=buildPdf(pages, "Beratungsantrag" + (d.name ? " – "+d.name : ""));
   download(bytes, dateiname(".pdf"));
-  toast("PDF erstellt: " + pages.length + " Seiten");
+  toast("PDF erstellt.");
   return bytes;
 }
 
@@ -798,7 +801,7 @@ const STEPS = [
   Nutze dazu am besten den <a href="https://sadw4223.github.io/Formulare/foerderplan.html" target="_blank" rel="noopener">Förderplan-Assistenten</a>,
   denn dann kannst du die meisten Angaben aus dem Förderplan direkt übernehmen. Die Sicherungsdatei (.json) aus dem
   Förderplangenerator füllt nämlich Name, Geburtsdatum, Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.
-  Hast du die .json-Datei nicht zur Hand oder wurde der Förderplan mit einem anderen Formular geschrieben, klicke einfach auf <b>Weiter</b>.</small></div>
+  Hast du die .json-Datei nicht zur Hand oder wurde der Förderplan mit einem anderen Formular geschrieben, klicke einfach auf Weiter.</small></div>
   <button type="button" class="btn-add" onclick="pickFp()">Förderplan-Datei wählen</button>
  </div>`},
 
@@ -811,7 +814,7 @@ const STEPS = [
  <div class="row">
   ${feld("s_gebdat","Geburtsdatum","fm","date")}
   ${feld("s_einsch","Einschulung zum","fm","text","01.08.2020")}
-  <div class="field fm"><span>Vorklasse</span>
+  <div class="field fm"><span>Vorklasse besucht?</span>
    <div class="seg seg-sm" id="vkSeg">
     <button type="button" data-v="ja" onclick="setVk('ja')">ja</button>
     <button type="button" data-v="nein" onclick="setVk('nein')">nein</button>
@@ -827,20 +830,20 @@ const STEPS = [
  </div>
  <div class="row">
   ${feld("s_kl","Klassenlehrer/in","f1","text","Frau Weber")}
-  ${feld("s_bfz","Förderschullehrkraft BFZ","f1","text","Herr Klein")}
+  ${feld("s_bfz","Zuständige Förderschullehrkraft des rBFZ","f1","text","Herr Klein")}
  </div>`},
 
-{t:"Eltern", h:()=>`
- <h2>Eltern bzw. Sorgeberechtigte</h2>
- <div class="row">${feld("e_name","Name der Eltern bzw. Sorgeberechtigten","f1","text","Anna und Peter Müller")}</div>
- <div class="row">${feld("e_anschrift","Anschrift der Eltern","f1","text","Musterstraße 3, 36341 Lauterbach")}</div>
- <div class="row">${feld("e_tel","Telefonnummer der Eltern","f1","text","06641 12345")}</div>`},
+{t:"Erziehungsberechtigte", h:()=>`
+ <h2>Erziehungsberechtigte</h2>
+ <div class="row">${feld("e_name","Namen der Erziehungsberechtigten","f1","text","Anna und Peter Müller")}</div>
+ <div class="row">${feld("e_anschrift","Anschrift","f1","text","Musterstraße 3, 36341 Lauterbach")}</div>
+ <div class="row">${feld("e_tel","Telefonnummer","f1","text","06641 12345")}</div>`},
 
 {t:"Anliegen", h:()=>`
  <h2>Worum geht es?</h2>
  <div class="sublabel">Art der Unterstützung</div>
  <div class="note blue">Voraussetzung für eine umfängliche Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
- Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte dürfen sich aber trotzdem beraten lassen.
+ Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte können sich aber natürlich trotzdem beraten lassen.
  Das dazu nötige Formular befindet sich in <a class="iserv" href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung/1.%20Formulare"
  target="_blank" rel="noopener">Dateien » Gruppen » Lehrer » Inklusive&nbsp;Beschulung » 1.&nbsp;Formulare</a>.</div>
  <div class="cols2" id="grpBer">
@@ -867,10 +870,6 @@ const STEPS = [
 
 {t:"Abschluss", h:()=>`
  <h2>Fertig zum Ausdrucken</h2>
- <div class="note green"><b>Alles übernommen:</b> Deine Angaben stehen jetzt im Antragsformular des rBFZ.
- Mit <b>PDF erstellen</b> wird es als PDF ausgegeben – im Aufbau der bekannten Vorlage.</div>
- <p class="hint">Im PDF sind alle Anlagen angekreuzt, Ort und Datum stehen schon drin. Klassenlehrkraft und
- Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</p>
  <div class="sublabel">Im Sekretariat zu erledigen</div>
  <div class="row">${feld("f_lusd","Datenerfassung in der LUSD erfolgt am","f2","date")}</div>
  <div class="note" id="lusdNote"></div>
@@ -1011,7 +1010,7 @@ function buildSummary(){
   if(!val("s_gebdat")) w("Es fehlt das Geburtsdatum.");
   if(!val("s_klasse")) w("Es fehlt die Klasse.");
   if(!val("s_kl")) w("Es fehlt die Klassenlehrkraft.");
-  if(!val("e_name")) w("Es fehlen die Namen der Eltern.");
+  if(!val("e_name")) w("Es fehlen die Namen der Erziehungsberechtigten.");
   if(!on("b_sys") && !on("b_diag")) w("Es ist weder systemische noch diagnostische Beratung angekreuzt.");
   if(!FSP_IDS.some(on)) w("Es ist kein Förderschwerpunkt angekreuzt.");
   if(!val("t_frage")) w("Die Fragestellung ist leer.");
