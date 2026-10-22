@@ -1708,6 +1708,25 @@ function nsBemerkung(){
   return "In den Fächern " + f.slice(0,-1).join(", ") + " und " + f[f.length-1] + satz;
 }
 
+/* Ist das BFZ beteiligt? Nur dann bekommt die BFZ-Lehrkraft im PDF eine
+   Unterschriftenzeile. Liefert den Grund als kurzen Text, sonst "". */
+function bfzGrund(){
+  if(val("s_bfz")) return "BFZ-Lehrkraft ist eingetragen";
+  if(mode()==="na") return "";
+  if(on("b_1")) return "BFZ im Rahmen vorbeugender Maßnahmen (VM)";
+  if(on("b_2")) return "BFZ unterstützt die inklusive Beschulung (IB)";
+  if(sopAktiv()) return "Anspruch auf sonderpädagogische Förderung";
+  const re = /\bBFZ\b|Beratungs- und Förderzentrum/i;
+  const iB = BETEILIGTE.indexOf("BFZ-Lehrkraft");
+  for(const b of ALLE.filter(bAktiv)){
+    if(on("p_"+b.id+"_"+iB)) return "BFZ-Lehrkraft ist bei „"+bName(b)+"“ beteiligt";
+    if(b.m.some((x,i)=>on("m_"+b.id+"_"+i) && re.test(x[0]))) return "BFZ-Maßnahme bei „"+bName(b)+"“";
+    if(mvals("mx_"+b.id).concat(mvals("zx_"+b.id), [val("px_"+b.id)]).some(t=>re.test(t)))
+      return "BFZ in einem eigenen Eintrag bei „"+bName(b)+"“";
+  }
+  if(mvals("wx").some(t=>re.test(t))) return "BFZ unter „weitere Unterstützung“";
+  return "";
+}
 function buildSummary(){
   const el=$("summary"); if(!el) return;
   const m=mode(), li=[];
@@ -1733,6 +1752,9 @@ function buildSummary(){
     if(!NA_GRUND.some(g=>on("nag_"+g[0])) && !val("nag_x"))
       li.push('<li class="warn">Es ist keine Begründung für den Nachteilsausgleich angegeben.</li>');
   }
+  const bg = bfzGrund();
+  li.push(bg ? `<li><b>Unterschrift BFZ-Lehrkraft</b>: ja – ${esc(bg)}</li>`
+             : `<li><b>Unterschrift BFZ-Lehrkraft</b>: entfällt, das BFZ ist nicht beteiligt</li>`);
   el.innerHTML = `<h4>Kurzübersicht</h4><ul>${li.join("")}</ul>`;
 }
 </script>
@@ -2495,7 +2517,7 @@ function compose(){
   const namen = ["Unterschrift "+vorname(),
                  "Unterschrift der Erziehungsberechtigten",
                  sysT("Unterschrift der Lernbegleitung"),
-                 "Unterschrift der BFZ-Lehrkraft"];
+                 bfzGrund() ? "Unterschrift der BFZ-Lehrkraft" : ""].filter(Boolean);
   const colW = (CW - 12*MM)/2;
   const ortZeile = [val("f_ort"), val("f_besp") ? "den "+fmtDate(val("f_besp")) : ""].filter(Boolean).join(", ");
   if(ortZeile){ L.gap(4*MM); L.text(ortZeile, {size:FS.body}); L.gap(11*MM); }
