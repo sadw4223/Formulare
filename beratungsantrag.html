@@ -249,6 +249,7 @@ textarea.big{min-height:190px}
 .field>span:empty{display:none}
 .hint a{color:var(--blue);font-weight:600}
 .note a{color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.note a.iserv{color:#2a8af6;text-decoration:underline;text-underline-offset:2px}
 .note .pfad{white-space:normal}
 .note.green{background:var(--gruen-b);border-left-color:var(--gruen);color:#1f6b3d}
 .chkx{display:flex;align-items:center;gap:10px;padding:3px 4px}
@@ -289,11 +290,9 @@ textarea.big{min-height:190px}
     <img id="logoImg" alt="">
     <div class="idty">
       <h1>Beratungsantrag-Assistent</h1>
-      <div class="brand"><b>LERNCAMPUS</b> <i>WASCHERDE</i> · Antrag an das rBFZ Lauterbach</div>
+      <div class="brand"><b>LERNCAMPUS</b> <i>WASCHERDE</i></div>
     </div>
     <div class="tools">
-      <button class="iconbtn" id="btnSave2" type="button">Sichern</button>
-      <button class="iconbtn" id="btnLoad" type="button">Antrag laden</button>
       <button class="iconbtn" id="btnReset" type="button">Neu</button>
       <button class="iconbtn help" id="btnHilfe" type="button" aria-label="Kurzanleitung und Datenschutz" title="Kurzanleitung und Datenschutz"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.6-2.7 2.6"/><path d="M12 16.9h.01"/></svg></button>
     </div>
@@ -307,7 +306,6 @@ textarea.big{min-height:190px}
   <button class="b btn-next" id="btnNext" type="button">Weiter</button>
   <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF erstellen</button>
 </div></div>
-<input type="file" id="fileIn" accept=".json,application/json" style="display:none">
 <input type="file" id="fpIn" accept=".json,application/json" style="display:none">
 <div class="ov hidden" id="hilfe" role="dialog" aria-modal="true" aria-labelledby="hilfeT">
  <div class="ov-box">
@@ -321,15 +319,11 @@ textarea.big{min-height:190px}
     <li>Im letzten Schritt erstellt <b>PDF erstellen</b> den Antrag im Formular des rBFZ. Klassenlehrkraft und
      Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</li>
    </ol>
-   <h4 id="hl_sich">Sichern und weiterbearbeiten</h4>
-   <p>Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Sicherungsdatei (.json) – zum Beispiel, wenn du
-    zwischendurch abbrechen musst oder eine Kollegin bzw. ein Kollege weitermachen soll. Geöffnet wird sie oben
-    rechts über <b>Antrag laden</b>. Ein PDF lässt sich nicht laden.</p>
    <h4 id="hl_ds">Datenschutz</h4>
    <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert
-    nichts im Browser – auch eine geladene Förderplan- oder Antrags-Datei wird nur hier auf dem Gerät gelesen.</p>
-   <p>Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Sichern</b> oder
-    als PDF herunterlädst. Diese Dateien gehören in den Ordner des Kindes in IServ.</p>
+    nichts im Browser – auch eine geladene Förderplan-Datei wird nur hier auf dem Gerät gelesen.</p>
+   <p>Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur das PDF, das du am Ende herunterlädst.
+    Es gehört in den Ordner des Kindes in IServ.</p>
   </div>
  </div>
 </div>
@@ -474,7 +468,7 @@ function seite1(ops, d){
   T(ops,TX,228.0,"An das","R",10);
   const ac=195.4;
   [["Beratungs- und Förderzentrum","B",253.0],["Lauterbach","B",265.0],
-   ["Hohenbucher Weg 17","R",278.0],["36341 Lauterbach","R",290.0]]
+   ["Schillerstraße 1","R",278.0],["36367 Wartenberg-Angersbach","R",290.0]]
    .forEach(([t,f,y])=>T(ops,ac-tw(t,f,11)/2,y,t,f,11));
 
   /* Titel */
@@ -752,7 +746,7 @@ function makePdf(){
 <script>
 "use strict";
 /* ==================================================================
-   BERATUNGSANTRAG-ASSISTENT – Oberfläche, Übernahme, Sichern/Laden
+   BERATUNGSANTRAG-ASSISTENT – Oberfläche und Übernahme aus dem Förderplan
    ================================================================== */
 const APP = "beratungsantrag", APPV = 1;
 document.getElementById("logoImg").src = LOGO;
@@ -780,9 +774,9 @@ const FSP_ART = [["b_lernen","Lernen","lernen"],["b_sprache","Sprache","sprache"
 const FSP_IDS = FSP_ART.map(f=>f[0]);
 const FSP_FORM = ["b_lernen","b_sprache","b_ese"];
 const MASS = [["m_binn","Binnendifferenzierung"],
-              ["m_ber","Beratung des Schülers/ der Erziehungsberechtigten"],
+              ["m_ber","Beratung des Schülers / der Erziehungsberechtigten"],
               ["m_stuetz","Stütz- und Fördermaßnahmen"],
-              ["m_zus","Zusammenarbeit mit Beratungsdiensten/ Fördereinrichtungen"]];
+              ["m_zus","Zusammenarbeit mit Beratungsdiensten / Fördereinrichtungen"]];
 const ANL  = [["a_zeugnis","Kopie des letzten Zeugnisses"],["a_akte","Kopie des Aktendeckels"],
               ["a_fp","Förderplan"],["a_einv","Einverständniserklärung der Eltern (nach\u00a0§\u00a04\u00a0VOSB)"]];
 
@@ -803,7 +797,8 @@ const STEPS = [
   <div><b>Willst du die Angaben aus dem <em class="hl">Förderplan</em> übernehmen?</b><small>Um einen Beratungsantrag an das rBFZ zu stellen, musst du einen Förderplan geschrieben haben.
   Nutze dazu am besten den <a href="https://sadw4223.github.io/Formulare/foerderplan.html" target="_blank" rel="noopener">Förderplan-Assistenten</a>,
   denn dann kannst du die meisten Angaben aus dem Förderplan direkt übernehmen. Die Sicherungsdatei (.json) aus dem
-  Förderplangenerator füllt nämlich Name, Geburtsdatum, Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.</small></div>
+  Förderplangenerator füllt nämlich Name, Geburtsdatum, Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.
+  Hast du die .json-Datei nicht zur Hand oder wurde der Förderplan mit einem anderen Formular geschrieben, klicke einfach auf <b>Weiter</b>.</small></div>
   <button type="button" class="btn-add" onclick="pickFp()">Förderplan-Datei wählen</button>
  </div>`},
 
@@ -844,9 +839,10 @@ const STEPS = [
 {t:"Anliegen", h:()=>`
  <h2>Worum geht es?</h2>
  <div class="sublabel">Art der Unterstützung</div>
- <div class="note blue">Voraussetzung für eine Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
- Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte dürfen sich trotzdem beraten lassen.
- Das dazu nötige Formular befindet sich in <span class="pfad"><a href="https://schuleanderwascherde.eu/iserv/file/-" target="_blank" rel="noopener">Dateien</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups" target="_blank" rel="noopener">Gruppen</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer" target="_blank" rel="noopener">Lehrer</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung" target="_blank" rel="noopener">Inklusive Beschulung</a> » <a href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung/1.%20Formulare" target="_blank" rel="noopener">1. Formulare</a></span>.</div>
+ <div class="note blue">Voraussetzung für eine umfängliche Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
+ Ohne Einverständnis ist keine schülerbezogene Diagnostik und Förderung möglich; die Lehrkräfte dürfen sich aber trotzdem beraten lassen.
+ Das dazu nötige Formular befindet sich in <a class="iserv" href="https://schuleanderwascherde.eu/iserv/file/-/Groups/Lehrer/Inklusive%20Beschulung/1.%20Formulare"
+ target="_blank" rel="noopener">Dateien » Gruppen » Lehrer » Inklusive&nbsp;Beschulung » 1.&nbsp;Formulare</a>.</div>
  <div class="cols2" id="grpBer">
   ${chk("b_sys","Systemische Beratung","Einverständniserklärung der Eltern wurde verweigert")}
   ${chk("b_diag","Diagnostische Beratung","Einverständniserklärung der Eltern liegt vor")}
@@ -875,9 +871,9 @@ const STEPS = [
  Mit <b>PDF erstellen</b> wird es als PDF ausgegeben – im Aufbau der bekannten Vorlage.</div>
  <p class="hint">Im PDF sind alle Anlagen angekreuzt, Ort und Datum stehen schon drin. Klassenlehrkraft und
  Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</p>
- <div class="sublabel">Nur für das Sekretariat</div>
- <div class="note" id="lusdNote"></div>
+ <div class="sublabel">Im Sekretariat zu erledigen</div>
  <div class="row">${feld("f_lusd","Datenerfassung in der LUSD erfolgt am","f2","date")}</div>
+ <div class="note" id="lusdNote"></div>
  <div class="sum" id="summary"></div>`}
 ];
 
@@ -892,7 +888,9 @@ function paintLusd(){
                                         : "in den Förderschwerpunkten <b>"+esc(fs.join(", "))+"</b>")
                        : "im gewählten Förderschwerpunkt";
   el.innerHTML = "<b>Wichtig:</b> Ab diesem Datum wird die Schülerin bzw. der Schüler offiziell als vorbeugende Maßnahme "
-    + wo + " geführt. Das ist zwingend nötig – bitte im Sekretariat an der entsprechenden Stelle in der LUSD eintragen lassen.";
+    + wo + " geführt. Das ist zwingend nötig – bitte im Sekretariat an der entsprechenden Stelle in der LUSD eintragen lassen. "
+    + "In der Regel ist das geforderte Datum das Datum der Antragstellung, und der Zeitraum läuft bis zum Ende des laufenden "
+    + "Schuljahres. Fördernde Schule ist damit das rBFZ Reinickendorf-Schule.";
 }
 function show(p){
   cur = Math.max(0, Math.min(STEPS.length-1, p));
@@ -912,7 +910,7 @@ function paintStepname(){
 }
 
 /* ---- Offene Angaben nach dem Laden einer Datei markieren -----------
-   Erst nach „Antrag laden“ oder der Übernahme aus dem Förderplan: Was dann
+   Erst nach der Übernahme aus dem Förderplan: Was dann
    noch leer ist, bekommt einen orangen Hintergrund, der beim Ausfüllen verschwindet. */
 let MARK = false, OFFEN = {};
 const OFFEN_FELDER = ["s_vorname","s_nachname","s_gebdat","s_einsch","s_vorkl","s_klasse","s_sj",
@@ -1096,15 +1094,6 @@ function importFoerderplan(s){
 /* ==================================================================
    SICHERN UND LADEN
    ================================================================== */
-function dumpState(){
-  const s={app:APP, v:APPV, ts:new Date().toISOString(), f:{}, c:{}};
-  document.querySelectorAll("#steps input, #steps textarea").forEach(e=>{
-    if(!e.id) return;
-    if(e.type==="checkbox") s.c[e.id]=e.checked; else s.f[e.id]=e.value;
-  });
-  s.imp = JSON.parse(JSON.stringify(IMP));
-  return s;
-}
 /* Dateiname wie im Förderplangenerator: JJJJ-MM-TT-Art-Vorname-Nachname.
    Umlaute bleiben erhalten, nur in Dateinamen verbotene Zeichen fallen weg. */
 function namensTeil(s){
@@ -1115,26 +1104,7 @@ function dateiname(endung){
   const name = [namensTeil(val("s_vorname")), namensTeil(val("s_nachname"))].filter(Boolean);
   return [heute(), endung===".json" ? "Beratungsantrag-Sicherung" : "Beratungsantrag"].concat(name.length ? name : ["ohne-Namen"]).join("-") + endung;
 }
-function saveAntrag(){
-  download(new TextEncoder().encode(JSON.stringify(dumpState(),null,1)), dateiname(".json"), "application/json");
-  toast("Antrag gesichert.");
-}
-function loadAntrag(s){
-  document.querySelectorAll("#steps input[type=checkbox]").forEach(e=>e.checked=false);
-  document.querySelectorAll("#steps input:not([type=checkbox]), #steps textarea").forEach(e=>e.value="");
-  Object.entries(s.c||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.checked=!!v; });
-  Object.entries(s.f||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.value=v; });
-  MASS.forEach(m=>{ IMP[m[0]] = ((s.imp||{})[m[0]]||[]).slice(); renderImp(m[0]); });
-  /* ältere Anträge: freies Feld „anderer Förderschwerpunkt“ den Kästchen zuordnen */
-  const alt = (s.f||{}).b_sonst_t || "";
-  if(alt) [["b_geistig",/geistig/i],["b_kme",/motor|körper/i],["b_sehen",/sehen/i],["b_hoeren",/hören|hoer/i],
-    ["b_krank",/krank/i],["b_lernen",/lernen/i],["b_sprache",/sprach/i],["b_ese",/emotional|sozial/i]]
-    .forEach(([id,re])=>{ if(re.test(alt)) $(id).checked = true; });
-  paintSj();
-}
-/* Zwei getrennte Wege: oben rechts nur gesicherte Anträge,
-   im Start-Schritt nur die Förderplan-Datei. */
-const istAntrag = s => !!(s && s.app===APP);
+/* Laden gibt es nur für die Förderplan-Datei im Start-Schritt. */
 const istFoerderplan = s => !!(s && s.app!==APP && s.f && ("s_vorname" in s.f || "s_nachname" in s.f));
 function liesJson(ev, weiter){
   const file=ev.target.files && ev.target.files[0]; if(!file) return;
@@ -1149,22 +1119,13 @@ function liesJson(ev, weiter){
   r.readAsText(file);
   ev.target.value="";
 }
-function pickFile(){ $("fileIn").click(); }
 function pickFp(){ $("fpIn").click(); }
-$("btnLoad").onclick = pickFile;
-$("btnSave2").onclick = saveAntrag;
-$("fileIn").onchange = ev=>liesJson(ev, s=>{
-  if(istAntrag(s)){ loadAntrag(s); MARK=true; show(1); toast("Antrag geladen – " + offenText(markOffen()) + "."); }
-  else if(istFoerderplan(s)) toast("Das ist eine Förderplan-Datei – die wird am Anfang über „Förderplan-Datei wählen“ übernommen.");
-  else toast("Das ist kein gesicherter Beratungsantrag.");
-});
 $("fpIn").onchange = ev=>liesJson(ev, s=>{
   if(istFoerderplan(s)){
     const n = importFoerderplan(s); MARK=true; show(1);
     toast("Förderplan übernommen" + (n ? " – "+n+(n===1?" Maßnahme":" Maßnahmen")+" einsortiert" : "")
           + ". " + offenText(markOffen()).replace(/^./, c=>c.toUpperCase()) + ".");
   }
-  else if(istAntrag(s)) toast("Das ist ein gesicherter Antrag – den öffnest du oben rechts über „Antrag laden“.");
   else toast("Das ist keine Förderplan-Datei.");
 });
 $("btnReset").onclick = ()=>{ if(confirm("Alle Eingaben verwerfen und neu beginnen?")) location.reload(); };
