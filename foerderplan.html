@@ -132,6 +132,8 @@ label.chk.sug span::after{content:"EMPFOHLEN";float:right;margin-left:8px;font-s
 .fsj{flex:0 0 auto}
 .sjpair{display:flex;align-items:center;gap:6px}
 .sjpair input{width:84px;text-align:center}
+.fkl{flex:0 0 auto}
+.fkl .sjpair input{width:58px}
 .sjpair input[readonly]{color:var(--grey);border-style:dashed}
 .sjpair input.ungueltig{border-color:var(--rot);box-shadow:0 0 0 1px var(--rot)}
 .sjpair>span{color:var(--grey);font-weight:700}
@@ -1130,6 +1132,28 @@ function pruefSj(){
   e.classList.toggle("ungueltig", !!d && !sjOk(d));
   if(d && !sjOk(d)) toast("Bitte das Jahr vierstellig eingeben, z. B. 2026.");
 }
+/* Klasse: Jahrgang als Zahl, Zusatz frei (b, R1 …) – zusammen z. B. „7b“ */
+const klOk = d => /^\d{1,2}$/.test(d) && +d>=1 && +d<=13;
+function setKl(){
+  const j=$("kl_j"), z=$("kl_z");
+  const d=j.value.replace(/\D/g,"").slice(0,2); if(j.value!==d) j.value=d;
+  const zz=z.value.replace(/\s+/g,""); if(z.value!==zz) z.value=zz;
+  if(klOk(d) || !d) j.classList.remove("ungueltig");
+  $("s_klasse").value = (klOk(d) ? d : "") + (klOk(d) ? zz : "");
+  $("s_klasse").dispatchEvent(new Event("input"));
+}
+function pruefKl(){
+  const j=$("kl_j"), d=j.value;
+  j.classList.toggle("ungueltig", !!d && !klOk(d));
+  if(d && !klOk(d)) toast("Bitte den Jahrgang als Zahl eingeben, z. B. 7.");
+}
+function paintKl(){
+  const j=$("kl_j"); if(!j) return;
+  const m=String(val("s_klasse")).match(/^\s*(\d{1,2})\s*(.*)$/);
+  j.value = m ? m[1] : ""; $("kl_z").value = m ? m[2].replace(/\s+/g,"").slice(0,4) : "";
+  j.classList.remove("ungueltig");
+  $("s_klasse").value = m ? m[1]+$("kl_z").value : val("s_klasse");
+}
 function paintSj(){
   const e=$("sj_a"); if(!e) return;
   const y=sjStart(val("s_sj"));
@@ -1395,7 +1419,12 @@ const STEPS = [
  <div class="row">
   ${feld("s_vorname","Vorname","f1","text","Mia")}
   ${feld("s_nachname","Nachname","f1","text","Berger")}
-  ${feld("s_klasse","Klasse","fs","text","7b")}
+  <div class="field fkl"><span>Klasse</span>
+   <div class="sjpair"><input type="text" id="kl_j" inputmode="numeric" maxlength="2" placeholder="7" autocomplete="off"
+     aria-label="Klasse – Jahrgang" title="Jahrgang" oninput="setKl()" onblur="pruefKl()">
+    <input type="text" id="kl_z" maxlength="4" placeholder="b" autocomplete="off" autocapitalize="off"
+     aria-label="Klasse – Zusatz" title="Zusatz" oninput="setKl()"></div>
+   <input type="hidden" id="s_klasse"></div>
  </div>
  <div class="row">
   ${feld("s_gebdat","geboren am","fm","date")}
@@ -1410,7 +1439,6 @@ const STEPS = [
     <button type="button" data-h="2" onclick="setHj('2')">2.</button>
    </div><input type="hidden" id="s_hj"></div>
  </div>
- <div class="note hjnote"><b>Fortschreibung:</b> Neues Schuljahr und Halbjahr eintragen – dann zeigen Pfeile, was sich verändert hat.</div>
  <div class="row">
   ${feld("s_kl","Lernbegleitung","f1","text","Frau Weber")}
   ${feld("s_bfz","BFZ-Lehrkraft","f1","text","Herr Klein")}
@@ -2723,7 +2751,7 @@ function loadState(s){
     const m = val("s_sj").match(/^(.*?)[,\s]+([12])\.\s*Halbjahr\s*$/);
     if(m){ $("s_sj").value = m[1].trim(); $("s_hj").value = m[2]; }
   }
-  paintSj(); paintHj();
+  paintSj(); paintKl(); paintHj();
   buildEval();
   /* Vergleichsstand für die Pfeile: die Einschätzungen, wie sie geladen wurden */
   GELADEN = {R: Object.assign({}, R), p: periode(), basis: s.basis || null};
