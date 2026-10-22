@@ -1516,7 +1516,7 @@ function applyAlt(still){
   document.title = "Förderplan- & Nachteilsausgleich-Assistent – "
                  + (a ? "Schule an der Wascherde" : "Lerncampus Wascherde");
   Object.keys(MULTI).forEach(renderMulti);    /* Beispieltexte in den freien Feldern */
-  if(!still){ refresh(); toast(a ? "Reguläres System: Schule an der Wascherde" : "Lerncampus Wascherde"); }
+  if(!still){ refresh(); toast(a ? "Reguläres System: Schule an der Wascherde" : "Neues System: Lerncampus Wascherde"); }
 }
 let cur = 0;
 
@@ -2549,7 +2549,7 @@ function dumpState(){
     if(e.type==="checkbox") s.c[e.id]=e.checked; else s.f[e.id]=e.value;
   });
   s.prevZiele = collectZiele();
-  s.system = altSys() ? "regulaer" : "lerncampus";
+  s.system = altSys() ? "regulaer" : "neu";
   return s;
 }
 function savePlan(){
