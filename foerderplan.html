@@ -241,9 +241,8 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 .sysw input:focus-visible + i{outline:2px solid var(--blue);outline-offset:2px}
 .sysw.on{border-color:var(--blue);background:#f0f5ff}
 /* ---- Kurzanleitung (Überlagerung) ---- */
-.iconbtn.help{flex:0 0 42px;width:42px;padding:0;font-weight:800;font-size:17px;color:var(--blue)}
-.mini{font-size:13.5px;color:var(--grey);margin:16px 2px 0;line-height:1.5}
-.mini a{color:var(--blue);font-weight:600;text-decoration:none}
+.iconbtn.help{flex:0 0 42px;width:42px;padding:0;color:var(--blue);display:inline-flex;align-items:center;justify-content:center}
+.iconbtn.help svg{display:block}
 .ov{position:fixed;inset:0;background:rgba(20,32,44,.45);z-index:60;display:flex;align-items:center;
   justify-content:center;padding:16px}
 .ov-box{background:#fff;border-radius:16px;max-width:620px;width:100%;max-height:calc(100vh - 32px);
@@ -271,7 +270,7 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
       <button class="iconbtn" id="btnSave2" type="button">Sichern</button>
       <button class="iconbtn" id="btnLoad" type="button">Plan laden</button>
       <button class="iconbtn" id="btnReset" type="button">Neu</button>
-      <button class="iconbtn help" id="btnHilfe" type="button" aria-label="Kurzanleitung und Datenschutz" title="Kurzanleitung und Datenschutz">?</button>
+      <button class="iconbtn help" id="btnHilfe" type="button" aria-label="Kurzanleitung und Datenschutz" title="Kurzanleitung und Datenschutz"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.6-2.7 2.6"/><path d="M12 16.9h.01"/></svg></button>
     </div>
   </header>
   <div class="progress" id="progress"></div>
@@ -1322,7 +1321,7 @@ const STEPS = [
   <label id="lbl_na"><input type="checkbox" id="mode_na">Nachteilsausgleich<small>eigenes Dokument, eine Seite</small></label>
   <label id="lbl_both"><input type="checkbox" id="mode_both">Beides<small>Förderplan mit Nachteilsausgleich in einem PDF</small></label>
  </div>
- <p class="mini">Deine Eingaben bleiben auf diesem Gerät. <a href="#" onclick="hilfe('hl_ds');return false">Datenschutz</a> · <a href="#" onclick="hilfe();return false">Kurzanleitung</a></p>`},
+`},
 
 {t:"Stammdaten", m:["fp","na","both"], id:"stamm", h:()=>`
  <h2>Angaben zur Schülerin / zum Schüler</h2>
