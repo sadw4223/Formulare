@@ -2578,7 +2578,7 @@ function dumpState(){
 function savePlan(){
   const s=dumpState();
   download(new TextEncoder().encode(JSON.stringify(s,null,1)), dateiName("json"), "application/json");
-  toast("Plan gesichert – Datei in der Schülerakte ablegen.");
+  toast("Plan als .json-Datei gesichert.");
 }
 function loadState(s){
   if(!s || !s.f) throw new Error("Diese Datei ist kein gesicherter Plan.");
@@ -2636,6 +2636,8 @@ $("btnPdf").onclick  = ()=>{ makePdf().catch(e=>{ console.error(e); toast("Fehle
 /* ---- Start -------------------------------------------------------- */
 $("f_ort").value = "Lauterbach";
 $("sys_alt").addEventListener("change", ()=>applyAlt());
+[["s_erst","s_fort"],["s_fort","s_erst"]].forEach(([a,b])=>
+  $(a).addEventListener("change", ()=>{ if(on(a)) $(b).checked = false; }));
 $("sys_alt").checked = false;   /* immer aus starten – auch wenn der Browser alte Formularwerte zurückholt */
 if(/^#(regulaer|alt)$/i.test(location.hash) || /[?&](regulaer|alt)(=|&|$)/i.test(location.search)){
   $("sys_alt").checked = true; applyAlt(true);

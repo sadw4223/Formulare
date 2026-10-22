@@ -233,6 +233,9 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 .imp small{display:block;color:var(--grey);font-size:13px;margin-top:3px;line-height:1.4}
 .imp .btn-add{margin-top:0}
 .imp b .hl{font-style:normal;color:var(--orange-d)}
+/* offene Angaben nach dem Laden */
+.field.offen input:not([type=hidden]),.field.offen textarea,.field.offen .seg button{background:#fde6cf}
+.cols2.offen{background:#fde6cf;box-shadow:0 0 0 6px #fde6cf;border-radius:6px}
 textarea.big{min-height:190px}
 .mrow{border:1px solid var(--line);border-radius:10px;padding:4px 10px 10px;margin:8px 0;background:#fdfefe}
 .mrow textarea{min-height:66px}
@@ -760,7 +763,7 @@ const STEPS = [
 {t:"Start", h:()=>`
  <h2>Beratungsantrag an das rBFZ</h2>
  <div class="imp">
-  <div><b>Angaben aus dem <em class="hl">Förderplan</em> übernehmen</b><small>Die Sicherungsdatei (.json) aus dem Förderplangenerator füllt Name, Geburtsdatum,
+  <div><b>Willst du die Angaben aus dem <em class="hl">Förderplan</em> übernehmen?</b><small>Die Sicherungsdatei (.json) aus dem Förderplangenerator füllt Name, Geburtsdatum,
   Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.</small></div>
   <button type="button" class="btn-add" onclick="pickFp()">Förderplan-Datei wählen</button>
  </div>
@@ -808,13 +811,13 @@ const STEPS = [
 {t:"Anliegen", h:()=>`
  <h2>Worum geht es?</h2>
  <div class="sublabel">Art der Unterstützung</div>
- <div class="cols2">
+ <div class="cols2" id="grpBer">
   ${chk("b_sys","Systemische Beratung","Einverständniserklärung der Eltern wurde verweigert")}
   ${chk("b_diag","Diagnostische Beratung","Einverständniserklärung der Eltern liegt vor")}
  </div>
  <div class="glabel">Förderschwerpunkt</div>
  <div class="note hidden" id="bartNote">Aus dem Förderplan vorgeschlagen – bitte prüfen.</div>
- <div class="cols2">${BART.filter(b=>FSP_IDS.includes(b[0])).map(b=>chk(b[0],b[1])).join("")}
+ <div class="cols2" id="grpFsp">${BART.filter(b=>FSP_IDS.includes(b[0])).map(b=>chk(b[0],b[1])).join("")}
   <div class="chkx"><input type="checkbox" id="b_sonst" aria-label="Anderer Förderschwerpunkt"><input type="text" id="b_sonst_t" placeholder="Anderer Förderschwerpunkt"></div>
  </div>
  <div class="note blue">Voraussetzung für eine Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
@@ -858,13 +861,44 @@ function show(p){
   document.querySelectorAll(".step").forEach((el,j)=>el.classList.toggle("active", j===cur));
   growAll();
   $("progress").innerHTML = STEPS.map((s,j)=>`<div class="${j<cur?"done":j===cur?"curr":""}"></div>`).join("");
-  $("stepname").innerHTML = `<b>${esc(STEPS[cur].t)}</b><span>Schritt ${cur+1} von ${STEPS.length}</span>`;
+  markOffen(); paintStepname();
   const last = cur===STEPS.length-1;
   $("btnBack").classList.toggle("hidden", cur===0);
   $("btnNext").classList.toggle("hidden", last);
   $("btnPdf").classList.toggle("hidden", !last);
   window.scrollTo(0,0);
 }
+function paintStepname(){
+  $("stepname").innerHTML = `<b>${esc(STEPS[cur].t)}</b><span>Schritt ${cur+1} von ${STEPS.length}</span>`;
+}
+
+/* ---- Offene Angaben nach dem Laden einer Datei markieren -----------
+   Erst nach „Antrag laden“ oder der Übernahme aus dem Förderplan: Was dann
+   noch leer ist, bekommt einen orangen Hintergrund, der beim Ausfüllen verschwindet. */
+let MARK = false, OFFEN = {};
+const OFFEN_FELDER = ["s_vorname","s_nachname","s_gebdat","s_einsch","s_vorkl","s_klasse","s_sj","s_sbj",
+  "s_kl","s_bfz","s_schule","e_name","e_anschrift","e_tel","t_frage","t_hilfe","f_lusd"];
+const OFFEN_GRP = [["grpBer", ()=>on("b_sys")||on("b_diag")],
+                   ["grpFsp", ()=>FSP_IDS.some(on)||on("b_sonst")]];
+function markOffen(){
+  OFFEN = {};
+  const zaehl = el=>{ const st=el.closest(".step"); if(st){ const i=+st.id.slice(2); OFFEN[i]=(OFFEN[i]||0)+1; } };
+  OFFEN_FELDER.forEach(id=>{
+    const e=$(id), w=e && e.closest(".field"); if(!w) return;
+    const leer = MARK && !val(id);
+    w.classList.toggle("offen", leer); if(leer) zaehl(e);
+  });
+  OFFEN_GRP.forEach(([gid,ok])=>{
+    const g=$(gid); const leer = MARK && !ok();
+    g.classList.toggle("offen", leer); if(leer) zaehl(g);
+  });
+  return Object.values(OFFEN).reduce((a,b)=>a+b,0);
+}
+function liveOffen(){ if(MARK){ markOffen(); paintStepname(); } }
+["input","change"].forEach(ev=>$("steps").addEventListener(ev, liveOffen));
+$("steps").addEventListener("click", ()=>setTimeout(liveOffen,0));
+const offenText = n => n ? (n===1 ? "1 Angabe noch offen" : n+" Angaben noch offen") + " (orange markiert)" : "alles ausgefüllt";
+
 $("btnBack").onclick = ()=>show(cur-1);
 $("btnNext").onclick = ()=>show(cur+1);
 
@@ -937,6 +971,7 @@ function buildSummary(){
   if(!val("t_frage")) w("Die Fragestellung ist leer.");
   if(!MASS.some(m=>on(m[0]))) w("Es ist keine bisherige Maßnahme angekreuzt.");
   if(!val("t_hilfe")) w("Es steht nicht drin, welche Hilfe erwartet wird.");
+  if(!val("f_lusd")) w("Es fehlt das Datum der Datenerfassung in der LUSD.");
   const ok = li.length===0;
   el.innerHTML = `<h4>${ok?"Alles Wichtige ist ausgefüllt.":"Vor dem Abschicken prüfen"}</h4>` + (ok?"":`<ul>${li.join("")}</ul>`);
 }
@@ -1038,7 +1073,7 @@ function dateiname(endung){
 }
 function saveAntrag(){
   download(new TextEncoder().encode(JSON.stringify(dumpState(),null,1)), dateiname(".json"), "application/json");
-  toast("Antrag gesichert – Datei im Ordner des Kindes ablegen.");
+  toast("Antrag gesichert.");
 }
 function loadAntrag(s){
   document.querySelectorAll("#steps input[type=checkbox]").forEach(e=>e.checked=false);
@@ -1070,14 +1105,15 @@ function pickFp(){ $("fpIn").click(); }
 $("btnLoad").onclick = pickFile;
 $("btnSave2").onclick = saveAntrag;
 $("fileIn").onchange = ev=>liesJson(ev, s=>{
-  if(istAntrag(s)){ loadAntrag(s); show(1); toast("Antrag geladen."); }
+  if(istAntrag(s)){ loadAntrag(s); MARK=true; show(1); toast("Antrag geladen – " + offenText(markOffen()) + "."); }
   else if(istFoerderplan(s)) toast("Das ist eine Förderplan-Datei – die wird am Anfang über „Förderplan-Datei wählen“ übernommen.");
   else toast("Das ist kein gesicherter Beratungsantrag.");
 });
 $("fpIn").onchange = ev=>liesJson(ev, s=>{
   if(istFoerderplan(s)){
-    const n = importFoerderplan(s); show(1);
-    toast("Förderplan übernommen" + (n ? " – "+n+(n===1?" Maßnahme":" Maßnahmen")+" einsortiert." : "."));
+    const n = importFoerderplan(s); MARK=true; show(1);
+    toast("Förderplan übernommen" + (n ? " – "+n+(n===1?" Maßnahme":" Maßnahmen")+" einsortiert" : "")
+          + ". " + offenText(markOffen()).replace(/^./, c=>c.toUpperCase()) + ".");
   }
   else if(istAntrag(s)) toast("Das ist ein gesicherter Antrag – den öffnest du oben rechts über „Antrag laden“.");
   else toast("Das ist keine Förderplan-Datei.");
