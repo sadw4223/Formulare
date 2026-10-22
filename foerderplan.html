@@ -127,6 +127,8 @@ label.chk.sug span::after{content:"EMPFOHLEN";float:right;margin-left:8px;font-s
 .arow .lbl small{display:block;color:var(--mid);font-size:11.5px;margin-top:1px}
 .arow.frei .lbl input{width:100%;font-size:14.5px;padding:9px 11px}
 .amp{display:flex;gap:5px;flex:none}
+.trend{flex:none;width:18px;height:18px;display:inline-flex;align-items:center}
+.trend svg{display:block}
 .amp button{width:32px;height:32px;border-radius:50%;border:1.5px solid #ccd5df;background:#fff;
   padding:0;cursor:pointer;position:relative}
 .amp button i{position:absolute;inset:3px;border-radius:50%;
@@ -216,7 +218,7 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
   font-family:var(--sf);font-weight:700}
 .btn-next{background:var(--blue);color:#fff;flex:1} .btn-next:active{background:var(--blue-d)}
 .btn-back{background:#e5eaf0;color:var(--dark);flex:0 0 auto} .btn-back:active{background:#d5dce5}
-.btn-pdf{background:var(--orange);color:#fff;flex:1} .btn-pdf:active{background:var(--orange-d)}
+.btn-pdf{background:var(--orange);color:#fff;flex:1;line-height:1.2} .btn-pdf:active{background:var(--orange-d)}
 .btn-save{background:#e5eaf0;color:var(--dark);flex:0 0 auto}
 @media(max-width:520px){button.b{padding:13px 16px;font-size:15px}}
 
@@ -240,7 +242,6 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 .sysw input:checked + i::after{left:22px}
 .sysw input:focus-visible + i{outline:2px solid var(--blue);outline-offset:2px}
 .sysw.on{border-color:var(--blue);background:#f0f5ff}
-.lnk{border:none;background:none;padding:0;font:inherit;font-weight:700;color:var(--blue);text-decoration:underline;cursor:pointer}
 /* ---- Kurzanleitung (Überlagerung) ---- */
 .iconbtn.help{flex:0 0 42px;width:42px;padding:0;color:var(--blue);display:inline-flex;align-items:center;justify-content:center}
 .iconbtn.help svg{display:block}
@@ -281,7 +282,7 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 <div class="nav"><div class="inner">
   <button class="b btn-back" id="btnBack" type="button">Zurück</button>
   <button class="b btn-next" id="btnNext" type="button">Weiter</button>
-  <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF erstellen</button>
+  <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF und Sicherungsdatei laden</button>
 </div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
 <div class="ov hidden" id="hilfe" role="dialog" aria-modal="true" aria-labelledby="hilfeT">
@@ -292,17 +293,18 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
    <ol>
     <li>Wähle auf der Startseite, was du erstellen möchtest: Förderplan, Nachteilsausgleich oder beides.</li>
     <li>Tippe dich durch die Schritte und bewerte nur, was zählt. Was leer bleibt, erscheint im PDF nicht.</li>
-    <li>Im letzten Schritt erstellt <b>PDF erstellen</b> das fertige Dokument.</li>
+    <li>Im letzten Schritt lädt <b>PDF und Sicherungsdatei laden</b> das fertige Dokument und die Sicherungsdatei herunter.</li>
    </ol>
    <p>Die orangen und grauen Hinweiskästen sind nur für dich – sie werden nicht gedruckt.</p>
    <h4 id="hl_sich">Sichern und Fortschreibung</h4>
-   <p><b>PDF erstellen</b> lädt das PDF und gleich dazu die Sicherungsdatei (.json) herunter. Diese Sicherung gilt als
-    abgeschlossen: Lädst du sie später über <b>Plan laden</b>, wird der Plan automatisch fortgeschrieben – alle Angaben
-    sind vorbelegt, die Ziele erscheinen als Rückblick zum Bewerten.</p>
-   <p>Mit <b>Sichern</b> oben rechts sicherst du zwischendurch, wenn du abbrechen musst oder jemand anderes weitermachen
-    soll. So ein Zwischenstand öffnet sich beim Laden genau so, wie du aufgehört hast.</p>
-   <p>Willst du einen abgeschlossenen Plan nur korrigieren, tippe nach dem Laden auf <b>Stattdessen nur korrigieren</b>.
+   <p>Im letzten Schritt lädst du das PDF und die Sicherungsdatei (.json) zusammen herunter. Mit <b>Sichern</b> oben
+    rechts sicherst du zwischendurch, wenn du abbrechen musst oder jemand anderes weitermachen soll.</p>
+   <p>Über <b>Plan laden</b> öffnest du eine Sicherungsdatei wieder – genau so, wie sie gesichert wurde. Für eine
+    Fortschreibung lädst du den alten Plan, kreuzt „Fortschreibung“ an und passt an, was sich geändert hat.
     Ein PDF lässt sich nicht laden, dafür brauchst du die .json-Datei.</p>
+   <p>Trägst du beim geladenen Plan das neue Schuljahr bzw. Halbjahr ein, zeigen Pfeile bei den Einschätzungen, was sich
+    verändert hat: grün nach rechts oben = verbessert, rot nach rechts unten = verschlechtert, graues = = gleich geblieben.
+    Die Zeichen stehen auch im PDF.</p>
    <h4 id="hl_ds">Datenschutz</h4>
    <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert nichts
     im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.</p>
@@ -1040,7 +1042,8 @@ function ampRow(bid,it){
     <div class="lbl">${esc(it[1])}${it[2]?`<small>${esc(it[2])}</small>`:""}</div>
     <div class="amp">${[1,2,3,4,5].map(v=>
       `<button type="button" data-v="${v}" title="${STUFE[v]}" aria-label="${STUFE[v]}"
-        onclick="setAmp('${key}',${v})"><i></i></button>`).join("")}</div></div>`;
+        onclick="setAmp('${key}',${v})"><i></i></button>`).join("")}</div>
+    <span class="trend" id="tr_${key}"></span></div>`;
 }
 /* Freie Punkte in der Einschätzung: Text und Füllkreise wie bei den
    vorgegebenen Punkten. Die Stufe liegt unter der Kennung "~gruppe_nummer". */
@@ -1060,7 +1063,8 @@ function renderFrei(bid,gi){
         oninput="MULTI['${mid}'][${k}]=this.value; refreshCard('${bid}')"></div>
       <div class="amp">${[1,2,3,4,5].map(s=>
         `<button type="button" data-v="${s}" title="${STUFE[s]}" aria-label="${STUFE[s]}"
-          onclick="setAmp('${key}',${s})"><i></i></button>`).join("")}</div></div>`;
+          onclick="setAmp('${key}',${s})"><i></i></button>`).join("")}</div>
+      <span class="trend" id="tr_${key}"></span></div>`;
   }).join("");
   arr.forEach((v,k)=>paintAmp(freiKey(bid,gi,k)));
 }
@@ -1090,7 +1094,32 @@ function paintAmp(key){
   const v = R[key]||0;
   row.className = "arow" + (v?" set":"");
   row.querySelectorAll(".amp button").forEach(b=>b.classList.toggle("on", +b.dataset.v===v));
+  paintTrend(key);
 }
+
+/* ---- Pfeile: Veränderung gegenüber dem Plan eines früheren Halbjahres ----
+   Lädt man einen Plan und trägt ein anderes Schuljahr oder Halbjahr ein, sind
+   seine Einschätzungen der Vergleich. Bleibt der Zeitraum gleich (Zwischenstand),
+   gilt der Vergleich, der in der Datei mitgesichert wurde. Neu eingeschätzte oder
+   gestrichene Punkte bekommen keinen Pfeil, gleich gebliebene ein graues „=“. */
+let GELADEN = null;
+const periode = () => (val("s_sj")||"").replace(/\s+/g,"") + "|" + (val("s_hj")||"");
+function basis(){
+  if(!GELADEN) return null;
+  return periode()!==GELADEN.p ? {R:GELADEN.R, p:GELADEN.p} : (GELADEN.basis || null);
+}
+function trend(key){
+  const b=basis(); if(!b) return "";
+  const vorher=b.R[key]||0, jetzt=R[key]||0;
+  if(!vorher || !jetzt) return "";
+  return jetzt>vorher ? "auf" : jetzt<vorher ? "ab" : "gleich";
+}
+const PFEIL = {
+  auf: `<svg viewBox="0 0 16 16" width="18" height="18" role="img" aria-label="verbessert"><title>verbessert</title><path d="M3.5 12.5 12.5 3.5M6 3.5h6.5V10" fill="none" stroke="#2e9e5b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  ab: `<svg viewBox="0 0 16 16" width="18" height="18" role="img" aria-label="verschlechtert"><title>verschlechtert</title><path d="M3.5 3.5 12.5 12.5M12.5 6v6.5H6" fill="none" stroke="#d64541" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  gleich: `<svg viewBox="0 0 16 16" width="18" height="18" role="img" aria-label="unverändert"><title>unverändert</title><path d="M3.5 6h9M3.5 10h9" fill="none" stroke="#8a97a5" stroke-width="2.2" stroke-linecap="round"/></svg>`};
+function paintTrend(key){ const t=$("tr_"+key); if(t) t.innerHTML = PFEIL[trend(key)] || ""; }
+function paintTrends(){ document.querySelectorAll(".trend[id^='tr_']").forEach(t=>paintTrend(t.id.slice(3))); }
 
 /* ---- Bereiche zusammenstellen ------------------------------------- */
 function slotBereich(id){
@@ -1236,7 +1265,7 @@ function mode(){ return on("mode_na")?"na" : on("mode_both")?"both" : "fp"; }
 function setHj(h){
   const f=$("s_hj"); if(!f) return;
   f.value = (f.value===h) ? "" : h;
-  paintHj();
+  paintHj(); paintTrends();
 }
 function paintHj(){
   const v=val("s_hj"), s=$("hjSeg"); if(!s) return;
@@ -1315,7 +1344,6 @@ const BSTEPS = ALLE.map(bereichStep);
 const STEPS = [
 
 {t:"Start", m:["fp","na","both"], id:"start", h:()=>`
- <div class="note blue hidden" id="ladeHinweis" style="margin-top:0"></div>
  <label class="sysw" id="l_sys" data-noalt>
   <span class="t"><b>Reguläres System</b><small>Logo und Formulierungen der Schule an der Wascherde</small></span>
   <input type="checkbox" id="sys_alt" role="switch" autocomplete="off"><i></i>
@@ -1357,13 +1385,6 @@ const STEPS = [
   </div>
   ${feld("s_seit","Förderplanung besteht seit","fm","date")}
  </div>`},
-
-{t:"Rückblick", m:["fp","both"], id:"rueck", when:()=>PREV.length>0, h:()=>`
- <h2>Rückblick auf den bisherigen Plan</h2>
- <p class="hint">Diese Ziele standen im geladenen Plan. Die Auswertung erscheint im PDF als eigener Abschnitt –
- und sie wirkt: ein <b>erreichtes</b> Ziel wird im neuen Plan abgewählt, alle anderen bleiben als Ziel stehen.
- „Fortgeführt“ hält ein Ziel auch dann, wenn es erreicht ist.</p>
- <div id="evWrap"></div>`},
 
 {t:"Anlass", m:["fp","both"], id:"anlass", h:()=>`
  <h2>Anlass der Förderplanung <small>§ 6 VOGSV</small></h2>
@@ -1473,9 +1494,7 @@ const STEPS = [
   ${feld("f_besp","Besprochen am","fm","date")}
  </div>
  <div class="sum" id="summary"></div>
- <div class="note"><b>PDF erstellen</b> lädt auch die Sicherungsdatei (.json) herunter.
- Beim nächsten Förderplan lädst du die .json-Datei über <b>Plan laden</b> – dann ist alles vorbelegt und die heutigen Ziele
- erscheinen als Rückblick. Die Datei enthält Schülerdaten und gehört in die Schülerakte bzw. in einen
+ <div class="note">Beim nächsten Förderplan lädst du die Sicherungsdatei über <b>Plan laden</b> und passt an, was sich geändert hat. Die Datei enthält Schülerdaten und gehört in die Schülerakte bzw. in einen
  geschützten Ordner, nicht in eine private Cloud.</div>`}
 ];
 
@@ -1908,6 +1927,19 @@ function opText(x,y,s,f,size,col){
 }
 function opRect(x,y,w,h,col){ return rgb(col)+" rg\n"+
   [x.toFixed(2),y.toFixed(2),w.toFixed(2),h.toFixed(2)].join(" ")+" re f"; }
+/* Pfeil nach rechts oben (verbessert, grün), rechts unten (verschlechtert, rot)
+   oder graues Gleichheitszeichen (unverändert) */
+function opPfeil(x,cy,art){
+  const f=v=>v.toFixed(2), h=2.1*MM;
+  if(art==="gleich"){
+    const d=0.55*MM;
+    return "q "+rgb(C.mid)+" RG 0.9 w 1 J "+f(x)+" "+f(cy+d)+" m "+f(x+h)+" "+f(cy+d)+" l S "+
+      f(x)+" "+f(cy-d)+" m "+f(x+h)+" "+f(cy-d)+" l S Q";
+  }
+  const dir = art==="auf" ? 1 : -1, col = dir>0 ? C.gruen : C.rot, a=1.0*MM, x2=x+h, y1=cy-dir*h/2, y2=cy+dir*h/2;
+  return "q "+rgb(col)+" RG 0.9 w 1 J 1 j "+f(x)+" "+f(y1)+" m "+f(x2)+" "+f(y2)+" l S "+
+    f(x2-a)+" "+f(y2)+" m "+f(x2)+" "+f(y2)+" l "+f(x2)+" "+f(y2-dir*a)+" l S Q";
+}
 function opLine(x1,y1,x2,y2,col,lw){ return rgb(col)+" RG\n"+(lw||0.5).toFixed(2)+" w\n"+
   x1.toFixed(2)+" "+y1.toFixed(2)+" m "+x2.toFixed(2)+" "+y2.toFixed(2)+" l S"; }
 /* Füllkreis (leer, viertel, halb, dreiviertel, voll) als Vektor –
@@ -2022,7 +2054,9 @@ Layout.prototype.bullets = function(items,o){
       this.line(lh, y=>{
         const ops=[opText(MG.l+o.x+ind, y-o.size*0.98, ln, "R", o.size, o.col)];
         if(i===0){
-          if(it.ball!==undefined){
+          if(it.pfeil){
+            ops.unshift(opPfeil(MG.l+o.x, y-o.size*0.98+0.33*o.size, it.pfeil));
+          } else if(it.ball!==undefined){
             const r=1.25*MM;
             ops.unshift(opBall(MG.l+o.x+r+0.2*MM, y-o.size*0.98+0.30*o.size, r, it.ball, dotCol));
           } else {
@@ -2343,12 +2377,12 @@ function bereichEintraege(b){
   const g0=jg();
   b.g.forEach(g=>{
     if(g.jg!=="alle" && g0 && g.jg!==g0) return;
-    g.it.forEach(it=>{ const v=lvl(b.id,it[0]); if(v) out[v].push(itemLabel(b,g,it)); });
+    g.it.forEach(it=>{ const v=lvl(b.id,it[0]); if(v) out[v].push({t:itemLabel(b,g,it), pfeil:trend(b.id+"."+it[0])}); });
   });
   /* Freie Punkte stehen auf der Stufe, die dafür gesetzt wurde. */
   dispGroups(b).forEach((dg,gi)=>{
     if(!grpItems(b,gi).length) return;
-    freiListe(b.id,gi).forEach(x=>out[R[x.key] || 1].push(x.t));
+    freiListe(b.id,gi).forEach(x=>out[R[x.key] || 1].push({t:x.t, pfeil:trend(x.key)}));
   });
   return out;
 }
@@ -2595,9 +2629,11 @@ async function makePdf(){
   addFooters(pages, meta);
   const bytes = buildPdf(pages, meta);
   download(bytes, dateiName("pdf"));
-  PDF_STAND = stand();
   /* gleich danach die Sicherungsdatei – mit kurzem Abstand, damit der Browser beide annimmt */
-  setTimeout(()=>{ sicherungLaden(); toast("PDF und Sicherungsdatei erstellt."); }, 700);
+  setTimeout(()=>{
+    download(new TextEncoder().encode(JSON.stringify(dumpState(),null,1)), dateiName("json"), "application/json");
+    toast("PDF und Sicherungsdatei erstellt.");
+  }, 700);
 }
 
 /* ==================================================================
@@ -2612,29 +2648,15 @@ function dumpState(){
   });
   s.prevZiele = collectZiele();
   s.system = altSys() ? "regulaer" : "neu";
-  s.rueck = {prev: PREV, ev: EV};   /* Rückblick samt Bewertung – fürs Weiterbearbeiten */
-  s.abgeschlossen = PDF_STAND !== null && PDF_STAND === stand();
-  return s;
-}
-/* Ein Plan gilt als abgeschlossen, wenn zum aktuellen Stand das PDF erstellt wurde.
-   Dann wird er beim nächsten Laden fortgeschrieben; sonst ist es ein Zwischenstand. */
-let PDF_STAND = null;
-function stand(){
-  const f={}, c={};
-  document.querySelectorAll("#steps input, #steps select, #steps textarea").forEach(e=>{
-    if(!e.id) return; if(e.type==="checkbox") c[e.id]=e.checked; else f[e.id]=e.value; });
-  return JSON.stringify([f,c,R,MULTI,EV,PREV]);
-}
-function sicherungLaden(){
-  const s=dumpState();
-  download(new TextEncoder().encode(JSON.stringify(s,null,1)), dateiName("json"), "application/json");
+  s.basis = basis();   /* Einschätzungen des Vorgängerplans – für die Pfeile */
   return s;
 }
 function savePlan(){
-  const s=sicherungLaden();
-  toast(s.abgeschlossen ? "Plan als .json-Datei gesichert (abgeschlossen)." : "Plan als .json-Datei gesichert.");
+  const s=dumpState();
+  download(new TextEncoder().encode(JSON.stringify(s,null,1)), dateiName("json"), "application/json");
+  toast("Plan als .json-Datei gesichert.");
 }
-function loadState(s, fort){
+function loadState(s){
   if(!s || !s.f) throw new Error("Diese Datei ist kein gesicherter Plan.");
   Object.keys(R).forEach(k=>delete R[k]);
   Object.keys(MULTI).forEach(k=>delete MULTI[k]);
@@ -2646,18 +2668,8 @@ function loadState(s, fort){
   Object.entries(s.c||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.checked=!!v; });
   Object.entries(s.f||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.value=v; });
   applyAlt(true);   /* Pläne ohne Angabe behalten die aktuelle Einstellung */
-  if(fort){
-    /* Fortschreibung: alte Ziele in den Rückblick, Termine neu setzen */
-    PREV = (s.prevZiele||[]).slice(0,40);
-    const a=$("s_erst"), b=$("s_fort"); if(a) a.checked=false; if(b) b.checked=true;
-    if(!val("s_seit") && s.ts) $("s_seit").value = s.ts.slice(0,10);
-    ["f_besp","f_eval"].forEach(id=>{ const e=$(id); if(e) e.value=""; });
-  } else {
-    /* Weiterbearbeiten: alles genau so wie gesichert, auch Rückblick und Bewertungen */
-    const rk = s.rueck || {};
-    PREV = (rk.prev||[]).slice(0,40);
-    Object.assign(EV, rk.ev||{});
-  }
+  /* Alles genau so wie gesichert – eine Fortschreibung passt man von Hand an */
+  PREV = [];
   SLOTS.forEach(f=>{ if(val("fach_"+f)) $("fr_"+f).classList.remove("hidden"); });
   $("addFach").classList.toggle("hidden", !SLOTS.some(f=>$("fr_"+f).classList.contains("hidden")));
   /* Ältere Pläne: der eigene Schwerpunkt lag je Bereich, nicht je Klappmenü */
@@ -2675,34 +2687,11 @@ function loadState(s, fort){
   }
   paintHj();
   buildEval();
+  /* Vergleichsstand für die Pfeile: die Einschätzungen, wie sie geladen wurden */
+  GELADEN = {R: Object.assign({}, R), p: periode(), basis: s.basis || null};
+  paintTrends();
   show(0);
-}
-/* Geladene Datei einordnen: Ältere Dateien ohne Angabe waren immer Abschluss-Sicherungen. */
-let LETZTE = null;
-function ladePlan(s){
-  LETZTE = s;
-  const fertig = s.abgeschlossen !== false;
-  loadState(s, fertig);
-  PDF_STAND = null;
-  ladeHinweis(fertig ? "fort" : "");
-  toast(fertig ? "Plan wird fortgeschrieben – " + (PREV.length ? PREV.length+" Ziele im Rückblick." : "keine Ziele im Rückblick.")
-               : "Zwischenstand geladen – du machst dort weiter, wo du aufgehört hast.");
-}
-function nurKorrigieren(){
-  if(!LETZTE) return;
-  loadState(LETZTE, false);
-  PDF_STAND = stand();          /* unverändert gesichert bleibt er abgeschlossen */
-  ladeHinweis("korr");
-  toast("Abgeschlossener Plan zum Korrigieren geöffnet.");
-}
-function ladeHinweis(art){
-  const el=$("ladeHinweis"); if(!el) return;
-  el.classList.toggle("hidden", !art);
-  el.innerHTML = art==="fort"
-    ? `<b>Fortschreibung:</b> Dieser Plan war abgeschlossen. Seine Ziele stehen jetzt im Rückblick, die Termine sind frei für den neuen Plan. <button type="button" class="lnk" onclick="nurKorrigieren()">Stattdessen nur korrigieren</button>`
-    : art==="korr"
-    ? `<b>Korrektur:</b> Der abgeschlossene Plan ist unverändert geöffnet. <button type="button" class="lnk" onclick="ladePlan(LETZTE)">Doch fortschreiben</button>`
-    : "";
+  toast("Plan geladen.");
 }
 $("btnLoad").onclick = ()=>$("fileIn").click();
 $("fileIn").onchange = ev=>{
@@ -2714,7 +2703,7 @@ $("fileIn").onchange = ev=>{
   r.onload = ()=>{
     let s; try{ s=JSON.parse(r.result); }catch(err){ toast("Die Datei konnte nicht gelesen werden."); return; }
     if(s && s.app){ toast("Das ist kein Förderplan, sondern eine andere Sicherungsdatei."); return; }
-    try{ ladePlan(s); }catch(err){ console.error(err); toast("Die Datei konnte nicht gelesen werden."); }
+    try{ loadState(s); }catch(err){ console.error(err); toast("Die Datei konnte nicht gelesen werden."); }
   };
   r.readAsText(f);
   ev.target.value="";
@@ -2739,6 +2728,7 @@ $("hilfe").querySelector(".ov-x").onclick = hilfeZu;
 document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("hilfe").classList.contains("hidden")) hilfeZu(); });
 $("f_ort").value = "Lauterbach";
 $("sys_alt").addEventListener("change", ()=>applyAlt());
+$("s_sj").addEventListener("input", paintTrends);
 [["s_erst","s_fort"],["s_fort","s_erst"]].forEach(([a,b])=>
   $(a).addEventListener("change", ()=>{ if(on(a)) $(b).checked = false; }));
 $("sys_alt").checked = false;   /* immer aus starten – auch wenn der Browser alte Formularwerte zurückholt */
