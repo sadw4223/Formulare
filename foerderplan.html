@@ -62,6 +62,7 @@ header.top .idty{flex:1 1 auto;min-width:0}
 .note{background:#fff8f0;border-left:4px solid var(--orange);border-radius:0 8px 8px 0;
   padding:10px 12px;font-size:13px;color:#7d4d1e;margin:12px 0}
 .note.blue{background:#f0f5ff;border-left-color:var(--blue);color:#26456f}
+.note.green{background:var(--gruen-b);border-left-color:var(--gruen);color:#1f6b3d}
 .sublabel{font-size:17px;font-weight:700;color:var(--dark);margin:22px 0 6px;letter-spacing:-.2px}
 .sublabel:first-child{margin-top:0}
 .glabel{font-size:13.5px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.7px;margin:22px 0 8px}
@@ -1261,7 +1262,11 @@ const STEPS = [
  <div class="note"><b>So geht es:</b> Durchtippen und nur das bewerten, was zählt. Alles, was leer bleibt,
  erscheint im PDF nicht. Die orangen und grauen Hinweiskästen sind nur für dich – sie werden nicht gedruckt.</div>
  <div class="note blue"><b>Fortschreibung:</b> Ein früher gesicherter Plan lässt sich oben rechts über
- <b>Plan laden</b> wieder öffnen. Dann sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</div>`},
+ <b>Plan laden</b> wieder öffnen. Dann sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</div>
+ <div class="note green"><b>Datenschutz:</b> Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts
+ ins Internet hoch und speichert nichts im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.
+ Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Plan sichern</b> oder als PDF
+ herunterlädst. Diese Dateien gehören in den Ordner des Kindes in IServ.</div>`},
 
 {t:"Stammdaten", m:["fp","na","both"], id:"stamm", h:()=>`
  <h2>Angaben zur Schülerin / zum Schüler</h2>
