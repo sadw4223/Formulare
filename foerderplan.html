@@ -240,6 +240,14 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 .sysw input:checked + i::after{left:22px}
 .sysw input:focus-visible + i{outline:2px solid var(--blue);outline-offset:2px}
 .sysw.on{border-color:var(--blue);background:#f0f5ff}
+/* ---- Karte „Plan fortschreiben“ ---- */
+.imp{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fdfefe;margin:16px 0 0}
+.imp>div{flex:1 1 260px}
+.imp b{display:block;color:var(--dark);font-size:15.5px}
+.imp small{display:block;color:var(--grey);font-size:13px;margin-top:3px;line-height:1.4}
+.imp .btn-add{margin-top:0}
+.imp b .hl{font-style:normal;color:var(--orange-d)}
 /* ---- Kurzanleitung (Überlagerung) ---- */
 .iconbtn.help{flex:0 0 42px;width:42px;padding:0;color:var(--blue);display:inline-flex;align-items:center;justify-content:center}
 .iconbtn.help svg{display:block}
@@ -283,6 +291,7 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
   <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF erstellen</button>
 </div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+<input type="file" id="fortIn" accept=".json,application/json" style="display:none">
 <div class="ov hidden" id="hilfe" role="dialog" aria-modal="true" aria-labelledby="hilfeT">
  <div class="ov-box">
   <div class="ov-head"><h3 id="hilfeT">Kurzanleitung</h3><button type="button" class="ov-x" aria-label="Schließen">×</button></div>
@@ -294,11 +303,14 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
     <li>Im letzten Schritt erstellt <b>PDF erstellen</b> das fertige Dokument.</li>
    </ol>
    <p>Die orangen und grauen Hinweiskästen sind nur für dich – sie werden nicht gedruckt.</p>
-   <h4 id="hl_sich">Sichern und Fortschreibung</h4>
+   <h4 id="hl_sich">Sichern und weiterbearbeiten</h4>
    <p>Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Sicherungsdatei (.json) – auch zwischendurch, wenn du
-    abbrechen musst oder jemand anderes weitermachen soll. Über <b>Plan laden</b> öffnest du sie wieder; dafür brauchst
-    du genau diese <b>.json-Datei</b>, ein PDF lässt sich nicht hochladen.</p>
-   <p>Lädst du den Plan vom letzten Mal, sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</p>
+    abbrechen musst oder jemand anderes weitermachen soll. Über <b>Plan laden</b> öffnest du sie wieder und machst genau
+    dort weiter, wo du aufgehört hast. Ein PDF lässt sich nicht hochladen.</p>
+   <h4 id="hl_fort">Fortschreibung</h4>
+   <p>Soll auf einen abgeschlossenen Plan ein neuer folgen, wähle auf der Startseite bei „Willst du einen bisherigen
+    Förderplan fortschreiben?“ dessen Sicherungsdatei. Dann sind alle Angaben vorbelegt, die Ziele des alten Plans
+    erscheinen als Rückblick zum Bewerten, und „Fortschreibung“ ist angekreuzt.</p>
    <h4 id="hl_ds">Datenschutz</h4>
    <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert nichts
     im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.</p>
@@ -1321,6 +1333,11 @@ const STEPS = [
   <label id="lbl_na"><input type="checkbox" id="mode_na">Nachteilsausgleich<small>eigenes Dokument, eine Seite</small></label>
   <label id="lbl_both"><input type="checkbox" id="mode_both">Beides<small>Förderplan mit Nachteilsausgleich in einem PDF</small></label>
  </div>
+ <div class="imp">
+  <div><b>Willst du einen bisherigen <em class="hl">Förderplan</em> fortschreiben?</b><small>Die Sicherungsdatei (.json)
+  des letzten Plans füllt alle Angaben schon aus. Seine Ziele erscheinen als Rückblick zum Bewerten.</small></div>
+  <button type="button" class="btn-add" onclick="$('fortIn').click()">Plan-Datei wählen</button>
+ </div>
 `},
 
 {t:"Stammdaten", m:["fp","na","both"], id:"stamm", h:()=>`
@@ -1469,7 +1486,7 @@ const STEPS = [
  </div>
  <div class="sum" id="summary"></div>
  <div class="note"><b>Sichern</b> oben rechts legt jederzeit eine kleine .json-Datei ab (Dateien-App, IServ, Ordner deiner Wahl).
- Beim nächsten Förderplan lädst du sie über <b>Plan laden</b> wieder – dann ist alles vorbelegt und die heutigen Ziele
+ Für den nächsten Förderplan wählst du sie auf der Startseite unter „Willst du einen bisherigen Förderplan fortschreiben?“ – dann ist alles vorbelegt und die heutigen Ziele
  erscheinen als Rückblick. Die Datei enthält Schülerdaten und gehört in die Schülerakte bzw. in einen
  geschützten Ordner, nicht in eine private Cloud.</div>`}
 ];
@@ -2605,6 +2622,7 @@ function dumpState(){
   });
   s.prevZiele = collectZiele();
   s.system = altSys() ? "regulaer" : "neu";
+  s.rueck = {prev: PREV, ev: EV};   /* Rückblick samt Bewertung – fürs Weiterbearbeiten */
   return s;
 }
 function savePlan(){
@@ -2612,7 +2630,7 @@ function savePlan(){
   download(new TextEncoder().encode(JSON.stringify(s,null,1)), dateiName("json"), "application/json");
   toast("Plan als .json-Datei gesichert.");
 }
-function loadState(s){
+function loadState(s, fort){
   if(!s || !s.f) throw new Error("Diese Datei ist kein gesicherter Plan.");
   Object.keys(R).forEach(k=>delete R[k]);
   Object.keys(MULTI).forEach(k=>delete MULTI[k]);
@@ -2624,11 +2642,18 @@ function loadState(s){
   Object.entries(s.c||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.checked=!!v; });
   Object.entries(s.f||{}).forEach(([k,v])=>{ const e=$(k); if(e) e.value=v; });
   applyAlt(true);   /* Pläne ohne Angabe behalten die aktuelle Einstellung */
-  /* Fortschreibung: alte Ziele in den Rückblick, Termine neu setzen */
-  PREV = (s.prevZiele||[]).slice(0,40);
-  if(PREV.length){ const a=$("s_erst"), b=$("s_fort"); if(a) a.checked=false; if(b) b.checked=true; }
-  if(!val("s_seit") && s.ts) $("s_seit").value = s.ts.slice(0,10);
-  ["f_besp","f_eval"].forEach(id=>{ const e=$(id); if(e) e.value=""; });
+  if(fort){
+    /* Fortschreibung: alte Ziele in den Rückblick, Termine neu setzen */
+    PREV = (s.prevZiele||[]).slice(0,40);
+    const a=$("s_erst"), b=$("s_fort"); if(a) a.checked=false; if(b) b.checked=true;
+    if(!val("s_seit") && s.ts) $("s_seit").value = s.ts.slice(0,10);
+    ["f_besp","f_eval"].forEach(id=>{ const e=$(id); if(e) e.value=""; });
+  } else {
+    /* Weiterbearbeiten: alles genau so wie gesichert, auch Rückblick und Bewertungen */
+    const rk = s.rueck || {};
+    PREV = (rk.prev||[]).slice(0,40);
+    Object.assign(EV, rk.ev||{});
+  }
   SLOTS.forEach(f=>{ if(val("fach_"+f)) $("fr_"+f).classList.remove("hidden"); });
   $("addFach").classList.toggle("hidden", !SLOTS.some(f=>$("fr_"+f).classList.contains("hidden")));
   /* Ältere Pläne: der eigene Schwerpunkt lag je Bereich, nicht je Klappmenü */
@@ -2647,20 +2672,26 @@ function loadState(s){
   paintHj();
   buildEval();
   show(0);
-  toast("Plan geladen – " + (PREV.length ? PREV.length+" Ziele im Rückblick" : "keine Ziele im Rückblick"));
+  toast(fort ? "Plan zum Fortschreiben übernommen – " + (PREV.length ? PREV.length+" Ziele im Rückblick." : "keine Ziele im Rückblick.")
+             : "Plan geladen.");
 }
 $("btnLoad").onclick = ()=>$("fileIn").click();
-$("fileIn").onchange = ev=>{
+function liesPlan(ev, fort){
   const f=ev.target.files && ev.target.files[0]; if(!f) return;
   if(/\.pdf$/i.test(f.name) || f.type==="application/pdf"){
     toast("Ein PDF lässt sich nicht laden – bitte die zugehörige .json-Datei wählen."); ev.target.value=""; return;
   }
   const r=new FileReader();
-  r.onload = ()=>{ try{ loadState(JSON.parse(r.result)); }
-    catch(err){ toast("Die Datei konnte nicht gelesen werden."); } };
+  r.onload = ()=>{
+    let s; try{ s=JSON.parse(r.result); }catch(err){ toast("Die Datei konnte nicht gelesen werden."); return; }
+    if(s && s.app){ toast("Das ist kein Förderplan, sondern eine andere Sicherungsdatei."); return; }
+    try{ loadState(s, fort); }catch(err){ console.error(err); toast("Die Datei konnte nicht gelesen werden."); }
+  };
   r.readAsText(f);
   ev.target.value="";
-};
+}
+$("fileIn").onchange = ev=>liesPlan(ev, false);   /* oben rechts: weiterbearbeiten */
+$("fortIn").onchange = ev=>liesPlan(ev, true);    /* Startseite: fortschreiben   */
 $("btnReset").onclick = ()=>{ if(confirm("Alle Eingaben verwerfen und neu beginnen?")) location.reload(); };
 $("btnSave2").onclick = savePlan;
 $("btnPdf").onclick  = ()=>{ makePdf().catch(e=>{ console.error(e); toast("Fehler beim Erstellen: "+e.message); }); };
