@@ -240,14 +240,7 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 .sysw input:checked + i::after{left:22px}
 .sysw input:focus-visible + i{outline:2px solid var(--blue);outline-offset:2px}
 .sysw.on{border-color:var(--blue);background:#f0f5ff}
-/* ---- Karte „Plan fortschreiben“ ---- */
-.imp{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
-  border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fdfefe;margin:16px 0 0}
-.imp>div{flex:1 1 260px}
-.imp b{display:block;color:var(--dark);font-size:15.5px}
-.imp small{display:block;color:var(--grey);font-size:13px;margin-top:3px;line-height:1.4}
-.imp .btn-add{margin-top:0}
-.imp b .hl{font-style:normal;color:var(--orange-d)}
+.lnk{border:none;background:none;padding:0;font:inherit;font-weight:700;color:var(--blue);text-decoration:underline;cursor:pointer}
 /* ---- Kurzanleitung (Überlagerung) ---- */
 .iconbtn.help{flex:0 0 42px;width:42px;padding:0;color:var(--blue);display:inline-flex;align-items:center;justify-content:center}
 .iconbtn.help svg{display:block}
@@ -291,7 +284,6 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
   <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF erstellen</button>
 </div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
-<input type="file" id="fortIn" accept=".json,application/json" style="display:none">
 <div class="ov hidden" id="hilfe" role="dialog" aria-modal="true" aria-labelledby="hilfeT">
  <div class="ov-box">
   <div class="ov-head"><h3 id="hilfeT">Kurzanleitung</h3><button type="button" class="ov-x" aria-label="Schließen">×</button></div>
@@ -303,14 +295,14 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
     <li>Im letzten Schritt erstellt <b>PDF erstellen</b> das fertige Dokument.</li>
    </ol>
    <p>Die orangen und grauen Hinweiskästen sind nur für dich – sie werden nicht gedruckt.</p>
-   <h4 id="hl_sich">Sichern und weiterbearbeiten</h4>
-   <p>Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Sicherungsdatei (.json) – auch zwischendurch, wenn du
-    abbrechen musst oder jemand anderes weitermachen soll. Über <b>Plan laden</b> öffnest du sie wieder und machst genau
-    dort weiter, wo du aufgehört hast. Ein PDF lässt sich nicht hochladen.</p>
-   <h4 id="hl_fort">Fortschreibung</h4>
-   <p>Soll auf einen abgeschlossenen Plan ein neuer folgen, wähle auf der Startseite bei „Willst du einen bisherigen
-    Förderplan fortschreiben?“ dessen Sicherungsdatei. Dann sind alle Angaben vorbelegt, die Ziele des alten Plans
-    erscheinen als Rückblick zum Bewerten, und „Fortschreibung“ ist angekreuzt.</p>
+   <h4 id="hl_sich">Sichern und Fortschreibung</h4>
+   <p><b>PDF erstellen</b> lädt das PDF und gleich dazu die Sicherungsdatei (.json) herunter. Diese Sicherung gilt als
+    abgeschlossen: Lädst du sie später über <b>Plan laden</b>, wird der Plan automatisch fortgeschrieben – alle Angaben
+    sind vorbelegt, die Ziele erscheinen als Rückblick zum Bewerten.</p>
+   <p>Mit <b>Sichern</b> oben rechts sicherst du zwischendurch, wenn du abbrechen musst oder jemand anderes weitermachen
+    soll. So ein Zwischenstand öffnet sich beim Laden genau so, wie du aufgehört hast.</p>
+   <p>Willst du einen abgeschlossenen Plan nur korrigieren, tippe nach dem Laden auf <b>Stattdessen nur korrigieren</b>.
+    Ein PDF lässt sich nicht laden, dafür brauchst du die .json-Datei.</p>
    <h4 id="hl_ds">Datenschutz</h4>
    <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert nichts
     im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.</p>
@@ -1323,6 +1315,7 @@ const BSTEPS = ALLE.map(bereichStep);
 const STEPS = [
 
 {t:"Start", m:["fp","na","both"], id:"start", h:()=>`
+ <div class="note blue hidden" id="ladeHinweis" style="margin-top:0"></div>
  <label class="sysw" id="l_sys" data-noalt>
   <span class="t"><b>Reguläres System</b><small>Logo und Formulierungen der Schule an der Wascherde</small></span>
   <input type="checkbox" id="sys_alt" role="switch" autocomplete="off"><i></i>
@@ -1332,11 +1325,6 @@ const STEPS = [
   <label id="lbl_fp" class="sel"><input type="checkbox" id="mode_fp" checked>Förderplan<small>Einschätzung, Ziele, Maßnahmen, Unterschriften</small></label>
   <label id="lbl_na"><input type="checkbox" id="mode_na">Nachteilsausgleich<small>eigenes Dokument, eine Seite</small></label>
   <label id="lbl_both"><input type="checkbox" id="mode_both">Beides<small>Förderplan mit Nachteilsausgleich in einem PDF</small></label>
- </div>
- <div class="imp">
-  <div><b>Willst du einen bisherigen <em class="hl">Förderplan</em> fortschreiben?</b><small>Die Sicherungsdatei (.json)
-  des letzten Plans füllt alle Angaben schon aus. Seine Ziele erscheinen als Rückblick zum Bewerten.</small></div>
-  <button type="button" class="btn-add" onclick="$('fortIn').click()">Plan-Datei wählen</button>
  </div>
 `},
 
@@ -1485,8 +1473,8 @@ const STEPS = [
   ${feld("f_besp","Besprochen am","fm","date")}
  </div>
  <div class="sum" id="summary"></div>
- <div class="note"><b>Sichern</b> oben rechts legt jederzeit eine kleine .json-Datei ab (Dateien-App, IServ, Ordner deiner Wahl).
- Für den nächsten Förderplan wählst du sie auf der Startseite unter „Willst du einen bisherigen Förderplan fortschreiben?“ – dann ist alles vorbelegt und die heutigen Ziele
+ <div class="note"><b>PDF erstellen</b> lädt auch die Sicherungsdatei (.json) herunter.
+ Beim nächsten Förderplan lädst du die .json-Datei über <b>Plan laden</b> – dann ist alles vorbelegt und die heutigen Ziele
  erscheinen als Rückblick. Die Datei enthält Schülerdaten und gehört in die Schülerakte bzw. in einen
  geschützten Ordner, nicht in eine private Cloud.</div>`}
 ];
@@ -2607,7 +2595,9 @@ async function makePdf(){
   addFooters(pages, meta);
   const bytes = buildPdf(pages, meta);
   download(bytes, dateiName("pdf"));
-  toast("PDF erstellt: " + pages.length + (pages.length===1?" Seite":" Seiten"));
+  PDF_STAND = stand();
+  /* gleich danach die Sicherungsdatei – mit kurzem Abstand, damit der Browser beide annimmt */
+  setTimeout(()=>{ sicherungLaden(); toast("PDF und Sicherungsdatei erstellt."); }, 700);
 }
 
 /* ==================================================================
@@ -2623,12 +2613,26 @@ function dumpState(){
   s.prevZiele = collectZiele();
   s.system = altSys() ? "regulaer" : "neu";
   s.rueck = {prev: PREV, ev: EV};   /* Rückblick samt Bewertung – fürs Weiterbearbeiten */
+  s.abgeschlossen = PDF_STAND !== null && PDF_STAND === stand();
+  return s;
+}
+/* Ein Plan gilt als abgeschlossen, wenn zum aktuellen Stand das PDF erstellt wurde.
+   Dann wird er beim nächsten Laden fortgeschrieben; sonst ist es ein Zwischenstand. */
+let PDF_STAND = null;
+function stand(){
+  const f={}, c={};
+  document.querySelectorAll("#steps input, #steps select, #steps textarea").forEach(e=>{
+    if(!e.id) return; if(e.type==="checkbox") c[e.id]=e.checked; else f[e.id]=e.value; });
+  return JSON.stringify([f,c,R,MULTI,EV,PREV]);
+}
+function sicherungLaden(){
+  const s=dumpState();
+  download(new TextEncoder().encode(JSON.stringify(s,null,1)), dateiName("json"), "application/json");
   return s;
 }
 function savePlan(){
-  const s=dumpState();
-  download(new TextEncoder().encode(JSON.stringify(s,null,1)), dateiName("json"), "application/json");
-  toast("Plan als .json-Datei gesichert.");
+  const s=sicherungLaden();
+  toast(s.abgeschlossen ? "Plan als .json-Datei gesichert (abgeschlossen)." : "Plan als .json-Datei gesichert.");
 }
 function loadState(s, fort){
   if(!s || !s.f) throw new Error("Diese Datei ist kein gesicherter Plan.");
@@ -2672,11 +2676,36 @@ function loadState(s, fort){
   paintHj();
   buildEval();
   show(0);
-  toast(fort ? "Plan zum Fortschreiben übernommen – " + (PREV.length ? PREV.length+" Ziele im Rückblick." : "keine Ziele im Rückblick.")
-             : "Plan geladen.");
+}
+/* Geladene Datei einordnen: Ältere Dateien ohne Angabe waren immer Abschluss-Sicherungen. */
+let LETZTE = null;
+function ladePlan(s){
+  LETZTE = s;
+  const fertig = s.abgeschlossen !== false;
+  loadState(s, fertig);
+  PDF_STAND = null;
+  ladeHinweis(fertig ? "fort" : "");
+  toast(fertig ? "Plan wird fortgeschrieben – " + (PREV.length ? PREV.length+" Ziele im Rückblick." : "keine Ziele im Rückblick.")
+               : "Zwischenstand geladen – du machst dort weiter, wo du aufgehört hast.");
+}
+function nurKorrigieren(){
+  if(!LETZTE) return;
+  loadState(LETZTE, false);
+  PDF_STAND = stand();          /* unverändert gesichert bleibt er abgeschlossen */
+  ladeHinweis("korr");
+  toast("Abgeschlossener Plan zum Korrigieren geöffnet.");
+}
+function ladeHinweis(art){
+  const el=$("ladeHinweis"); if(!el) return;
+  el.classList.toggle("hidden", !art);
+  el.innerHTML = art==="fort"
+    ? `<b>Fortschreibung:</b> Dieser Plan war abgeschlossen. Seine Ziele stehen jetzt im Rückblick, die Termine sind frei für den neuen Plan. <button type="button" class="lnk" onclick="nurKorrigieren()">Stattdessen nur korrigieren</button>`
+    : art==="korr"
+    ? `<b>Korrektur:</b> Der abgeschlossene Plan ist unverändert geöffnet. <button type="button" class="lnk" onclick="ladePlan(LETZTE)">Doch fortschreiben</button>`
+    : "";
 }
 $("btnLoad").onclick = ()=>$("fileIn").click();
-function liesPlan(ev, fort){
+$("fileIn").onchange = ev=>{
   const f=ev.target.files && ev.target.files[0]; if(!f) return;
   if(/\.pdf$/i.test(f.name) || f.type==="application/pdf"){
     toast("Ein PDF lässt sich nicht laden – bitte die zugehörige .json-Datei wählen."); ev.target.value=""; return;
@@ -2685,13 +2714,11 @@ function liesPlan(ev, fort){
   r.onload = ()=>{
     let s; try{ s=JSON.parse(r.result); }catch(err){ toast("Die Datei konnte nicht gelesen werden."); return; }
     if(s && s.app){ toast("Das ist kein Förderplan, sondern eine andere Sicherungsdatei."); return; }
-    try{ loadState(s, fort); }catch(err){ console.error(err); toast("Die Datei konnte nicht gelesen werden."); }
+    try{ ladePlan(s); }catch(err){ console.error(err); toast("Die Datei konnte nicht gelesen werden."); }
   };
   r.readAsText(f);
   ev.target.value="";
-}
-$("fileIn").onchange = ev=>liesPlan(ev, false);   /* oben rechts: weiterbearbeiten */
-$("fortIn").onchange = ev=>liesPlan(ev, true);    /* Startseite: fortschreiben   */
+};
 $("btnReset").onclick = ()=>{ if(confirm("Alle Eingaben verwerfen und neu beginnen?")) location.reload(); };
 $("btnSave2").onclick = savePlan;
 $("btnPdf").onclick  = ()=>{ makePdf().catch(e=>{ console.error(e); toast("Fehler beim Erstellen: "+e.message); }); };
