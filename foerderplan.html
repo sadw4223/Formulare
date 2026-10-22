@@ -251,6 +251,7 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
       <div class="brand" id="brandLine"><b>LERNCAMPUS</b> <i>WASCHERDE</i> · nach VOGSV Hessen</div>
     </div>
     <div class="tools">
+      <button class="iconbtn" id="btnSave2" type="button">Sichern</button>
       <button class="iconbtn" id="btnLoad" type="button">Plan laden</button>
       <button class="iconbtn" id="btnReset" type="button">Neu</button>
     </div>
@@ -262,7 +263,6 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
 <div class="nav"><div class="inner">
   <button class="b btn-back" id="btnBack" type="button">Zurück</button>
   <button class="b btn-next" id="btnNext" type="button">Weiter</button>
-  <button class="b btn-save hidden" id="btnSave" type="button">Plan sichern</button>
   <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF erstellen</button>
 </div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
@@ -1282,12 +1282,13 @@ const STEPS = [
  </div>
  <div class="note"><b>So geht es:</b> Durchtippen und nur das bewerten, was zählt. Alles, was leer bleibt,
  erscheint im PDF nicht. Die orangen und grauen Hinweiskästen sind nur für dich – sie werden nicht gedruckt.</div>
- <div class="note blue"><b>Fortschreibung:</b> Ein früher gesicherter Plan lässt sich oben rechts über
- <b>Plan laden</b> wieder öffnen. Dafür brauchst du die zugehörige <b>.json-Datei</b>, die beim <b>Plan sichern</b>
- entstanden ist – ein PDF lässt sich nicht hochladen. Dann sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</div>
+ <div class="note blue"><b>Sichern und Fortschreibung:</b> Mit <b>Sichern</b> oben rechts entsteht jederzeit eine
+ Sicherungsdatei (.json) – auch zwischendurch, wenn du abbrechen musst oder jemand anderes weitermachen soll.
+ Über <b>Plan laden</b> öffnest du sie wieder; dafür brauchst du genau diese <b>.json-Datei</b>, ein PDF lässt sich nicht hochladen.
+ Lädst du den Plan vom letzten Mal, sind alle Angaben vorbelegt und die alten Ziele erscheinen als Rückblick.</div>
  <div class="note green"><b>Datenschutz:</b> Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts
  ins Internet hoch und speichert nichts im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.
- Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Plan sichern</b> oder als PDF
+ Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Sichern</b> oder als PDF
  herunterlädst. Diese Dateien gehören in den Ordner des Kindes in IServ.</div>`},
 
 {t:"Stammdaten", m:["fp","na","both"], id:"stamm", h:()=>`
@@ -1435,8 +1436,8 @@ const STEPS = [
   ${feld("f_besp","Besprochen am","fm","date")}
  </div>
  <div class="sum" id="summary"></div>
- <div class="note"><b>Plan sichern</b> legt eine kleine .json-Datei ab (Dateien-App, IServ, Ordner deiner Wahl).
- Beim nächsten Förderplan lädst du sie oben rechts wieder – dann ist alles vorbelegt und die heutigen Ziele
+ <div class="note"><b>Sichern</b> oben rechts legt jederzeit eine kleine .json-Datei ab (Dateien-App, IServ, Ordner deiner Wahl).
+ Beim nächsten Förderplan lädst du sie über <b>Plan laden</b> wieder – dann ist alles vorbelegt und die heutigen Ziele
  erscheinen als Rückblick. Die Datei enthält Schülerdaten und gehört in die Schülerakte bzw. in einen
  geschützten Ordner, nicht in eine private Cloud.</div>`}
 ];
@@ -1588,7 +1589,6 @@ function show(p){
   $("btnBack").classList.toggle("hidden", cur===0);   /* nicht nur unsichtbar – sonst bleibt die Lücke */
   $("btnNext").classList.toggle("hidden", last);
   $("btnPdf").classList.toggle("hidden", !last);
-  $("btnSave").classList.toggle("hidden", !last);
   window.scrollTo(0,0);
 }
 $("btnBack").onclick = ()=>show(cur-1);
@@ -2277,7 +2277,7 @@ function namensTeil(s){
 }
 function dateiName(ext){
   const art = {fp:"Förderplan", na:"Nachteilsausgleich",
-               both:"Förderplan+Nachteilsausgleich"}[mode()];
+               both:"Förderplan+Nachteilsausgleich"}[mode()] + (ext==="json" ? "-Sicherung" : "");
   const name = [namensTeil(val("s_vorname")), namensTeil(val("s_nachname"))].filter(Boolean);
   return [heute(), art].concat(name.length ? name : ["ohne-Namen"]).join("-") + "." + ext;
 }
@@ -2630,7 +2630,7 @@ $("fileIn").onchange = ev=>{
   ev.target.value="";
 };
 $("btnReset").onclick = ()=>{ if(confirm("Alle Eingaben verwerfen und neu beginnen?")) location.reload(); };
-$("btnSave").onclick = savePlan;
+$("btnSave2").onclick = savePlan;
 $("btnPdf").onclick  = ()=>{ makePdf().catch(e=>{ console.error(e); toast("Fehler beim Erstellen: "+e.message); }); };
 
 /* ---- Start -------------------------------------------------------- */

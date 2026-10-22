@@ -276,7 +276,6 @@ textarea.big{min-height:190px}
 <div class="nav"><div class="inner">
   <button class="b btn-back" id="btnBack" type="button">Zurück</button>
   <button class="b btn-next" id="btnNext" type="button">Weiter</button>
-  <button class="b btn-save hidden" id="btnSave" type="button">Antrag sichern</button>
   <button class="b btn-pdf hidden" id="btnPdf" type="button">PDF erstellen</button>
 </div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
@@ -763,7 +762,7 @@ const STEPS = [
   Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen vor.</small></div>
   <button type="button" class="btn-add" onclick="pickFp()">Förderplan-Datei wählen</button>
  </div>
- <div class="note blue"><b>Antrag weiterbearbeiten:</b> Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Antrags-Datei –
+ <div class="note blue"><b>Antrag weiterbearbeiten:</b> Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Sicherungsdatei (.json) –
  zum Beispiel, wenn du zwischendurch abbrechen musst oder eine Kollegin bzw. ein Kollege weitermachen soll.
  Geöffnet wird sie oben rechts über <b>Antrag laden</b>. Dort lassen sich nur gesicherte Anträge öffnen,
  die Förderplan-Datei gehört in das Feld hier oben.</div>
@@ -858,7 +857,6 @@ function show(p){
   $("btnBack").classList.toggle("hidden", cur===0);
   $("btnNext").classList.toggle("hidden", last);
   $("btnPdf").classList.toggle("hidden", !last);
-  $("btnSave").classList.toggle("hidden", !last);
   window.scrollTo(0,0);
 }
 $("btnBack").onclick = ()=>show(cur-1);
@@ -1026,7 +1024,7 @@ function namensTeil(s){
 }
 function dateiname(endung){
   const name = [namensTeil(val("s_vorname")), namensTeil(val("s_nachname"))].filter(Boolean);
-  return [heute(), "Beratungsantrag"].concat(name.length ? name : ["ohne-Namen"]).join("-") + endung;
+  return [heute(), endung===".json" ? "Beratungsantrag-Sicherung" : "Beratungsantrag"].concat(name.length ? name : ["ohne-Namen"]).join("-") + endung;
 }
 function saveAntrag(){
   download(new TextEncoder().encode(JSON.stringify(dumpState(),null,1)), dateiname(".json"), "application/json");
@@ -1075,7 +1073,6 @@ $("fpIn").onchange = ev=>liesJson(ev, s=>{
   else toast("Das ist keine Förderplan-Datei.");
 });
 $("btnReset").onclick = ()=>{ if(confirm("Alle Eingaben verwerfen und neu beginnen?")) location.reload(); };
-$("btnSave").onclick = saveAntrag;
 $("btnPdf").onclick = ()=>{ try{ makePdf(); }catch(e){ console.error(e); toast("Fehler beim Erstellen: "+e.message); } };
 
 /* ---- Start -------------------------------------------------------- */
