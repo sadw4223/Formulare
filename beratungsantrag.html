@@ -257,6 +257,24 @@ textarea.big{min-height:190px}
   font-weight:600;color:var(--dark);cursor:pointer;font-family:var(--sf)}
 .chip.on{border-color:var(--blue);background:#f0f5ff;color:var(--blue)}
 .chip.on::before{content:"✓ "}
+
+/* ---- Kurzanleitung (Überlagerung) ---- */
+.iconbtn.help{flex:0 0 42px;width:42px;padding:0;font-weight:800;font-size:17px;color:var(--blue)}
+.mini{font-size:13.5px;color:var(--grey);margin:16px 2px 0;line-height:1.5}
+.mini a{color:var(--blue);font-weight:600;text-decoration:none}
+.ov{position:fixed;inset:0;background:rgba(20,32,44,.45);z-index:60;display:flex;align-items:center;
+  justify-content:center;padding:16px}
+.ov-box{background:#fff;border-radius:16px;max-width:620px;width:100%;max-height:calc(100vh - 32px);
+  max-height:calc(100dvh - 32px);display:flex;flex-direction:column;box-shadow:0 14px 44px rgba(0,0,0,.28)}
+.ov-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 12px;
+  border-bottom:1px solid var(--line)}
+.ov-head h3{margin:0;font-size:18px;color:var(--dark)}
+.ov-x{border:none;background:var(--fill);width:36px;height:36px;border-radius:50%;font-size:22px;line-height:1;
+  color:var(--grey);cursor:pointer;flex:none}
+.ov-body{position:relative;overflow:auto;padding:4px 18px 20px;-webkit-overflow-scrolling:touch}
+.ov-body h4{font-size:15.5px;margin:18px 0 6px;color:var(--dark)}
+.ov-body p,.ov-body li{font-size:14.5px;line-height:1.5;color:#33414e;margin:0 0 6px}
+.ov-body ol{padding-left:20px;margin:0}
 </style>
 </head>
 <body>
@@ -271,6 +289,7 @@ textarea.big{min-height:190px}
       <button class="iconbtn" id="btnSave2" type="button">Sichern</button>
       <button class="iconbtn" id="btnLoad" type="button">Antrag laden</button>
       <button class="iconbtn" id="btnReset" type="button">Neu</button>
+      <button class="iconbtn help" id="btnHilfe" type="button" aria-label="Kurzanleitung und Datenschutz" title="Kurzanleitung und Datenschutz">?</button>
     </div>
   </header>
   <div class="progress" id="progress"></div>
@@ -284,6 +303,30 @@ textarea.big{min-height:190px}
 </div></div>
 <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
 <input type="file" id="fpIn" accept=".json,application/json" style="display:none">
+<div class="ov hidden" id="hilfe" role="dialog" aria-modal="true" aria-labelledby="hilfeT">
+ <div class="ov-box">
+  <div class="ov-head"><h3 id="hilfeT">Kurzanleitung</h3><button type="button" class="ov-x" aria-label="Schließen">×</button></div>
+  <div class="ov-body">
+   <h4 id="hl_so">So geht es</h4>
+   <ol>
+    <li>Willst du Angaben aus dem Förderplan übernehmen, wähle am Anfang die Förderplan-Datei (.json).
+     Name, Klasse, Lehrkräfte und die bisherigen Maßnahmen sind dann schon ausgefüllt.</li>
+    <li>Geh die Schritte durch. Nach dem Laden einer Datei sind fehlende Angaben orange hinterlegt.</li>
+    <li>Im letzten Schritt erstellt <b>PDF erstellen</b> den Antrag im Formular des rBFZ. Klassenlehrkraft und
+     Schulleitung unterschreiben auf dem Ausdruck oder im PDF am iPad.</li>
+   </ol>
+   <h4 id="hl_sich">Sichern und weiterbearbeiten</h4>
+   <p>Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Sicherungsdatei (.json) – zum Beispiel, wenn du
+    zwischendurch abbrechen musst oder eine Kollegin bzw. ein Kollege weitermachen soll. Geöffnet wird sie oben
+    rechts über <b>Antrag laden</b>. Ein PDF lässt sich nicht laden.</p>
+   <h4 id="hl_ds">Datenschutz</h4>
+   <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert
+    nichts im Browser – auch eine geladene Förderplan- oder Antrags-Datei wird nur hier auf dem Gerät gelesen.</p>
+   <p>Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Sichern</b> oder
+    als PDF herunterlädst. Diese Dateien gehören in den Ordner des Kindes in IServ.</p>
+  </div>
+ </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -767,13 +810,7 @@ const STEPS = [
   Klasse, Schuljahr, Lehrkräfte und die bisherigen Maßnahmen schon aus.</small></div>
   <button type="button" class="btn-add" onclick="pickFp()">Förderplan-Datei wählen</button>
  </div>
- <div class="note blue"><b>Antrag weiterbearbeiten:</b> Mit <b>Sichern</b> oben rechts entsteht jederzeit eine Sicherungsdatei (.json) –
- zum Beispiel, wenn du zwischendurch abbrechen musst oder eine Kollegin bzw. ein Kollege weitermachen soll.
- Geöffnet wird sie oben rechts über <b>Antrag laden</b>.</div>
- <div class="note green"><b>Datenschutz:</b> Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts
- ins Internet hoch und speichert nichts im Browser – auch eine geladene Förderplan- oder Antrags-Datei wird nur hier auf dem Gerät gelesen.
- Schließt du die Seite, sind die Eingaben weg. Gespeichert wird nur, was du selbst mit <b>Sichern</b> oder als PDF
- herunterlädst. Diese Dateien gehören in den Ordner des Kindes in IServ.</div>`},
+ <p class="mini">Deine Eingaben bleiben auf diesem Gerät. <a href="#" onclick="hilfe('hl_ds');return false">Datenschutz</a> · <a href="#" onclick="hilfe();return false">Kurzanleitung</a></p>`},
 
 {t:"Schülerin / Schüler", h:()=>`
  <h2>Angaben zur Schülerin / zum Schüler</h2>
@@ -1122,6 +1159,20 @@ $("btnReset").onclick = ()=>{ if(confirm("Alle Eingaben verwerfen und neu beginn
 $("btnPdf").onclick = ()=>{ try{ makePdf(); }catch(e){ console.error(e); toast("Fehler beim Erstellen: "+e.message); } };
 
 /* ---- Start -------------------------------------------------------- */
+/* ---- Kurzanleitung: Überlagerung mit Anleitung und Datenschutz ---- */
+function hilfe(abschnitt){
+  const o=$("hilfe"), body=o.querySelector(".ov-body");
+  o.classList.remove("hidden"); document.body.style.overflow="hidden";
+  const t = abschnitt ? $(abschnitt) : null;
+  body.scrollTop = t ? Math.max(0, t.offsetTop - 6) : 0;
+  o.querySelector(".ov-x").focus();
+}
+function hilfeZu(){ $("hilfe").classList.add("hidden"); document.body.style.overflow=""; }
+$("btnHilfe").onclick = ()=>hilfe();
+$("hilfe").addEventListener("click", e=>{ if(e.target.id==="hilfe") hilfeZu(); });
+$("hilfe").querySelector(".ov-x").onclick = hilfeZu;
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !$("hilfe").classList.contains("hidden")) hilfeZu(); });
+
 $("s_schule").value = SCHULE;
 show(0);
 
