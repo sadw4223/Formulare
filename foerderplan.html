@@ -129,6 +129,13 @@ label.chk.sug span::after{content:"EMPFOHLEN";float:right;margin-left:8px;font-s
 .amp{display:flex;gap:5px;flex:none}
 .trend{flex:none;width:18px;height:18px;display:inline-flex;align-items:center}
 .trend svg{display:block}
+.fsj{flex:0 0 auto}
+.sjpair{display:flex;align-items:center;gap:6px}
+.sjpair input{width:84px;text-align:center}
+.sjpair input[readonly]{color:var(--grey);border-style:dashed}
+.sjpair input.ungueltig{border-color:var(--rot);box-shadow:0 0 0 1px var(--rot)}
+.sjpair>span{color:var(--grey);font-weight:700}
+.hjnote{margin:4px 0 10px}
 .amp button{width:32px;height:32px;border-radius:50%;border:1.5px solid #ccd5df;background:#fff;
   padding:0;cursor:pointer;position:relative}
 .amp button i{position:absolute;inset:3px;border-radius:50%;
@@ -1103,7 +1110,33 @@ function paintAmp(key){
    gilt der Vergleich, der in der Datei mitgesichert wurde. Neu eingeschätzte oder
    gestrichene Punkte bekommen keinen Pfeil, gleich gebliebene ein graues „=“. */
 let GELADEN = null;
-const periode = () => (val("s_sj")||"").replace(/\s+/g,"") + "|" + (val("s_hj")||"");
+/* Anfangsjahr des Schuljahres – auch ältere Pläne mit „2026/27“, „2026/2027“ oder „26/27“ */
+function sjStart(t){ const m=String(t||"").match(/\d{2,4}/); if(!m) return ""; const n=+m[0]; return String(m[0].length<=2 ? 2000+n : n); }
+const periode = () => sjStart(val("s_sj")) + "|" + (val("s_hj")||"");
+/* Schuljahr: links das erste Jahr vierstellig eintippen, rechts steht das zweite von selbst */
+const sjText = y => y ? y+"/"+String((+y+1)%100).padStart(2,"0") : "";
+const sjOk = d => /^20\d\d$/.test(d);
+function setSj(){
+  const e=$("sj_a"), d=e.value.replace(/\D/g,"").slice(0,4);
+  if(e.value!==d) e.value=d;
+  const ok=sjOk(d);
+  if(ok || !d) e.classList.remove("ungueltig");
+  $("s_sj").value = ok ? sjText(d) : "";
+  $("sj_b").value = ok ? String(+d+1) : "";
+  $("s_sj").dispatchEvent(new Event("input"));
+}
+function pruefSj(){
+  const e=$("sj_a"), d=e.value;
+  e.classList.toggle("ungueltig", !!d && !sjOk(d));
+  if(d && !sjOk(d)) toast("Bitte das Jahr vierstellig eingeben, z. B. 2026.");
+}
+function paintSj(){
+  const e=$("sj_a"); if(!e) return;
+  const y=sjStart(val("s_sj"));
+  e.value = y || ""; e.classList.remove("ungueltig");
+  $("sj_b").value = y ? String(+y+1) : "";
+  $("s_sj").value = sjText(y);
+}
 function basis(){
   if(!GELADEN) return null;
   return periode()!==GELADEN.p ? {R:GELADEN.R, p:GELADEN.p} : (GELADEN.basis || null);
@@ -1366,13 +1399,18 @@ const STEPS = [
  </div>
  <div class="row">
   ${feld("s_gebdat","geboren am","fm","date")}
-  <div class="field fm"><span>Schuljahr</span><input type="text" id="s_sj" placeholder="2026/27"></div>
+  <div class="field fsj"><span>Schuljahr</span>
+   <div class="sjpair"><input type="text" id="sj_a" inputmode="numeric" maxlength="4" placeholder="JJJJ" autocomplete="off"
+     aria-label="Schuljahr – erstes Jahr" oninput="setSj()" onblur="pruefSj()">
+    <span>/</span><input type="text" id="sj_b" readonly tabindex="-1" aria-label="Schuljahr – zweites Jahr" placeholder="JJJJ"></div>
+   <input type="hidden" id="s_sj"></div>
   <div class="field fm"><span>Halbjahr</span>
    <div class="seg seg-sm" id="hjSeg">
     <button type="button" data-h="1" onclick="setHj('1')">1.</button>
     <button type="button" data-h="2" onclick="setHj('2')">2.</button>
    </div><input type="hidden" id="s_hj"></div>
  </div>
+ <div class="note hjnote"><b>Fortschreibung:</b> Neues Schuljahr und Halbjahr eintragen – dann zeigen Pfeile, was sich verändert hat.</div>
  <div class="row">
   ${feld("s_kl","Lernbegleitung","f1","text","Frau Weber")}
   ${feld("s_bfz","BFZ-Lehrkraft","f1","text","Herr Klein")}
@@ -1440,7 +1478,7 @@ const STEPS = [
  ${feld("nag_bel","Grundlage / Beleg","f2","text","Fachärztliches Attest vom 03.06.2026")}
  <div class="note">Der Nachteilsausgleich setzt einen <b>zielgleichen</b> Bildungsgang voraus. Wird zieldifferent
  unterrichtet – Förderschwerpunkt Lernen oder geistige Entwicklung –, sind die Anforderungen ohnehin angepasst;
- dafür braucht es keinen Nachteilsausgleich, sondern den Förderplan. Für besondere Schwierigkeiten im
+ dafür braucht es keinen Nachteilsausgleich, sondern nur den Förderplan. Für besondere Schwierigkeiten im
  <b>Rechnen</b> gibt die Verordnung vor, dass ein Nachteilsausgleich nur in der Grundschule gewährt werden kann.</div>
 
  <div class="sublabel">Maßnahmen</div>
@@ -2685,7 +2723,7 @@ function loadState(s){
     const m = val("s_sj").match(/^(.*?)[,\s]+([12])\.\s*Halbjahr\s*$/);
     if(m){ $("s_sj").value = m[1].trim(); $("s_hj").value = m[2]; }
   }
-  paintHj();
+  paintSj(); paintHj();
   buildEval();
   /* Vergleichsstand für die Pfeile: die Einschätzungen, wie sie geladen wurden */
   GELADEN = {R: Object.assign({}, R), p: periode(), basis: s.basis || null};
