@@ -717,6 +717,7 @@ function toast(t){ const el=$("toast"); el.textContent=t; el.classList.add("on")
 const SCHULE = "Schule an der Wascherde";
 
 /* Kästchen des Formulars (Reihenfolge wie in der Vorlage) */
+const FSP_IDS = ["b_lernen","b_sprache","b_ese"];   /* Förderschwerpunkte im Ankreuzfeld */
 const BART = [["b_sys","Systemische Beratung"],["b_diag","Diagnostische Beratung"],
               ["b_lernen","Lernen"],["b_sprache","Sprache"],
               ["b_ese","Emotional-soziale Entwicklung"]];
@@ -799,16 +800,21 @@ const STEPS = [
  <div class="row">${feld("s_schule","Schule","f1","text")}</div>`},
 
 {t:"Eltern", h:()=>`
- <h2>Eltern / Sorgeberechtigte</h2>
- <div class="row">${feld("e_name","Name der Eltern / Sorgeberechtigten","f1","text","Anna und Peter Müller")}</div>
+ <h2>Eltern bzw. Sorgeberechtigte</h2>
+ <div class="row">${feld("e_name","Name der Eltern bzw. Sorgeberechtigten","f1","text","Anna und Peter Müller")}</div>
  <div class="row">${feld("e_anschrift","Anschrift der Eltern","f1","text","Musterstraße 3, 36341 Lauterbach")}</div>
- <div class="row">${feld("e_tel","Telefonnummer (Eltern)","f1","text","06641 12345")}</div>`},
+ <div class="row">${feld("e_tel","Telefonnummer der Eltern","f1","text","06641 12345")}</div>`},
 
 {t:"Anliegen", h:()=>`
  <h2>Worum geht es?</h2>
  <div class="sublabel">Art der Unterstützung</div>
+ <div class="cols2">
+  ${chk("b_sys","Systemische Beratung","Einverständniserklärung der Eltern wurde verweigert")}
+  ${chk("b_diag","Diagnostische Beratung","Einverständniserklärung der Eltern liegt vor")}
+ </div>
+ <div class="glabel">Förderschwerpunkt</div>
  <div class="note hidden" id="bartNote">Aus dem Förderplan vorgeschlagen – bitte prüfen.</div>
- <div class="cols2">${BART.map(b=>chk(b[0],b[1])).join("")}
+ <div class="cols2">${BART.filter(b=>FSP_IDS.includes(b[0])).map(b=>chk(b[0],b[1])).join("")}
   <div class="chkx"><input type="checkbox" id="b_sonst" aria-label="Anderer Förderschwerpunkt"><input type="text" id="b_sonst_t" placeholder="Anderer Förderschwerpunkt"></div>
  </div>
  <div class="note blue">Voraussetzung für eine Unterstützung durch das rBFZ ist die <b>Einverständniserklärung der Eltern</b>.
@@ -892,6 +898,9 @@ $("t_hilfe").addEventListener("input", paintChips);
 /* Kästchen setzen sich selbst, sobald daneben etwas steht */
 MASS.forEach(m=>$(m[0]+"_t").addEventListener("input", ()=>{ if(val(m[0]+"_t")) $(m[0]).checked = true; }));
 $("b_sonst_t").addEventListener("input", ()=>{ if(val("b_sonst_t")) $("b_sonst").checked = true; });
+/* Systemisch = ohne Einverständnis, diagnostisch = mit Einverständnis – schließt sich aus */
+[["b_sys","b_diag"],["b_diag","b_sys"]].forEach(([a,b])=>
+  $(a).addEventListener("change", ()=>{ if(on(a)) $(b).checked = false; }));
 
 /* Vorklasse als Zwei-Knopf-Auswahl */
 function setVk(v){ const f=$("s_vorkl"); f.value = (f.value===v) ? "" : v; paintVk(); }
@@ -923,7 +932,8 @@ function buildSummary(){
   if(!val("s_klasse")) w("Es fehlt die Klasse.");
   if(!val("s_kl")) w("Es fehlt die Klassenlehrkraft.");
   if(!val("e_name")) w("Es fehlen die Namen der Eltern.");
-  if(!BART.some(b=>on(b[0])) && !on("b_sonst")) w("Es ist keine Art der Unterstützung angekreuzt.");
+  if(!on("b_sys") && !on("b_diag")) w("Es ist weder systemische noch diagnostische Beratung angekreuzt.");
+  if(!FSP_IDS.some(on) && !on("b_sonst")) w("Es ist kein Förderschwerpunkt angekreuzt.");
   if(!val("t_frage")) w("Die Fragestellung ist leer.");
   if(!MASS.some(m=>on(m[0]))) w("Es ist keine bisherige Maßnahme angekreuzt.");
   if(!val("t_hilfe")) w("Es steht nicht drin, welche Hilfe erwartet wird.");
