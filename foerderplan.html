@@ -1272,7 +1272,7 @@ const STEPS = [
 {t:"Start", m:["fp","na","both"], id:"start", h:()=>`
  <label class="sysw" id="l_sys" data-noalt>
   <span class="t"><b>Reguläres System</b><small>Logo und Formulierungen der Schule an der Wascherde</small></span>
-  <input type="checkbox" id="sys_alt" role="switch"><i></i>
+  <input type="checkbox" id="sys_alt" role="switch" autocomplete="off"><i></i>
  </label>
  <h2>Was möchtest du erstellen?</h2>
  <div class="mode">
@@ -2610,6 +2610,7 @@ $("btnPdf").onclick  = ()=>{ makePdf().catch(e=>{ console.error(e); toast("Fehle
 /* ---- Start -------------------------------------------------------- */
 $("f_ort").value = "Lauterbach";
 $("sys_alt").addEventListener("change", ()=>applyAlt());
+$("sys_alt").checked = false;   /* immer aus starten – auch wenn der Browser alte Formularwerte zurückholt */
 if(/^#(regulaer|alt)$/i.test(location.hash) || /[?&](regulaer|alt)(=|&|$)/i.test(location.search)){
   $("sys_alt").checked = true; applyAlt(true);
 }
