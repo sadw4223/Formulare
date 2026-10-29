@@ -1,0 +1,17 @@
+{
+ "name": "Lerncampus Wascherde – Schulkonzept",
+ "short_name": "Schulkonzept",
+ "start_url": "schulkonzept.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#ffffff",
+ "theme_color": "#ffffff",
+ "lang": "de",
+ "icons": [
+  {
+   "src": "schulkonzept-icon.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}
