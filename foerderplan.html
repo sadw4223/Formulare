@@ -311,9 +311,10 @@ button.b{font-size:16px;padding:13px 22px;border:none;border-radius:11px;cursor:
    <p>Über <b>Plan laden</b> öffnest du eine Sicherungsdatei wieder – genau so, wie sie gesichert wurde. Für eine
     Fortschreibung lädst du den alten Plan, kreuzt „Fortschreibung“ an und passt an, was sich geändert hat.
     Ein PDF lässt sich nicht laden, dafür brauchst du die .json-Datei.</p>
-   <p>Trägst du beim geladenen Plan das neue Schuljahr bzw. Halbjahr ein, zeigen Pfeile bei den Einschätzungen, was sich
-    verändert hat: grün nach rechts oben = verbessert, rot nach rechts unten = verschlechtert, graues = = gleich geblieben.
-    Die Zeichen stehen auch im PDF.</p>
+   <p>Bei einer Fortschreibung zeigen Pfeile bei den Einschätzungen, was sich gegenüber dem geladenen Plan verändert hat,
+    sobald du das neue Schuljahr bzw. Halbjahr einträgst: grün nach rechts oben = verbessert, rot nach rechts unten =
+    verschlechtert, graues = = gleich geblieben. Die Zeichen stehen auch im PDF. Ist „Fortschreibung“ nicht angekreuzt,
+    gibt es keine Pfeile – so kann eine Kollegin oder ein Kollege einen Plan öffnen und ergänzen.</p>
    <h4 id="hl_ds">Datenschutz</h4>
    <p>Alles, was du eingibst, bleibt auf diesem Gerät. Der Assistent lädt nichts ins Internet hoch und speichert nichts
     im Browser – auch eine geladene Plan-Datei wird nur hier auf dem Gerät gelesen.</p>
@@ -1110,7 +1111,9 @@ function paintAmp(key){
    Lädt man einen Plan und trägt ein anderes Schuljahr oder Halbjahr ein, sind
    seine Einschätzungen der Vergleich. Bleibt der Zeitraum gleich (Zwischenstand),
    gilt der Vergleich, der in der Datei mitgesichert wurde. Neu eingeschätzte oder
-   gestrichene Punkte bekommen keinen Pfeil, gleich gebliebene ein graues „=“. */
+   gestrichene Punkte bekommen keinen Pfeil, gleich gebliebene ein graues „=“.
+   Pfeile gibt es nur bei einer Fortschreibung – ein Erstplan bleibt ohne, auch
+   wenn ihn jemand anderes öffnet, ergänzt oder das Halbjahr umstellt. */
 let GELADEN = null;
 /* Anfangsjahr des Schuljahres – auch ältere Pläne mit „2026/27“, „2026/2027“ oder „26/27“ */
 function sjStart(t){ const m=String(t||"").match(/\d{2,4}/); if(!m) return ""; const n=+m[0]; return String(m[0].length<=2 ? 2000+n : n); }
@@ -1166,6 +1169,7 @@ function basis(){
   return periode()!==GELADEN.p ? {R:GELADEN.R, p:GELADEN.p} : (GELADEN.basis || null);
 }
 function trend(key){
+  if(!on("s_fort")) return "";
   const b=basis(); if(!b) return "";
   const vorher=b.R[key]||0, jetzt=R[key]||0;
   if(!vorher || !jetzt) return "";
@@ -2796,7 +2800,7 @@ $("f_ort").value = "Lauterbach";
 $("sys_alt").addEventListener("change", ()=>applyAlt());
 $("s_sj").addEventListener("input", paintTrends);
 [["s_erst","s_fort"],["s_fort","s_erst"]].forEach(([a,b])=>
-  $(a).addEventListener("change", ()=>{ if(on(a)) $(b).checked = false; }));
+  $(a).addEventListener("change", ()=>{ if(on(a)) $(b).checked = false; paintTrends(); }));
 $("sys_alt").checked = false;   /* immer aus starten – auch wenn der Browser alte Formularwerte zurückholt */
 if(/^#(regulaer|alt)$/i.test(location.hash) || /[?&](regulaer|alt)(=|&|$)/i.test(location.search)){
   $("sys_alt").checked = true; applyAlt(true);
