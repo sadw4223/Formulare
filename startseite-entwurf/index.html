@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wascherde Startseite</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playpen+Sans:wght@400;500&display=swap">
+<style>
+/* Layout: Stapel ruhiger, randloser Abschnitte. Je Abschnitt eine Aussage, ein Satz, ein Bild oder eine Taste.
+   Farben aus dem Designsystem Lerncampus Wascherde, Haltung nach WWAD. */
+:root {
+  --grund: #ffffff;
+  --flaeche: #f4f7fa;
+  --tinte: #243746;
+  --text: #5a6672;
+  --linie: #dbe3ec;
+  --blau: #2f7bf6;           /* logo-blau: Flächen, Striche, fette Schrift ab 19 px */
+  --blau-text: #1e64d6;      /* abgedunkelt für Links in Fließtextgröße (5,6:1) */
+  --orange: #f47b20;         /* logo-orange: nur Akzent, nie Schrift */
+  --taste-text: #ffffff;
+  --kopf-grund: rgba(255,255,255,.92);
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --hand: "Playpen Sans", "Comic Sans MS", cursive;
+  --r-klein: 12px; --r-karte: 20px; --r-gross: 32px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --grund: #111a22; --flaeche: #1a2631; --tinte: #eef3f8; --text: #a9b6c3; --linie: #2b3a48;
+    --blau: #4b8ff8; --blau-text: #7fb0ff; --orange: #f68a3a; --taste-text: #ffffff; --kopf-grund: rgba(17,26,34,.92);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --grund: #111a22; --flaeche: #1a2631; --tinte: #eef3f8; --text: #a9b6c3; --linie: #2b3a48;
+  --blau: #4b8ff8; --blau-text: #7fb0ff; --orange: #f68a3a; --taste-text: #ffffff; --kopf-grund: rgba(17,26,34,.92);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--grund); color: var(--text); font-family: var(--sans); font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--kopf-grund); }
+h1, h2, h3 { color: var(--tinte); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--blau-text); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--blau); outline-offset: 3px; border-radius: 6px; }
+img { display: block; max-width: 100%; }
+
+.innen { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Kopfzeile */
+.kopf { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--kopf-grund); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--linie); }
+.kopf .innen { display: flex; align-items: center; gap: 24px; min-height: 64px; }
+.marke { display: flex; align-items: center; gap: 12px; color: var(--tinte); font-weight: 700; font-size: 17px; line-height: 1.15; }
+.marke:hover { text-decoration: none; }
+.marke svg { width: 34px; height: 34px; flex: none; }
+.marke small { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; }
+.marke small .o { color: var(--orange); } .marke small .b { color: var(--blau); }
+.nav { display: flex; gap: 24px; margin-left: auto; font-size: 15px; font-weight: 500; }
+.nav a { color: var(--tinte); }
+.taste { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 22px; border-radius: 999px; font-weight: 700; font-size: 17px; white-space: nowrap; }
+.taste:hover { text-decoration: none; }
+.taste.voll { background: var(--blau); color: var(--taste-text); font-size: 19px; }
+.taste.rand { border: 1.5px solid var(--linie); color: var(--tinte); font-size: 15px; min-height: 40px; padding: 0 18px; }
+.menue { display: none; margin-left: auto; position: relative; }
+.menue summary { list-style: none; cursor: pointer; font-weight: 600; color: var(--tinte); padding: 8px 14px; border: 1.5px solid var(--linie); border-radius: 999px; font-size: 15px; }
+.menue summary::-webkit-details-marker { display: none; }
+.menue nav { position: absolute; right: 0; top: calc(100% + 8px); background: var(--grund); border: 1px solid var(--linie); border-radius: var(--r-karte); padding: 8px; display: grid; min-width: 220px; }
+.menue nav a { padding: 12px 14px; border-radius: var(--r-klein); color: var(--tinte); font-weight: 500; }
+.menue nav a:hover { background: var(--flaeche); text-decoration: none; }
+@media (max-width: 820px) { .nav, .kopf .taste.rand { display: none; } .menue { display: block; } }
+
+/* Abschnitte */
+section { padding-block: 72px; }
+section + section { border-top: 1px solid var(--linie); }
+.eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text); margin-bottom: 12px; }
+.h-display { font-size: clamp(40px, 6.4vw, 72px); line-height: 1.04; font-weight: 800; letter-spacing: -0.03em; }
+.h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.1; font-weight: 800; letter-spacing: -0.02em; }
+.lead { font-size: clamp(19px, 2vw, 24px); line-height: 1.4; color: var(--text); max-width: 34em; margin-top: 16px; }
+.kopfzeile-abschnitt { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+.kopfzeile-abschnitt > div { min-width: 0; }
+
+/* Hero */
+.hero { padding-block: 56px 0; border-top: 0; }
+.hero-text { display: grid; gap: 0; max-width: 820px; }
+.hero-text .taste { justify-self: start; margin-top: 28px; }
+.ecken { position: relative; display: inline-block; }
+.hero-bild { margin-top: 48px; border-radius: var(--r-gross); overflow: hidden; aspect-ratio: 16 / 8; max-width: 100%; }
+.hero-bild img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%; }
+.fakt { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-top: 20px; font-size: 15px; color: var(--text); }
+.fakt b { color: var(--tinte); font-weight: 700; }
+
+/* Schnellzugriff */
+.schnell { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.schnell a { display: grid; gap: 4px; padding: 20px; border-radius: var(--r-karte); background: var(--flaeche); color: var(--text); font-size: 15px; line-height: 1.4; }
+.schnell a:hover { text-decoration: none; background: var(--linie); }
+.schnell a b { color: var(--tinte); font-size: 19px; font-weight: 700; }
+.schnell a b::after { content: " →"; color: var(--blau); }
+@media (max-width: 860px) { .schnell { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .schnell { grid-template-columns: 1fr; } }
+
+/* Aktuelles */
+.news { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.news article { display: grid; align-content: start; gap: 8px; padding-top: 20px; border-top: 2px solid var(--tinte); }
+.news .meta { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.news h3 { font-size: 22px; line-height: 1.2; font-weight: 700; }
+.news p { font-size: 16px; }
+@media (max-width: 860px) { .news { grid-template-columns: 1fr; } }
+
+/* Lerncampus */
+.bausteine { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px; }
+.baustein { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.polaroid { background: #fff; padding: 8px 8px 0; box-shadow: 0 0 0 1px var(--linie); transform: rotate(var(--dreh, 0deg)); }
+.polaroid img { aspect-ratio: 1; width: 100%; object-fit: cover; }
+.polaroid span { display: block; padding: 6px 0 10px; text-align: center; font-family: var(--hand); font-size: 15px; color: #243746; }
+.baustein h3 { font-size: 17px; line-height: 1.25; font-weight: 700; }
+.baustein p { font-family: var(--hand); font-size: 15px; line-height: 1.35; }
+@media (max-width: 960px) { .bausteine { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .bausteine { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Abschlüsse */
+.zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.karte { background: var(--flaeche); border-radius: var(--r-karte); padding: 28px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.karte h3 { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.weiter { margin-top: 16px; font-size: 17px; }
+@media (max-width: 720px) { .zwei { grid-template-columns: 1fr; } }
+
+/* Drei Stärken */
+.drei { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.drei div { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.drei h3 { font-size: 20px; font-weight: 700; }
+.drei .strich { width: 40px; height: 4px; border-radius: 2px; background: var(--orange); margin-bottom: 8px; }
+@media (max-width: 820px) { .drei { grid-template-columns: 1fr; gap: 28px; } }
+
+/* Auszeichnungen */
+.auszeichnung { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 40px; align-items: center; }
+.zahl { font-size: clamp(88px, 14vw, 160px); font-weight: 800; letter-spacing: -0.05em; line-height: .9; color: var(--blau); }
+.siegel { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding: 0; list-style: none; }
+.siegel li { border: 1.5px solid var(--linie); border-radius: 999px; padding: 8px 16px; font-size: 15px; font-weight: 600; color: var(--tinte); }
+@media (max-width: 720px) { .auszeichnung { grid-template-columns: 1fr; gap: 16px; } }
+
+/* Kontakt */
+.kontakt { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.kontakt div { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.kontakt dt, .kontakt .label { font-size: 13px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+.kontakt .wert { font-size: 20px; font-weight: 600; color: var(--tinte); font-variant-numeric: tabular-nums; }
+@media (max-width: 720px) { .kontakt { grid-template-columns: 1fr; } }
+
+footer { border-top: 1px solid var(--linie); padding-block: 28px 40px; font-size: 14px; }
+footer .innen { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+footer .links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-left: auto; }
+footer .partner { flex-basis: 100%; color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="kopf">
+  <div class="innen">
+    <a class="marke" href="#start" aria-label="Schule an der Wascherde, zur Startseite">
+      <svg viewBox="-7.5 -7.5 115 115" aria-hidden="true"><g fill="none" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"><path stroke="#2f7bf6" d="M30 0H0V100H100V70"/><path stroke="#f47b20" d="M70 0H100V30"/><path stroke="#f47b20" d="M25 24V76H75V24"/><path stroke="#f47b20" d="M50 34V76"/></g></svg>
+      <span>Schule an der Wascherde<small><span class="o">Lerncampus</span> <span class="b">Wascherde</span></small></span>
+    </a>
+    <nav class="nav" aria-label="Hauptmenü">
+      <a href="#lerncampus">Lerncampus</a>
+      <a href="#abschluesse">Abschlüsse</a>
+      <a href="#aktuelles">Aktuelles</a>
+      <a href="#kontakt">Kontakt</a>
+    </nav>
+    <a class="taste rand" href="https://schuleanderwascherde.eu" target="_blank" rel="noopener">IServ</a>
+    <details class="menue">
+      <summary>Menü</summary>
+      <nav aria-label="Hauptmenü mobil">
+        <a href="#lerncampus">Lerncampus</a>
+        <a href="#abschluesse">Abschlüsse</a>
+        <a href="#aktuelles">Aktuelles</a>
+        <a href="#kontakt">Kontakt</a>
+        <a href="https://schuleanderwascherde.eu" target="_blank" rel="noopener">IServ</a>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<main id="start">
+
+  <section class="hero">
+    <div class="innen">
+      <div class="hero-text">
+        <p class="eyebrow">Haupt- und Realschule in Lauterbach</p>
+        <h1 class="h-display">Schule neu denken.<br>Lernen neu gestalten.</h1>
+        <p class="lead">Seit 1833 führen wir Kinder aus Lauterbach und vier Grundschulbezirken zu ihrem Abschluss. Heute lernen sie bei uns im Lerncampus, im eigenen Tempo.</p>
+        <a class="taste voll" href="#lerncampus">Lerncampus entdecken</a>
+      </div>
+      <figure class="hero-bild" style="margin-inline: 0; margin-bottom: 0;">
+        <img src="bilder/eingang.jpg" alt="Eingang der Schule an der Wascherde mit blühender Wildblumenwiese vor der Fassade" width="2000" height="1116">
+      </figure>
+      <p class="fakt"><span><b>An der Wascherde 26</b>, 36341 Lauterbach</span><span>Sekretariat <b>7:30–13:00 Uhr</b></span><span>Telefon <b>06641 9669-0</b></span></p>
+    </div>
+  </section>
+
+  <section aria-label="Schnellzugriff">
+    <div class="innen">
+      <div class="schnell">
+        <a href="#aktuelles"><b>Termine</b>Ferien, Elternabende und Veranstaltungen.</a>
+        <a href="#aktuelles"><b>Aktuelles</b>Neues aus dem Schulleben und der Presse.</a>
+        <a href="#kontakt"><b>Downloads</b>Formulare und Infomaterial, ohne Weg ins Sekretariat.</a>
+        <a href="https://schuleanderwascherde.eu" target="_blank" rel="noopener"><b>IServ</b>Krankmeldung und Nachrichten für Schüler und Eltern.</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="aktuelles">
+    <div class="innen">
+      <div class="kopfzeile-abschnitt">
+        <div><p class="eyebrow">Aktuelles</p><h2 class="h2">Kürzlich an der Wascherde.</h2></div>
+        <a href="#aktuelles">Alle Beiträge →</a>
+      </div>
+      <div class="news">
+        <article>
+          <p class="meta">21.10.2026 · Information</p>
+          <h3>Tag der offenen Tür 2026</h3>
+          <p>Lernen Sie unsere Schule und den Lerncampus kennen. Wir laden alle Viertklässler und ihre Eltern ein.</p>
+          <a href="#aktuelles">Weiterlesen</a>
+        </article>
+        <article>
+          <p class="meta">21.10.2026 · Information</p>
+          <h3>Elternabend Jahrgang 5</h3>
+          <p>Alles zum Übergang von der Grundschule an die Wascherde, an einem Abend erklärt.</p>
+          <a href="#aktuelles">Weiterlesen</a>
+        </article>
+        <article>
+          <p class="meta">19.01.2026 · Digitale Schule</p>
+          <h3>Partner der Digitalen Drehtür</h3>
+          <p>Wir sind offizielle Partnerschule des digitalen Bildungsangebots der Länder.</p>
+          <a href="#aktuelles">Weiterlesen</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="lerncampus">
+    <div class="innen">
+      <div class="kopfzeile-abschnitt">
+        <div><p class="eyebrow">Lerncampus Wascherde</p><h2 class="h2">Unsere fünf Bausteine für gutes Lernen.</h2></div>
+      </div>
+      <div class="bausteine">
+        <div class="baustein"><figure class="polaroid" style="margin:0; --dreh:-1.5deg"><img src="bilder/lernbuero.jpg" alt="Schülerinnen und Schüler arbeiten im Lernbüro an eigenen Arbeitsplätzen" loading="lazy"><span>Lernbüro</span></figure><h3>Individualisiertes Lernen</h3><p>„Ich lerne in meinem eigenen Tempo.“</p></div>
+        <div class="baustein"><figure class="polaroid" style="margin:0; --dreh:1deg"><img src="bilder/lernwelt.jpg" alt="Lernwelt mit Sitzecken und Schülergruppen" loading="lazy"><span>Lernwelt</span></figure><h3>Neue Lehrer- und Lernerrolle</h3><p>„Ich werde beim Lernen begleitet.“</p></div>
+        <div class="baustein"><figure class="polaroid" style="margin:0; --dreh:-1deg"><img src="bilder/lernflur.jpg" alt="Lernflur mit Sitzinseln und Sofas" loading="lazy"><span>Lernflur</span></figure><h3>Raum als dritter Pädagoge</h3><p>„Ich finde meinen Lernort.“</p></div>
+        <div class="baustein"><figure class="polaroid" style="margin:0; --dreh:1.5deg"><img src="bilder/inputraum.jpg" alt="Inputraum mit Lehrerin am digitalen Display" loading="lazy"><span>Inputraum</span></figure><h3>Digitales Arbeiten</h3><p>„Ich lerne auch digital.“</p></div>
+        <div class="baustein"><figure class="polaroid" style="margin:0; --dreh:-1.5deg"><img src="bilder/co-working.jpg" alt="Co-Working-Bereich mit Sofas am Fenster" loading="lazy"><span>Co-Working</span></figure><h3>Schwerpunktsetzung</h3><p>„Ich entdecke meine Stärken.“</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="abschluesse">
+    <div class="innen">
+      <div class="kopfzeile-abschnitt">
+        <div><p class="eyebrow">Abschlüsse</p><h2 class="h2">Jeder Abschluss ist ein Weg nach vorn.</h2><p class="lead">Wir bereiten auf Ausbildung, Fachoberschule, berufliches Gymnasium und Studium vor.</p></div>
+      </div>
+      <div class="zwei">
+        <div class="karte"><h3>Hauptschulabschluss</h3><p>Praxisnaher Unterricht und individuelle Förderung für einen sicheren Start in die Ausbildung.</p></div>
+        <div class="karte"><h3>Mittlere Reife</h3><p>Der Weg in die Berufswelt, und mit einem Schnitt von 3,0 oder besser weiter an Gymnasium oder Fachoberschule.</p></div>
+      </div>
+      <div class="drei" style="margin-top: 56px;">
+        <div><span class="strich" aria-hidden="true"></span><h3>Gute Berufschancen</h3><p>Betriebe kommen zu uns in die Schule. Kontakte entstehen schon im Unterricht.</p></div>
+        <div><span class="strich" aria-hidden="true"></span><h3>Schulsozialarbeit vor Ort</h3><p>Ansprechpartner für Schüler und Eltern, gemeinsam mit dem Vogelsbergkreis.</p></div>
+        <div><span class="strich" aria-hidden="true"></span><h3>AGs am Nachmittag</h3><p>Nähen, Bläser, Lego, Mediothek und Bienen. Engagement, das sich auszahlt.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ausgezeichnet">
+    <div class="innen auszeichnung">
+      <p class="zahl" aria-hidden="true">2&nbsp;%</p>
+      <div>
+        <h2 class="h2" id="ausgezeichnet">Wir gehören zu den 2&nbsp;% ausgezeichneten Schulen in Deutschland.</h2>
+        <ul class="siegel">
+          <li>Digitale Schule</li>
+          <li>MINT-freundliche Schule</li>
+          <li>Gütesiegel Berufsorientierung</li>
+          <li>Umweltschule</li>
+          <li>Schule ohne Rassismus – Schule mit Courage</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="kontakt">
+    <div class="innen">
+      <div class="kopfzeile-abschnitt">
+        <div><p class="eyebrow">Kontakt</p><h2 class="h2">Wir sind für Sie da.</h2></div>
+      </div>
+      <div class="kontakt">
+        <div><span class="label">Adresse</span><span class="wert">An der Wascherde 26<br>36341 Lauterbach</span><a href="https://maps.google.com/?q=An+der+Wascherde+26+36341+Lauterbach" target="_blank" rel="noopener">Route planen</a></div>
+        <div><span class="label">Telefon</span><span class="wert">06641 9669-0</span></div>
+        <div><span class="label">Sekretariat</span><span class="wert">Mo–Fr 7:30–13:00 Uhr</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="innen">
+    <span>© Schule an der Wascherde</span>
+    <span class="links"><a href="#kontakt">Impressum</a><a href="#kontakt">Datenschutz</a><a href="https://www.instagram.com" target="_blank" rel="noopener">Instagram</a><a href="https://www.facebook.com" target="_blank" rel="noopener">Facebook</a></span>
+    <span class="partner">Partner: Digitale Drehtür (LIS Bremen) · Fritz-Schubert-Institut Heidelberg</span>
+  </div>
+</footer>
+</body>
+</html>
