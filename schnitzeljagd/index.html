@@ -5,62 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
 <title>Schnitzeljagd – Lerncampus Wascherde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Designsystem Lerncampus Wascherde */
   :root {
-    --text: #262626; --text2: #595959; --grund: #F2F2F7; --linie: #D1D1D6;
-    --blau: #0088FF; --blau-text: #1E6EF4; --erfolg: #008932; --fehler: #E9152D;
-    --lc-blau: #1d4f91; --lc-orange: #e8820c;
+    --logo-blau: #2f7bf6; --logo-orange: #f47b20;
+    --tinte: #243746; --text: #5a6672; --text-leise: #8a97a5;
+    --linie: #dbe3ec; --grund: #ffffff; --flaeche: #f4f7fa;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, sans-serif; color: var(--text); background: #fff; font-size: 17px; line-height: 1.4; -webkit-text-size-adjust: 100%; }
-  main { max-width: 36rem; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
-  .marke { font-size: 13px; font-weight: 700; letter-spacing: .06em; }
-  .marke .l { color: var(--lc-blau); } .marke .w { color: var(--lc-orange); }
-  h1 { font-size: 34px; line-height: 1.15; font-weight: 700; margin: 24px 0 8px; }
+  body { font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); background: var(--grund); font-size: 17px; line-height: 1.4; -webkit-text-size-adjust: 100%; }
+  main { max-width: 36rem; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
+
+  /* Kopfzeile: Zeichen links, Kopftitel und Wortmarke rechts daneben, Trennlinie darunter */
+  .kopf { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--linie); }
+  .kopf img { width: 44px; height: 44px; flex: none; }
+  .kopftitel { font-size: 22px; line-height: 1.2; font-weight: 700; color: var(--tinte); }
+  .wortmarke { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; }
+  .wortmarke .l { color: var(--logo-orange); } .wortmarke .w { color: var(--logo-blau); }
+
+  h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
-  .stand { display: flex; justify-content: space-between; font-size: 15px; color: var(--text2); margin-bottom: 8px; }
-  .balken { height: 6px; background: var(--grund); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
-  .balken div { height: 100%; background: var(--blau); border-radius: 3px; transition: width .4s; }
-  .taste { display: block; width: 100%; min-height: 50px; border: 0; border-radius: 999px; font: inherit; font-weight: 600; font-size: 17px; cursor: pointer; padding: 0 20px; }
-  .taste.haupt { background: var(--blau-text); color: #fff; }
-  .taste.neben { background: var(--grund); color: var(--text); }
+  .stand { font-size: 15px; font-weight: 500; color: var(--tinte); margin-bottom: 8px; }
+  .balken { height: 6px; background: var(--linie); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+  .balken div { height: 100%; background: var(--logo-blau); border-radius: 3px; transition: width .4s; }
+  .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
+  .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
-  .suchen { color: var(--text2); font-size: 15px; margin: 12px 0 0; }
-  .fehler { color: var(--fehler); font-size: 15px; margin: 12px 0 0; }
-  h2 { font-size: 22px; font-weight: 700; margin: 40px 0 12px; }
-  .karte { background: var(--grund); border-radius: 20px; padding: 12px; margin-bottom: 12px; }
-  .karte img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; background: #E5E5EA; }
-  .karte .nr { font-size: 13px; color: var(--text2); margin: 12px 8px 0; }
-  .karte h3 { font-size: 20px; margin: 2px 8px 4px; }
+  .suchen { font-size: 15px; margin: 12px 0 0; }
+  .fehler { color: var(--tinte); font-size: 15px; font-weight: 500; margin: 12px 0 0; padding: 12px 16px; background: var(--flaeche); border-radius: 12px; }
+  h2 { font-size: 22px; font-weight: 700; color: var(--tinte); margin: 40px 0 12px; }
+  .karte { background: var(--flaeche); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+  .karte img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; background: var(--linie); }
+  .karte .nr { font-size: 13px; font-weight: 500; margin: 12px 8px 0; }
+  .karte h3 { font-size: 20px; color: var(--tinte); margin: 2px 8px 4px; }
   .karte p { margin: 0 8px 8px; }
-  .leise { background: none; border: 0; font: inherit; font-size: 15px; color: var(--blau-text); padding: 12px 0; cursor: pointer; }
-  .hinweis { position: fixed; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); max-width: 34rem; margin: 0 auto; background: var(--text); color: #fff; border-radius: 999px; padding: 12px 12px 12px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; z-index: 5; }
-  .hinweis button { background: none; border: 0; color: #5CB8FF; font: inherit; font-weight: 600; padding: 4px 8px; cursor: pointer; }
+  .karte .antwort { font-size: 15px; }
+  .karte .antwort b { color: var(--tinte); font-weight: 500; }
+  .leise { background: none; border: 0; font: inherit; font-size: 15px; font-weight: 500; color: var(--tinte); text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: 3px; padding: 12px 0; cursor: pointer; }
+  .hinweisleiste { position: fixed; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); max-width: 34rem; margin: 0 auto; background: var(--tinte); color: #fff; border-radius: 12px; padding: 12px 12px 12px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; z-index: 5; }
+  .hinweisleiste button { background: none; border: 0; color: #fff; text-decoration: underline; font: inherit; font-weight: 700; padding: 4px 8px; cursor: pointer; }
   [hidden] { display: none !important; }
 
   /* Kamera-Ansicht */
   #ar { position: fixed; inset: 0; background: #000; z-index: 10; }
   #kamera { position: absolute; inset: 0; overflow: hidden; }
-  #arLabel { position: absolute; z-index: 20; top: max(16px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); width: max-content; background: var(--text); color: #fff; border-radius: 999px; padding: 10px 18px; font-size: 15px; font-weight: 600; text-align: center; }
-  #arSchliessen { position: absolute; z-index: 20; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); width: auto; background: #fff; color: var(--text); }
-  #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 78vh; overflow-y: auto; background: #fff; border-radius: 20px 20px 0 0; padding: 12px 20px max(20px, env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .35s ease; }
+  #arLabel { position: absolute; z-index: 20; top: max(16px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); width: max-content; background: var(--tinte); color: #fff; border-radius: 12px; padding: 10px 16px; font-size: 15px; font-weight: 500; text-align: center; }
+  #arSchliessen { position: absolute; z-index: 20; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); width: auto; background: var(--grund); color: var(--tinte); }
+
+  /* halbhohes Blatt mit Infos und Frage */
+  #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 82%; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--grund); border-radius: 17px 17px 0 0; padding: 12px 20px max(20px, env(safe-area-inset-bottom)); transform: translateY(105%); transition: transform .35s ease; }
   #blatt.offen { transform: none; }
   #blatt .griff { width: 36px; height: 5px; border-radius: 3px; background: var(--linie); margin: 0 auto 12px; }
-  #blatt img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: 32vh; object-fit: cover; border-radius: 12px; background: #E5E5EA; }
-  #blatt .nr { font-size: 13px; color: var(--text2); margin: 16px 0 0; }
-  #blatt h3 { font-size: 22px; margin: 2px 0 8px; }
-  #blatt p { margin: 0 0 20px; }
+  #blatt img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: 24vh; object-fit: cover; border-radius: 12px; background: var(--linie); }
+  #blatt .nr { font-size: 13px; font-weight: 500; margin: 16px 0 0; }
+  #blatt h3 { font-size: 24px; line-height: 1.2; color: var(--tinte); margin: 2px 0 8px; }
+  #blatt p { margin: 0; }
+  .frage { border-top: 1px solid var(--linie); margin-top: 16px; padding-top: 16px; }
+  .frage .text { font-weight: 700; color: var(--tinte); margin-bottom: 12px; }
+  .auswahl { background: var(--flaeche); border-radius: 12px; overflow: hidden; }
+  .auswahl button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; text-align: left; min-height: 52px; padding: 12px 16px; border: 0; background: none; font: inherit; color: var(--tinte); cursor: pointer; }
+  .auswahl button + button { border-top: 1px solid var(--linie); }
+  .auswahl button.richtig { font-weight: 700; }
+  .auswahl button.richtig .zeichen { color: var(--logo-blau); }
+  .auswahl button.falsch { color: var(--text-leise); text-decoration: line-through; }
+  .auswahl button .zeichen { flex: none; font-weight: 800; }
+  .eingabe { display: flex; gap: 8px; }
+  .eingabe input { flex: 1; min-width: 0; height: 54px; font: inherit; font-size: 17px; padding: 0 16px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
+  .eingabe input:focus { outline: 2px solid var(--logo-blau); outline-offset: -1px; }
+  .eingabe button { width: auto; flex: none; }
+  .rueckmeldung { min-height: 22px; margin: 12px 0 0; font-size: 15px; font-weight: 700; color: var(--tinte); }
+  #blattWeiter { margin-top: 16px; }
+  @keyframes wackeln { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .wackeln { animation: wackeln .25s ease 2; }
 </style>
 </head>
 <body>
 <main>
-  <div class="marke"><span class="l">LERNCAMPUS</span> <span class="w">WASCHERDE</span></div>
-  <h1 id="titel">Schnitzeljagd</h1>
+  <header class="kopf">
+    <img src="logo.png" alt="Lerncampus Wascherde">
+    <div><div class="kopftitel">Schnitzeljagd</div><div class="wortmarke"><span class="l">LERNCAMPUS</span> <span class="w">WASCHERDE</span></div></div>
+  </header>
+  <h1 id="titel"></h1>
   <p class="lead" id="lead"></p>
 
   <div id="unterwegs">
-    <div class="stand"><span id="standText"></span></div>
+    <div class="stand" id="standText"></div>
     <div class="balken"><div id="balken"></div></div>
     <button class="taste haupt" id="start">Kamera starten</button>
     <p class="suchen" id="suchen"></p>
@@ -68,74 +100,163 @@
   </div>
 
   <section id="besucht" hidden>
-    <h2>Besuchte Stationen</h2>
+    <h2>Deine Stationen</h2>
     <div id="karten"></div>
     <button class="leise" id="neu">Von vorn beginnen</button>
   </section>
 </main>
 
-<div class="hinweis" id="rueck" hidden><span>Fortschritt gelöscht.</span><button id="rueckBtn">Rückgängig</button></div>
+<div class="hinweisleiste" id="rueck" hidden><span>Alles zurückgesetzt.</span><button id="rueckBtn">Rückgängig</button></div>
 
 <div id="ar" hidden>
   <div id="kamera"></div>
   <div id="arLabel"></div>
   <button class="taste" id="arSchliessen">Schließen</button>
-  <div id="blatt" role="dialog" aria-modal="false">
+  <div id="blatt" role="dialog">
     <div class="griff"></div>
     <img id="blattBild" alt="">
     <div class="nr" id="blattNr"></div>
     <h3 id="blattOrt"></h3>
     <p id="blattText"></p>
-    <button class="taste haupt" id="blattWeiter">Weiter</button>
+    <div class="frage" id="frageBox">
+      <div class="text" id="frageText"></div>
+      <div id="frageFeld"></div>
+      <p class="rueckmeldung" id="rueckmeldung"></p>
+    </div>
+    <button class="taste haupt" id="blattWeiter" hidden>Weiter</button>
   </div>
 </div>
 
 <script src="stationen.js"></script>
 <script>
 (function () {
-  const daten = SCHNITZELJAGD, st = daten.stationen, N = st.length;
+  const daten = SCHNITZELJAGD, st = daten.stationen, N = st.length, WW = daten.wegweiser || [];
   const $ = id => document.getElementById(id);
+  const esc = t => String(t).replace(/[&<>"]/g, z => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[z]));
 
   // ---------- Fortschritt (nur in diesem Browser gespeichert) ----------
-  const SCHLUESSEL = "schnitzeljagd-wascherde-v2";
-  let erledigt = 0;
-  try { erledigt = Math.min(N, parseInt(localStorage.getItem(SCHLUESSEL) || "0", 10) || 0); } catch (e) {}
-  function speichern() { try { localStorage.setItem(SCHLUESSEL, String(erledigt)); } catch (e) {} }
-
-  function karteHtml(i) {
-    const s = st[i];
-    return `<div class="karte"><img src="${s.bild}" alt="${s.ort}" loading="lazy"><div class="nr">Station ${i + 1}</div><h3>${s.ort}</h3><p>${s.text}</p></div>`;
-  }
+  const SCHLUESSEL = "schnitzeljagd-wascherde-v3";
+  let stand = { erledigt: 0, antworten: [] };
+  try { const s = JSON.parse(localStorage.getItem(SCHLUESSEL) || "null"); if (s && typeof s.erledigt === "number") stand = s; } catch (e) {}
+  stand.erledigt = Math.min(N, stand.erledigt);
+  function speichern() { try { localStorage.setItem(SCHLUESSEL, JSON.stringify(stand)); } catch (e) {} }
 
   function zeigen() {
-    const fertig = erledigt >= N;
-    $("titel").textContent = fertig ? "Geschafft!" : "Schnitzeljagd";
-    $("lead").textContent = fertig ? daten.ende : (erledigt === 0 ? daten.start : "Weiter geht’s mit der nächsten Station.");
+    const e = stand.erledigt, fertig = e >= N;
+    $("titel").textContent = fertig ? "Du hast es geschafft." : (e === 0 ? "Kennst du schon deine neue Schule?" : "Wo geht es weiter?");
+    $("lead").textContent = fertig ? daten.ende : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
     $("unterwegs").hidden = fertig;
     if (!fertig) {
-      $("standText").textContent = "Station " + (erledigt + 1) + " von " + N;
-      $("suchen").textContent = st[erledigt].suchen || "Suchen Sie den nächsten runden Aufkleber auf dem Boden.";
+      $("standText").textContent = "Station " + (e + 1) + " von " + N;
+      $("suchen").textContent = st[e].suchen || "Suche den nächsten runden Aufkleber auf dem Boden.";
     }
-    $("balken").style.width = (erledigt / N * 100) + "%";
-    $("besucht").hidden = erledigt === 0;
-    let html = ""; for (let i = erledigt - 1; i >= 0; i--) html += karteHtml(i);
+    $("balken").style.width = (e / N * 100) + "%";
+    $("besucht").hidden = e === 0;
+    let html = "";
+    for (let i = e - 1; i >= 0; i--) {
+      const s = st[i], a = stand.antworten[i];
+      html += `<div class="karte"><img src="${esc(s.bild)}" alt="${esc(s.ort)}" loading="lazy"><div class="nr">Station ${i + 1}</div><h3>${esc(s.ort)}</h3><p>${esc(s.text)}</p>`
+            + (s.frage && a ? `<p class="antwort">${esc(s.frage.text)} <b>${esc(a)}</b></p>` : "") + `</div>`;
+    }
     $("karten").innerHTML = html;
   }
   zeigen();
 
   // Von vorn beginnen – sofort ausführen, kurz „Rückgängig“ anbieten
-  let vorher = 0, rueckTimer = null;
+  let vorher = null, rueckTimer = null;
   $("neu").addEventListener("click", () => {
-    vorher = erledigt; erledigt = 0; speichern(); zeigen(); window.scrollTo(0, 0);
+    vorher = JSON.parse(JSON.stringify(stand)); stand = { erledigt: 0, antworten: [] }; speichern(); zeigen(); window.scrollTo(0, 0);
     $("rueck").hidden = false; clearTimeout(rueckTimer); rueckTimer = setTimeout(() => $("rueck").hidden = true, 6000);
   });
-  $("rueckBtn").addEventListener("click", () => { erledigt = vorher; speichern(); zeigen(); $("rueck").hidden = true; });
+  $("rueckBtn").addEventListener("click", () => { if (vorher) { stand = vorher; speichern(); zeigen(); } $("rueck").hidden = true; });
+
+  // ---------- Frage ----------
+  const normal = t => String(t).toLowerCase().trim()
+    .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
+    .replace(/[^a-z0-9 ]/g, "").replace(/^(im|in der|in dem|in den|der|die|das|den|dem|ein|eine)\s+/, "").replace(/\s+/g, " ");
+
+  let fehlversuche = 0, aktiveStation = -1;
+
+  function frageAufbauen(i) {
+    const f = st[i].frage; fehlversuche = 0;
+    $("rueckmeldung").textContent = ""; $("rueckmeldung").className = "rueckmeldung";
+    $("blattWeiter").hidden = true;
+    $("frageBox").hidden = !f;
+    if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
+    $("frageText").textContent = f.text;
+    if (f.auswahl) {
+      $("frageFeld").innerHTML = `<div class="auswahl">${f.auswahl.map((a, k) => `<button type="button" data-k="${k}"><span>${esc(a)}</span><span class="zeichen"></span></button>`).join("")}</div>`;
+      $("frageFeld").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+        if (!$("blattWeiter").hidden || b.classList.contains("falsch")) return;
+        const wahl = f.auswahl[Number(b.dataset.k)];
+        if (wahl === f.richtig) { b.classList.add("richtig"); b.querySelector(".zeichen").textContent = "✓"; frageGeloest(i, wahl, true); }
+        else { b.classList.add("falsch"); falsch(i, () => {
+          const r = [...$("frageFeld").querySelectorAll("button")].find(x => f.auswahl[Number(x.dataset.k)] === f.richtig);
+          r.classList.add("richtig"); r.querySelector(".zeichen").textContent = "✓";
+        }); }
+      }));
+    } else {
+      $("frageFeld").innerHTML = `<form class="eingabe" id="eingabeForm" autocomplete="off"><input id="eingabe" enterkeyhint="done" autocapitalize="sentences" autocorrect="off" spellcheck="false" placeholder="Deine Antwort" aria-label="Deine Antwort"><button class="taste haupt" type="submit">Antworten</button></form>`;
+      $("eingabeForm").addEventListener("submit", ev => {
+        ev.preventDefault();
+        if (!$("blattWeiter").hidden) return;
+        const w = $("eingabe").value; if (!w.trim()) return;
+        if (f.antwort.some(a => normal(a) === normal(w))) { $("eingabe").blur(); frageGeloest(i, f.antwort[0], true); }
+        else falsch(i, () => { $("eingabe").value = f.antwort[0]; $("eingabe").blur(); });
+      });
+    }
+  }
+
+  function falsch(i, aufloesen) {
+    fehlversuche++;
+    const feld = $("frageFeld"); feld.classList.remove("wackeln"); void feld.offsetWidth; feld.classList.add("wackeln");
+    if (fehlversuche >= 2) {
+      aufloesen();
+      $("rueckmeldung").textContent = "Hier siehst du die richtige Antwort.";
+      $("rueckmeldung").className = "rueckmeldung";
+      frageGeloest(i, st[i].frage.richtig || st[i].frage.antwort[0], false);
+    } else {
+      $("rueckmeldung").textContent = "Achtung, schaue noch einmal genau hin.";
+      $("rueckmeldung").className = "rueckmeldung";
+    }
+  }
+
+  function frageGeloest(i, antwort, richtig) {
+    if (richtig) { $("rueckmeldung").textContent = "Richtig."; $("rueckmeldung").className = "rueckmeldung"; }
+    if (stand.erledigt === i) { stand.erledigt = i + 1; stand.antworten[i] = antwort; speichern(); zeigen(); }
+    $("blattWeiter").textContent = i === N - 1 ? "Abschließen" : "Weiter";
+    $("blattWeiter").hidden = false;
+    // jetzt erst den Weg freigeben
+    if (sichtbar === i && pfeile[i]) pfeile[i].setAttribute("visible", true);
+  }
+
+  // ---------- halbhohes Blatt ----------
+  function blattZeigen(i) {
+    const s = st[i]; aktiveStation = i;
+    $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
+    $("blattNr").textContent = "Station " + (i + 1) + " von " + N;
+    $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
+    frageAufbauen(i);
+    $("blatt").scrollTop = 0; $("blatt").classList.add("offen");
+    $("arSchliessen").hidden = true; label("");
+  }
+  const blattOffen = () => $("blatt").classList.contains("offen");
+  $("blattWeiter").addEventListener("click", () => {
+    $("blatt").classList.remove("offen"); $("arSchliessen").hidden = false; aktiveStation = -1;
+    if (stand.erledigt >= N) { arBeenden(); return; }
+    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil zu Station " + (stand.erledigt + 1) : sucheText()); tippPlanen();
+  });
+  // Tastatur auf dem iPhone: Blatt über der Tastatur halten
+  if (window.visualViewport) {
+    const anpassen = () => { const vv = window.visualViewport; $("blatt").style.bottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop) + "px"; };
+    visualViewport.addEventListener("resize", anpassen); visualViewport.addEventListener("scroll", anpassen);
+  }
 
   // ---------- Kamera und Erkennung ----------
   function ladeSkript(src) {
     return new Promise((ok, fehler) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fehler; document.head.appendChild(s); });
   }
-  let skripteGeladen = false;
+  let skripteGeladen = false, sichtbar = null, wwSichtbar = false, pfeile = [];
 
   // Resize-Listener, die MindAR anmeldet, mitschreiben – beim Schließen wieder entfernen
   let resizeListener = [];
@@ -147,15 +268,15 @@
 
   function pfeilKomponente() {
     if (AFRAME.components["boden-pfeil"]) return;
-    // Flacher Pfeil, der auf dem Boden liegt und von der Mitte des Aufklebers weg zeigt
+    // Flacher Pfeil, der hinter dem Aufkleber auf dem Boden liegt
     AFRAME.registerComponent("boden-pfeil", {
       init: function () {
         const T = AFRAME.THREE, f = new T.Shape();
-        const sb = 0.09, sl = 0.38, kb = 0.26, kl = 0.32;   // Schaft- und Kopfmaße (Aufkleber = 1 breit)
+        const sb = 0.13, sl = 1.15, kb = 0.36, kl = 0.5;   // Schaft- und Kopfmaße (Aufkleber = 1 breit)
         f.moveTo(-sb, 0); f.lineTo(sb, 0); f.lineTo(sb, sl); f.lineTo(kb, sl); f.lineTo(0, sl + kl);
         f.lineTo(-kb, sl); f.lineTo(-sb, sl); f.lineTo(-sb, 0);
         const g = new T.ExtrudeGeometry(f, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 3 });
-        const m = new T.MeshStandardMaterial({ color: 0x0088FF, roughness: 0.45, metalness: 0.05, emissive: 0x003b70, emissiveIntensity: 0.25 });
+        const m = new T.MeshStandardMaterial({ color: 0xf47b20, roughness: 0.5, metalness: 0.0, emissive: 0x7a3300, emissiveIntensity: 0.25 });
         this.el.setObject3D("mesh", new T.Mesh(g, m));
       },
       remove: function () { this.el.removeObject3D("mesh"); }
@@ -163,29 +284,21 @@
   }
 
   function label(t) { $("arLabel").textContent = t; $("arLabel").hidden = !t; }
-  function sucheText() { return erledigt < N ? "Station " + (erledigt + 1) + ": Aufkleber suchen" : ""; }
-
-  function blattZeigen(i) {
-    const s = st[i];
-    $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
-    $("blattNr").textContent = "Station " + (i + 1) + " von " + N;
-    $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
-    $("blattWeiter").textContent = i === N - 1 ? "Abschließen" : "Weiter";
-    $("blatt").scrollTop = 0; $("blatt").classList.add("offen");
-    $("arSchliessen").hidden = true; label("");
+  function sucheText() { return stand.erledigt < N ? "Station " + (stand.erledigt + 1) + ": Suche den Aufkleber" : ""; }
+  // Wird eine Weile nichts erkannt: Tipp zur Haltung
+  let tippTimer = null;
+  function tippPlanen() {
+    clearTimeout(tippTimer);
+    tippTimer = setTimeout(() => {
+      if (!$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N)
+        label("Halte das iPhone direkt über den Aufkleber");
+    }, 7000);
   }
-  $("blattWeiter").addEventListener("click", () => {
-    $("blatt").classList.remove("offen"); $("arSchliessen").hidden = false;
-    if (erledigt >= N) { arBeenden(); return; }
-    label(sichtbar !== null && sichtbar < erledigt ? "Folgen Sie dem Pfeil zu Station " + (erledigt + 1) : sucheText());
-  });
-
-  let sichtbar = null; // Index des gerade erkannten Aufklebers
 
   async function arStarten() {
     $("fehler").hidden = true;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      fehler("Hier ist die Kamera nicht verfügbar. Bitte öffnen Sie die Seite in Safari.");
+      fehler("Hier geht die Kamera nicht. Öffne die Seite bitte in Safari.");
       return;
     }
     $("start").disabled = true; $("start").textContent = "Wird geladen …";
@@ -196,21 +309,28 @@
         skripteGeladen = true;
       }
     } catch (e) {
-      fehler("Die Seite konnte nicht vollständig geladen werden. Bitte prüfen Sie die Internetverbindung.");
+      fehler("Die Seite ist nicht ganz geladen. Prüfe das Internet und versuche es noch einmal.");
       startZurueck(); return;
     }
     pfeilKomponente();
-    $("ar").hidden = false; $("arSchliessen").hidden = false; label(sucheText());
+    $("ar").hidden = false; $("arSchliessen").hidden = false; label(sucheText()); tippPlanen();
 
     let anker = "";
     for (let i = 0; i < N; i++) {
       const pfeil = i < N - 1
         ? `<a-entity rotation="0 0 ${-(st[i].richtung || 0)}"><a-entity class="pfeil" visible="false" position="0 0.6 0.02"
-             animation="property: position; from: 0 0.6 0.02; to: 0 0.78 0.02; dir: alternate; loop: true; dur: 650; easing: easeInOutSine">
+             animation="property: position; from: 0 0.6 0.02; to: 0 0.85 0.02; dir: alternate; loop: true; dur: 650; easing: easeInOutSine">
              <a-entity boden-pfeil></a-entity></a-entity></a-entity>`
         : "";
       anker += `<a-entity class="anker" data-i="${i}" mindar-image-target="targetIndex: ${i}">${pfeil}</a-entity>`;
     }
+    // Wegweiser: Bilder nach den Stationen, zeigen nur den Pfeil
+    WW.forEach((w, j) => {
+      anker += `<a-entity class="anker-ww" data-j="${j}" mindar-image-target="targetIndex: ${N + j}">
+        <a-entity rotation="0 0 ${-(w.richtung || 0)}"><a-entity class="pfeil" visible="false" position="0 0.6 0.02"
+          animation="property: position; from: 0 0.6 0.02; to: 0 0.85 0.02; dir: alternate; loop: true; dur: 650; easing: easeInOutSine">
+          <a-entity boden-pfeil></a-entity></a-entity></a-entity></a-entity>`;
+    });
     $("kamera").innerHTML = `
       <a-scene mindar-image="imageTargetSrc: targets/stationen.mind; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.0001; filterBeta: 0.001"
                color-space="sRGB" renderer="colorManagement: true; antialias: true" vr-mode-ui="enabled: false" xr-mode-ui="enabled: false"
@@ -222,33 +342,57 @@
       </a-scene>`;
 
     const szene = $("kamera").querySelector("a-scene");
+    pfeile = [];
     szene.querySelectorAll(".anker").forEach(a => {
       const i = Number(a.dataset.i), pfeil = a.querySelector(".pfeil");
+      pfeile[i] = pfeil;
       a.addEventListener("targetFound", () => {
         sichtbar = i;
-        if (i === erledigt) {                       // die gesuchte Station
-          erledigt++; speichern(); zeigen();
-          if (pfeil) pfeil.setAttribute("visible", true);
+        if (blattOffen()) {                         // Frage ist gerade offen
+          if (i === aktiveStation && i < stand.erledigt && pfeil) pfeil.setAttribute("visible", true);
+          return;
+        }
+        if (i === stand.erledigt) {                 // die gesuchte Station: Info und Frage
           if (navigator.vibrate) navigator.vibrate(30);
           blattZeigen(i);
-        } else if (i < erledigt) {                  // schon besucht: Weg noch einmal zeigen
+        } else if (i < stand.erledigt) {            // schon geschafft: Weg noch einmal zeigen
           if (pfeil) pfeil.setAttribute("visible", true);
-          if (!$("blatt").classList.contains("offen"))
-            label(erledigt < N ? "Folgen Sie dem Pfeil zu Station " + (erledigt + 1) : "Station " + (i + 1) + " – schon besucht");
+          label(stand.erledigt < N ? "Folge dem Pfeil zu Station " + (stand.erledigt + 1) : "Station " + (i + 1) + " hast du schon geschafft.");
         } else {                                    // zu weit vorne
-          if (!$("blatt").classList.contains("offen"))
-            label("Das ist Station " + (i + 1) + ". Bitte zuerst Station " + (erledigt + 1) + ".");
+          label("Das ist Station " + (i + 1) + ". Suche zuerst Station " + (stand.erledigt + 1) + ".");
         }
       });
       a.addEventListener("targetLost", () => {
         if (sichtbar === i) sichtbar = null;
         if (pfeil) pfeil.setAttribute("visible", false);
-        if (!$("blatt").classList.contains("offen")) label(sucheText());
+        if (!blattOffen()) { label(sucheText()); tippPlanen(); }
+      });
+    });
+    szene.querySelectorAll(".anker-ww").forEach(a => {
+      const j = Number(a.dataset.j), nach = WW[j].nach, pfeil = a.querySelector(".pfeil");
+      a.addEventListener("targetFound", () => {
+        wwSichtbar = true;
+        if (blattOffen()) return;
+        if (stand.erledigt === nach - 1) {          // genau auf diesem Weg: Pfeil zeigen
+          pfeil.setAttribute("visible", true);
+          label("Folge dem Pfeil zu Station " + nach);
+        } else if (stand.erledigt >= N) {
+          label("Du hast schon alle Stationen geschafft.");
+        } else if (nach - 1 < stand.erledigt) {     // Weg schon geschafft
+          label("Diesen Weg kennst du schon. Suche Station " + (stand.erledigt + 1) + ".");
+        } else {                                    // Weg kommt erst später
+          label("Hier geht es später weiter. Suche zuerst Station " + (stand.erledigt + 1) + ".");
+        }
+      });
+      a.addEventListener("targetLost", () => {
+        wwSichtbar = false;
+        pfeil.setAttribute("visible", false);
+        if (!blattOffen()) { label(sucheText()); tippPlanen(); }
       });
     });
     szene.addEventListener("arError", () => {
       arBeenden();
-      fehler("Die Kamera ließ sich nicht starten. Tippen Sie in der Adressleiste auf „aA“ › Website-Einstellungen › Kamera › Erlauben und laden Sie die Seite neu.");
+      fehler("Die Kamera startet nicht. Tippe oben in der Adressleiste auf „aA“ › Website-Einstellungen › Kamera › Erlauben. Lade die Seite dann neu.");
     });
     startZurueck();
   }
@@ -264,7 +408,7 @@
       document.querySelectorAll("video").forEach(v => { try { v.srcObject && v.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {} v.remove(); });
       szene.remove();
     }
-    $("kamera").innerHTML = ""; $("blatt").classList.remove("offen"); sichtbar = null;
+    $("kamera").innerHTML = ""; $("blatt").classList.remove("offen"); sichtbar = null; wwSichtbar = false; aktiveStation = -1; pfeile = [];
     $("ar").hidden = true; window.scrollTo(0, 0);
   }
 

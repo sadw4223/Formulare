@@ -1,39 +1,94 @@
 // Inhalte der Schnitzeljagd – hier werden alle Stationen gepflegt, in der Reihenfolge des Rundgangs.
+// Zielgruppe: künftige Schulkinder (du-Form, kurze Sätze).
 //
 // ort        Name des Raums (Überschrift der Infokarte)
 // text       Infotext, der nach dem Scannen erscheint
 // bild       Foto des Raums (Ordner „bilder“), Querformat 3:2
-// suchen     kurzer Hinweis, wo der Aufkleber dieser Station liegt (erscheint, solange man ihn sucht)
-// richtung   Richtung des Pfeils in Grad, im Uhrzeigersinn ab der blauen Spitze des Aufklebers.
-//            0 = geradeaus (Normalfall: Aufkleber so kleben, dass die Spitze in Laufrichtung zeigt),
-//            90 = rechts, 180 = zurück, 270 = links. Die letzte Station hat keinen Pfeil.
+// suchen     kurzer Hinweis, wo der Aufkleber dieser Station liegt
+// richtung   (selten nötig) Pfeil in Grad gegenüber dem Rückseiten-Pfeil drehen, im Uhrzeigersinn:
+//            0 = wie auf der Rückseite (Normalfall), 90 = rechts, 180 = zurück, 270 = links. Die letzte Station hat keinen Pfeil.
+// frage      Frage zur Station. Zwei Arten:
+//            Auswahl:  { text: "…", auswahl: ["A", "B", "C"], richtig: "B" }
+//            Eingabe:  { text: "…", antwort: ["Lernbüro", "Lernbuero"] }   (Groß-/Kleinschreibung egal; mehrere Schreibweisen möglich)
+//            Nach zwei falschen Versuchen wird die richtige Antwort gezeigt, damit niemand hängen bleibt.
 //
-// Die Bilder für die Kamera-Erkennung liegen in „targets“ (station1.png …) und sind
-// zusammen in „targets/stationen.mind“ übersetzt. Neue Station = neues Bild + neu übersetzen.
+// WEGWEISER (kleine Aufkleber mit orangem Rand, für Wand oder Boden): Beim Scannen erscheint nur der Pfeil,
+// und zwar nur, wenn das Kind gerade auf dem Weg zu dieser Station ist. Der Pfeil zeigt immer in die Richtung,
+// die beim Befestigen der Pfeil auf der Rückseite angegeben hat.
+//   { nach: 2, wo: "Treppe zum 1. Stock" }   nach = Nummer der Station, zu der er führt; wo = nur für dich (steht auf dem Druckblatt)
+//
+// Nach jeder Änderung an Stationen oder Wegweisern: python3 bauen.py <ordner schnitzeljagd>
+// (erzeugt die Bilder in „targets“, die Erkennungsdatei „targets/stationen.mind“ und das Druck-PDF).
 
 const SCHNITZELJAGD = {
-  start: "Willkommen am Lerncampus Wascherde! Folgen Sie den runden Aufklebern auf dem Boden – an jeder Station erfahren Sie etwas über unsere Schule.",
-  ende: "Sie haben alle Stationen besucht. Vielen Dank für Ihren Besuch – bei Fragen sprechen Sie uns gern an.",
+  start: "Folge den runden Aufklebern durch die Schule. An jeder Station lernst du einen Raum kennen. Die Antwort auf die Frage findest du vor Ort heraus.",
+  ende: "Du hast alle Stationen gefunden. Zeige diesen Bildschirm hier am Eingang, dann bekommst du deine kleine Überraschung.",
   stationen: [
-    { // BEISPIEL
-      ort: "Haupteingang",
-      text: "Willkommen! Hier beginnt der Rundgang durch den Lerncampus. Der Pfeil zeigt Ihnen den Weg zur nächsten Station.",
+    {
+      ort: "Eingangsbereich",
+      text: "Willkommen an der Wascherde. Hier kommst du jeden Morgen an. Im Lerncampus lernen die Kinder aus Jahrgang 5 und 6, bald auch du.",
       bild: "bilder/station1.jpg",
       suchen: "Der erste Aufkleber liegt direkt am Eingang.",
-      richtung: 0
+      frage: { text: "Frage ein Schulkind: Was zeigt die Farbe des Schlüsselbands?", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man schon übernimmt", "Die Klasse"], richtig: "Wie viel Verantwortung man schon übernimmt" }
     },
-    { // BEISPIEL
-      ort: "Lernbüro",
-      text: "Im Lernbüro arbeiten die Kinder selbstständig an ihren Aufgaben. Lernbegleiterinnen und Lernbegleiter unterstützen sie dabei.",
+    {
+      ort: "Kunst- und Musikraum",
+      text: "Hier wird gemalt, gebaut und Musik gemacht. In Projekten wählst du selbst, was dich interessiert.",
       bild: "bilder/station2.jpg",
-      suchen: "Folgen Sie dem Pfeil. Der nächste Aufkleber liegt vor dem Lernbüro.",
-      richtung: 0
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt beim Kunst- und Musikraum.",
+      frage: { text: "Frage hier nach: Wie heißt die Bläser-AG der Wascherde?", antwort: ["WaschBlech", "Wasch Blech", "Waschblech AG"] }
     },
-    { // BEISPIEL
-      ort: "Aula",
-      text: "In der Aula kommen alle zusammen – zu Versammlungen, Aufführungen und Festen.",
+    {
+      ort: "Mensa",
+      text: "In der Mensa gibt es Mittagessen. Auch in der Pause ist hier einiges los.",
       bild: "bilder/station3.jpg",
-      suchen: "Folgen Sie dem Pfeil. Der letzte Aufkleber liegt in der Aula."
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt in der Mensa.",
+      frage: { text: "Frage ein Schulkind: Was darf man in der Pause in der Mensa machen?", auswahl: ["Fußball spielen", "Essen, Karten spielen und sich unterhalten", "Schlafen"], richtig: "Essen, Karten spielen und sich unterhalten" }
+    },
+    {
+      ort: "Naturwissenschaften",
+      text: "In diesem Raum wird geforscht und experimentiert. Hier gibt es Dinge, die du in keinem anderen Raum findest.",
+      bild: "bilder/station4.jpg",
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt bei den Naturwissenschaften.",
+      frage: { text: "Frage hier nach: Um welche Tiere kümmert sich eine AG an unserer Schule?", antwort: ["Bienen", "Biene", "Honigbienen"] }
+    },
+    {
+      ort: "Lernwelt",
+      text: "Die Lernwelt sieht ganz anders aus als ein Klassenzimmer. Hier arbeiten Kinder zusammen.",
+      bild: "bilder/station5.jpg",
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt in der Lernwelt.",
+      frage: { text: "Schaue dich um: Worauf kann man in der Lernwelt sitzen?", auswahl: ["Nur auf Holzstühlen", "Auf Schaukeln", "Auf Sofas und Sitzkissen"], richtig: "Auf Sofas und Sitzkissen" }
+    },
+    {
+      ort: "Lernflur",
+      text: "Auch auf dem Flur wird gelernt. Hier findest du einen Platz, der zu dir passt.",
+      bild: "bilder/station6.jpg",
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt im Lernflur.",
+      frage: { text: "Frage ein Schulkind: Wann darf man im Flur arbeiten?", auswahl: ["In der Pause", "In der Lernzeit", "Nach der Schule"], richtig: "In der Lernzeit" }
+    },
+    {
+      ort: "Lernbüro",
+      text: "Im Lernbüro arbeitest du an deinen Aufgaben, jedes Kind an seinem eigenen Platz. Bevor du hineingehst, machst du etwas, das es an anderen Schulen selten gibt.",
+      bild: "bilder/station7.jpg",
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt vor dem Lernbüro.",
+      frage: { text: "Schaue dich vor der Glastür um: Was ziehen die Kinder an, bevor sie ins Lernbüro gehen?", antwort: ["Hausschuhe", "Hausschuh", "Puschen", "Pantoffeln", "Schlappen"] }
+    },
+    {
+      ort: "Inputräume",
+      text: "In den Inputräumen erklärt dir eine Lehrkraft Neues, zusammen mit deiner Lerngruppe. Für jedes Hauptfach gibt es einen eigenen Raum.",
+      bild: "bilder/station8.jpg",
+      suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt bei den Inputräumen.",
+      frage: { text: "Schaue auf die Türschilder: Für welche Fächer gibt es Inputräume?", auswahl: ["Sport, Kunst und Musik", "Deutsch, Mathe und Englisch", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
+    },
+    {
+      ort: "Eingangsbereich",
+      text: "Du bist wieder am Anfang. Jetzt kennst du die wichtigsten Räume des Lerncampus. Zum Schluss wartet hier eine kleine Überraschung auf dich.",
+      bild: "bilder/station9.jpg",
+      suchen: "Folge dem Pfeil zurück zum Eingang. Dort liegt der letzte Aufkleber."
     }
+  ],
+  wegweiser: [
+    { nach: 2, wo: "BEISPIEL: Treppe zum Kunst- und Musikraum" },
+    { nach: 4, wo: "BEISPIEL: Flur zu den Naturwissenschaften" }
   ]
 };
