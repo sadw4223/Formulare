@@ -56,6 +56,9 @@
   #ar { position: fixed; inset: 0; background: #000; z-index: 10; }
   #kamera { position: absolute; inset: 0; overflow: hidden; }
   #arLabel { position: absolute; z-index: 20; top: max(16px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); width: max-content; background: var(--tinte); color: #fff; border-radius: 12px; padding: 10px 16px; font-size: 15px; font-weight: 500; text-align: center; }
+  /* Kompass-Pfeil: zeigt weiter die Richtung, wenn der Aufkleber nicht mehr im Bild ist */
+  #kompass { position: absolute; z-index: 20; left: 50%; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 74px); width: 132px; height: 132px; margin-left: -66px; border-radius: 50%; background: var(--grund); border: 2px solid var(--linie); }
+  #kompass svg { width: 100%; height: 100%; transition: transform .12s linear; }
   #arSchliessen { position: absolute; z-index: 20; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); width: auto; background: var(--grund); color: var(--tinte); }
 
   /* halbhohes Blatt mit Infos und Frage */
@@ -119,6 +122,9 @@
 <div id="ar" hidden>
   <div id="kamera"></div>
   <div id="arLabel"></div>
+  <div id="kompass" hidden aria-hidden="true">
+    <svg viewBox="-50 -50 100 100"><path d="M0 -38 L24 -6 H9 V36 H-9 V-6 H-24 Z" fill="#f47b20"/></svg>
+  </div>
   <button class="taste" id="arSchliessen">Schließen</button>
   <div id="blatt" role="dialog">
     <div class="griff"></div>
@@ -254,6 +260,7 @@ window.schnitzeljagdStarten = function () {
 
   // ---------- halbhohes Blatt ----------
   function blattZeigen(i) {
+    kompassZiel = null; $("kompass").hidden = true;
     const s = st[i]; aktiveStation = i;
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
@@ -305,19 +312,74 @@ window.schnitzeljagdStarten = function () {
   }
 
   function label(t) { $("arLabel").textContent = t; $("arLabel").hidden = !t; }
-  function sucheText() { return stand.erledigt < N ? (stand.erledigt === 0 ? "Suche den ersten Aufkleber" : "Suche den nächsten Aufkleber") : ""; }
+  function sucheText() {
+    if (kompassZiel && stand.erledigt < N) return "Folge dem Pfeil";
+    return stand.erledigt < N ? (stand.erledigt === 0 ? "Suche den ersten Aufkleber" : "Suche den nächsten Aufkleber") : "";
+  }
+
+  // ---------- Kompass-Pfeil ----------
+  // Solange ein Pfeil in der Kamera zu sehen ist, merkt sich die Seite seine Richtung im Raum
+  // (über die Lage des iPhones). Ist der Aufkleber weg, zeigt ein Pfeil unten weiter in diese Richtung
+  // und dreht sich mit, wenn sich das Kind dreht. Gilt nur für die Richtung, nicht für die Entfernung.
+  let lage = null, kompassZiel = null, kompassTimer = null;
+  function drehe(o, v) {            // Gerät → Raum (W3C: R = Rz(alpha) · Rx(beta) · Ry(gamma))
+    const r = Math.PI / 180, a = o.a * r, b = o.b * r, g = o.g * r;
+    let [x, y, z] = v;
+    [x, z] = [Math.cos(g) * x + Math.sin(g) * z, -Math.sin(g) * x + Math.cos(g) * z];   // Ry
+    [y, z] = [Math.cos(b) * y - Math.sin(b) * z, Math.sin(b) * y + Math.cos(b) * z];    // Rx
+    [x, y] = [Math.cos(a) * x - Math.sin(a) * y, Math.sin(a) * x + Math.cos(a) * y];    // Rz
+    return [x, y, z];
+  }
+  function lageMerken(e) {
+    if (e.alpha === null) return;
+    lage = { a: e.alpha, b: e.beta, g: e.gamma };
+    kompassZeigen();
+  }
+  function lageErlauben() {         // iPhone/iPad fragt einmal nach – muss direkt beim Tippen passieren
+    window.addEventListener("deviceorientation", lageMerken);   // Daten kommen erst, wenn erlaubt
+    try {
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function")
+        DeviceOrientationEvent.requestPermission().catch(() => {});
+    } catch (e) {}
+  }
+  function bildschirm(v) {          // Bildschirm → Gerät (iPad/iPhone quer gehalten)
+    const w = -((screen.orientation && screen.orientation.angle) || window.orientation || 0) * Math.PI / 180;
+    return [Math.cos(w) * v[0] - Math.sin(w) * v[1], Math.sin(w) * v[0] + Math.cos(w) * v[1], v[2]];
+  }
+  function richtungMerken() {       // läuft, solange die Kamera an ist
+    if (!lage || blattOffen()) return;
+    const T = AFRAME.THREE;
+    for (const p of document.querySelectorAll("#kamera .pfeil")) {
+      if (!p.object3D || !p.object3D.visible || !p.parentEl.parentEl.object3D.visible) continue;
+      const v = new T.Vector3(0, 1, 0).transformDirection(p.object3D.matrixWorld);   // Pfeilrichtung, Kamera = Gerät
+      const w = drehe(lage, bildschirm([v.x, v.y, v.z])), l = Math.hypot(w[0], w[1]);
+      if (l > 0.35) kompassZiel = [w[0] / l, w[1] / l];                             // nur die Richtung am Boden
+    }
+  }
+  function kompassZeigen() {
+    const zeigen = kompassZiel && lage && !$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N;
+    $("kompass").hidden = !zeigen;
+    if (!zeigen) return;
+    // Blickrichtung waagerecht: Kamera nach vorn (iPhone aufrecht) plus Oberkante (iPhone flach)
+    const v = drehe(lage, [0, 0, -1]), o = drehe(lage, bildschirm([0, 1, 0]));
+    let fx = v[0] + o[0], fy = v[1] + o[1]; const l = Math.hypot(fx, fy); if (l < 1e-3) return; fx /= l; fy /= l;
+    const [zx, zy] = kompassZiel;
+    const winkel = Math.atan2(fx * zy - fy * zx, fx * zx + fy * zy) * 180 / Math.PI;      // links positiv
+    $("kompass").querySelector("svg").style.transform = "rotate(" + (-winkel) + "deg)";
+  }
   // Wird eine Weile nichts erkannt: Tipp zur Haltung
   let tippTimer = null;
   function tippPlanen() {
     clearTimeout(tippTimer);
     tippTimer = setTimeout(() => {
-      if (!$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N)
+      if (!$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N && !kompassZiel)
         label("Halte die Kamera über den Aufkleber");
     }, 7000);
   }
 
   async function arStarten() {
     $("fehler").hidden = true;
+    if (!lageErfragt) { lageErfragt = true; lageErlauben(); }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       fehler("Hier geht die Kamera nicht. Öffne die Seite in Safari.");
       return;
@@ -407,8 +469,11 @@ window.schnitzeljagdStarten = function () {
       arBeenden();
       fehler("Die Kamera startet nicht. Tippe oben in der Adressleiste auf „aA“ › Website-Einstellungen › Kamera › Erlauben. Lade die Seite dann neu.");
     });
+    clearInterval(kompassTimer);
+    kompassTimer = setInterval(() => { richtungMerken(); kompassZeigen(); }, 150);
     startZurueck();
   }
+  let lageErfragt = false;
 
   function startZurueck() { $("start").disabled = false; $("start").textContent = startText(); }
   function fehler(t) { $("fehler").hidden = false; $("fehler").textContent = t; }
@@ -422,6 +487,7 @@ window.schnitzeljagdStarten = function () {
       szene.remove();
     }
     $("kamera").innerHTML = ""; $("blatt").classList.remove("offen"); sichtbar = null; wwSichtbar = false; aktiveStation = -1; pfeile = [];
+    clearInterval(kompassTimer); $("kompass").hidden = true;
     $("ar").hidden = true; window.scrollTo(0, 0);
   }
 
