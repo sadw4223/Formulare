@@ -45,6 +45,7 @@
   .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
+  .taste.neben { background: var(--flaeche); color: var(--tinte); border: 1px solid var(--linie); margin-top: 24px; }
   .fehler { color: var(--tinte); font-size: 15px; font-weight: 500; margin: 12px 0 0; padding: 12px 16px; background: var(--flaeche); border-radius: 12px; }
   h2 { font-size: 22px; font-weight: 700; color: var(--tinte); margin: 40px 0 12px; }
   .leise { background: none; border: 0; font: inherit; font-size: 15px; font-weight: 500; color: var(--tinte); text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: 3px; padding: 12px 0; cursor: pointer; }
@@ -113,7 +114,7 @@
   <section id="besucht" hidden>
     <h2>Deine Stationen</h2>
     <ul class="liste" id="karten"></ul>
-    <button class="leise" id="neu" hidden>Von vorn beginnen</button>
+    <button class="taste neben" id="neu" hidden>Neu starten</button>
   </section>
 </main>
 
@@ -182,7 +183,7 @@ window.schnitzeljagdStarten = function () {
       $("start").textContent = startText();
     }
     $("besucht").hidden = e === 0;
-    $("neu").hidden = !fertig;   // „Von vorn“ nur am Ende, damit niemand aus Versehen alles löscht
+    $("neu").hidden = e === 0;   // Neustart jederzeit möglich; „Rückgängig“ fängt ein versehentliches Tippen ab
     let html = "";
     for (let i = 0; i < e; i++) {
       const s = st[i], ok = (stand.ersterVersuch || [])[i];
@@ -197,7 +198,7 @@ window.schnitzeljagdStarten = function () {
   // Von vorn beginnen – sofort ausführen, kurz „Rückgängig“ anbieten
   let vorher = null, rueckTimer = null;
   $("neu").addEventListener("click", () => {
-    vorher = JSON.parse(JSON.stringify(stand)); stand = { erledigt: 0, antworten: [] }; speichern(); zeigen(); window.scrollTo(0, 0);
+    vorher = JSON.parse(JSON.stringify(stand)); stand = { erledigt: 0, antworten: [] }; kompassZiel = null; speichern(); zeigen(); window.scrollTo(0, 0);
     $("rueck").hidden = false; clearTimeout(rueckTimer); rueckTimer = setTimeout(() => $("rueck").hidden = true, 6000);
   });
   $("rueckBtn").addEventListener("click", () => { if (vorher) { stand = vorher; speichern(); zeigen(); } $("rueck").hidden = true; });
