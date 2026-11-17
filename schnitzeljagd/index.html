@@ -135,6 +135,7 @@
   <div id="kamera"></div>
   <div id="arLabel"></div>
   <div id="kompass" hidden aria-hidden="true">
+    <svg viewBox="-50 -50 100 100" id="kompassPunkte"></svg>
     <svg class="pfeil-svg" viewBox="-50 -50 100 100"><path d="M0 -38 L24 -6 H9 V36 H-9 V-6 H-24 Z" fill="#f47b20"/></svg>
   </div>
   <!-- Countdown unter dem Kompass: der Balken wird in 30 Sekunden kürzer, dann verschwindet der Kompass -->
@@ -327,6 +328,11 @@ window.schnitzeljagdStarten = function () {
         [[0, 38], [24, 6], [9, 6], [9, -36], [-9, -36], [-9, 6], [-24, 6]].forEach(([x, y], n) => n ? f.lineTo(x * k, y * k) : f.moveTo(x * k, y * k));
         f.closePath();
         const pfeil = new T.Mesh(new T.ShapeGeometry(f), flach(0xf47b20)); pfeil.position.z = 0.004;
+        const punktForm = new T.CircleGeometry(2.4 * k, 20), punktFarbe = flach(0xc3ceda);
+        for (let i = 0; i < 12; i++) {
+          const pt = new T.Mesh(punktForm, punktFarbe), w = i * Math.PI / 6;
+          pt.position.set(Math.sin(w) * 44 * k, Math.cos(w) * 44 * k, 0.003); gruppe.add(pt);
+        }
         gruppe.add(scheibe, rand, pfeil);
         this.el.setObject3D("mesh", gruppe);
       },
@@ -346,12 +352,17 @@ window.schnitzeljagdStarten = function () {
   // und dreht sich mit, wenn sich das Kind dreht. Gilt nur für die Richtung, nicht für die Entfernung.
   let lage = null, kompassZiel = null, kompassTimer = null, proben = [], kompassZeit = 0, letzteLage = null, kompassAn = false;
   let sollWinkel = null, istWinkel = null;
+  let glatt = null, glattZeit = 0, raste = null;            // geglättete Richtung und eingerastete Stellung (0–11)
+  let altLage = null, altLageZeit = 0, drehTempo = 0;     // wie schnell sich das Gerät gerade dreht (Grad/s)
+  document.getElementById("kompassPunkte").innerHTML = Array.from({ length: 12 }, (_, i) => {
+    const w = i * Math.PI / 6; return `<circle cx="${(Math.sin(w) * 44).toFixed(2)}" cy="${(-Math.cos(w) * 44).toFixed(2)}" r="2.4" fill="#c3ceda"/>`;
+  }).join("");
   // Pfeil weich nachführen (60-mal pro Sekunde), immer über den kürzeren Weg drehen – kein Springen, kein Kreiseln
   (function nachfuehren() {
     if (kompassAn && sollWinkel !== null) {
       if (istWinkel === null) istWinkel = sollWinkel;
       const d = ((sollWinkel - istWinkel) % 360 + 540) % 360 - 180;
-      istWinkel += d * 0.2;
+      istWinkel += Math.abs(d) < 0.3 ? d : d * 0.25;
       $("kompass").querySelector(".pfeil-svg").style.transform = "rotate(" + istWinkel.toFixed(1) + "deg)";
     }
     requestAnimationFrame(nachfuehren);
@@ -368,6 +379,15 @@ window.schnitzeljagdStarten = function () {
   function lageMerken(e) {
     if (e.alpha === null) return;
     lage = { a: e.alpha, b: e.beta, g: e.gamma };
+    const jetzt = performance.now();
+    if (altLage && jetzt - altLageZeit > 30) {
+      // Winkel zwischen alter und neuer Lage (über zwei Achsen des Geräts)
+      const z1 = drehe(altLage, [0, 0, 1]), z2 = drehe(lage, [0, 0, 1]), y1 = drehe(altLage, [0, 1, 0]), y2 = drehe(lage, [0, 1, 0]);
+      const wz = Math.acos(Math.min(1, z1[0] * z2[0] + z1[1] * z2[1] + z1[2] * z2[2])), wy = Math.acos(Math.min(1, y1[0] * y2[0] + y1[1] * y2[1] + y1[2] * y2[2]));
+      const tempo = Math.max(wz, wy) * 180 / Math.PI / ((jetzt - altLageZeit) / 1000);
+      drehTempo = drehTempo * 0.6 + tempo * 0.4;
+      altLage = lage; altLageZeit = jetzt;
+    } else if (!altLage) { altLage = lage; altLageZeit = jetzt; }
     kompassZeigen();
   }
   function lageErlauben() {         // iPhone/iPad fragt einmal nach – muss direkt beim Tippen passieren
@@ -394,6 +414,8 @@ window.schnitzeljagdStarten = function () {
       const blick = new T.Vector3(0, 0, 0).applyMatrix4(p.object3D.matrixWorld).normalize();
       const frontal = Math.abs(n.dot(blick));
       if (frontal < 0.3) continue;
+      // Beim Drehen hinkt das Kamerabild dem Lagesensor hinterher → nur ruhige Momente zählen
+      if (drehTempo > 25) continue;
       const jetzt = Date.now();
       proben.push({ t: jetzt, x: w[0] / l, y: w[1] / l, g: frontal * frontal });
       proben = proben.filter(p => jetzt - p.t < 2000);
@@ -424,7 +446,7 @@ window.schnitzeljagdStarten = function () {
     const zeigen = kompassZiel && lage && !$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N;
     const k = $("kompass");
     if (zeigen && !kompassAn) {
-      k.hidden = false; istWinkel = null;
+      k.hidden = false; istWinkel = null; glatt = null; raste = null;
       // Von der letzten Stelle der Scheibe zur Kompass-Position gleiten
       if (letzteLage && Date.now() - letzteLage.t < 1500) {
         const z = k.getBoundingClientRect(), s = Math.max(0.2, letzteLage.d / z.width);
@@ -443,7 +465,22 @@ window.schnitzeljagdStarten = function () {
     let fx = v[0] + o[0], fy = v[1] + o[1]; const l = Math.hypot(fx, fy); if (l < 1e-3) return; fx /= l; fy /= l;
     const [zx, zy] = kompassZiel;
     const winkel = Math.atan2(fx * zy - fy * zx, fx * zx + fy * zy) * 180 / Math.PI;      // links positiv
-    sollWinkel = -winkel;
+    // 1. Messwerte glätten (Zeitkonstante ~0,35 s) – das Zittern des Sensors verschwindet
+    const t = performance.now(), roh = -winkel * Math.PI / 180;
+    if (!glatt) glatt = [Math.cos(roh), Math.sin(roh)];
+    else {
+      const q = 1 - Math.exp(-Math.min(500, t - glattZeit) / 350);
+      glatt = [glatt[0] + (Math.cos(roh) - glatt[0]) * q, glatt[1] + (Math.sin(roh) - glatt[1]) * q];
+    }
+    glattZeit = t;
+    const a = Math.atan2(glatt[1], glatt[0]) * 180 / Math.PI;
+    // 2. Auf 12 Stellungen einrasten (alle 30°); erst wechseln, wenn die Richtung deutlich drüber ist
+    if (raste === null) raste = ((Math.round(a / 30) % 12) + 12) % 12;
+    else {
+      const abw = ((a - raste * 30) % 360 + 540) % 360 - 180;
+      if (Math.abs(abw) > 15 + 8) raste = ((Math.round(a / 30) % 12) + 12) % 12;
+    }
+    sollWinkel = raste * 30;
     const rest = Math.max(0, 1 - (Date.now() - kompassZeit) / (KOMPASS_SEKUNDEN * 1000));
     $("kompassRest").style.width = (rest * 100).toFixed(1) + "%";
   }
