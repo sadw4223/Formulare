@@ -29,7 +29,8 @@
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
   .stand { font-size: 15px; font-weight: 500; color: var(--tinte); margin-bottom: 8px; }
-  .stand { margin-bottom: 16px; }
+  .balken { height: 6px; background: var(--linie); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+  .balken div { height: 100%; background: var(--logo-blau); border-radius: 3px; transition: width .4s; }
   .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
@@ -38,8 +39,7 @@
   h2 { font-size: 22px; font-weight: 700; color: var(--tinte); margin: 40px 0 12px; }
   .karte { background: var(--flaeche); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
   .karte img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; background: var(--linie); }
-  .karte .nr { font-size: 13px; font-weight: 500; margin: 12px 8px 0; }
-  .karte h3 { font-size: 20px; color: var(--tinte); margin: 2px 8px 4px; }
+  .karte h3 { font-size: 20px; color: var(--tinte); margin: 12px 8px 4px; }
   .karte p { margin: 0 8px 8px; }
   .karte .antwort { font-size: 15px; }
   .karte .antwort b { color: var(--tinte); font-weight: 500; }
@@ -59,8 +59,7 @@
   #blatt.offen { transform: none; }
   #blatt .griff { width: 36px; height: 5px; border-radius: 3px; background: var(--linie); margin: 0 auto 12px; }
   #blatt img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: 24vh; object-fit: cover; border-radius: 12px; background: var(--linie); }
-  #blatt .nr { font-size: 13px; font-weight: 500; margin: 16px 0 0; }
-  #blatt h3 { font-size: 24px; line-height: 1.2; color: var(--tinte); margin: 2px 0 8px; }
+  #blatt h3 { font-size: 24px; line-height: 1.2; color: var(--tinte); margin: 16px 0 8px; }
   #blatt p { margin: 0; }
   .frage { border-top: 1px solid var(--linie); margin-top: 16px; padding-top: 16px; }
   .frage .text { font-weight: 700; color: var(--tinte); margin-bottom: 12px; }
@@ -94,7 +93,7 @@
   <p class="lead" id="lead"></p>
 
   <div id="unterwegs">
-    <div class="stand" id="standText"></div>
+    <div class="balken"><div id="balken"></div></div>
     <button class="taste haupt" id="start">Schnitzeljagd starten</button>
     <p class="suchen" id="suchen"></p>
     <p class="fehler" id="fehler" hidden></p>
@@ -116,7 +115,6 @@
   <div id="blatt" role="dialog">
     <div class="griff"></div>
     <img id="blattBild" alt="">
-    <div class="nr" id="blattNr"></div>
     <h3 id="blattOrt"></h3>
     <p id="blattText"></p>
     <div class="frage" id="frageBox">
@@ -154,7 +152,6 @@ window.schnitzeljagdStarten = function () {
     $("lead").textContent = fertig ? daten.ende : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
     $("unterwegs").hidden = fertig;
     if (!fertig) {
-      $("standText").textContent = "Station " + (e + 1);
       $("start").textContent = startText();
       $("suchen").textContent = st[e].suchen || "Suche den nächsten runden Aufkleber auf dem Boden.";
     }
@@ -162,10 +159,11 @@ window.schnitzeljagdStarten = function () {
     let html = "";
     for (let i = e - 1; i >= 0; i--) {
       const s = st[i], a = stand.antworten[i];
-      html += `<div class="karte"><img src="${esc(s.bild)}" alt="${esc(s.ort)}" loading="lazy"><div class="nr">Station ${i + 1}</div><h3>${esc(s.ort)}</h3><p>${esc(s.text)}</p>`
+      html += `<div class="karte"><img src="${esc(s.bild)}" alt="${esc(s.ort)}" loading="lazy"><h3>${esc(s.ort)}</h3><p>${esc(s.text)}</p>`
             + (s.frage && a ? `<p class="antwort">Antwort: <b>${esc(a)}</b></p>` : "") + `</div>`;
     }
     $("karten").innerHTML = html;
+    $("balken").style.width = (e / N * 100) + "%";
   }
   zeigen();
 
@@ -246,7 +244,6 @@ window.schnitzeljagdStarten = function () {
   function blattZeigen(i) {
     const s = st[i]; aktiveStation = i;
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
-    $("blattNr").textContent = "Station " + (i + 1);
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
     frageAufbauen(i);
     $("blatt").scrollTop = 0; $("blatt").classList.add("offen");
@@ -256,7 +253,7 @@ window.schnitzeljagdStarten = function () {
   $("blattWeiter").addEventListener("click", () => {
     $("blatt").classList.remove("offen"); $("arSchliessen").hidden = false; aktiveStation = -1;
     if (stand.erledigt >= N) { arBeenden(); return; }
-    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil zu Station " + (stand.erledigt + 1) : sucheText()); tippPlanen();
+    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil zur nächsten Station" : sucheText()); tippPlanen();
   });
   // Tastatur auf dem iPhone: Blatt über der Tastatur halten
   if (window.visualViewport) {
@@ -296,7 +293,7 @@ window.schnitzeljagdStarten = function () {
   }
 
   function label(t) { $("arLabel").textContent = t; $("arLabel").hidden = !t; }
-  function sucheText() { return stand.erledigt < N ? "Station " + (stand.erledigt + 1) + ": Suche den Aufkleber" : ""; }
+  function sucheText() { return stand.erledigt < N ? (stand.erledigt === 0 ? "Suche den ersten Aufkleber" : "Suche den nächsten Aufkleber") : ""; }
   // Wird eine Weile nichts erkannt: Tipp zur Haltung
   let tippTimer = null;
   function tippPlanen() {
@@ -369,9 +366,9 @@ window.schnitzeljagdStarten = function () {
           blattZeigen(i);
         } else if (i < stand.erledigt) {            // schon geschafft: Weg noch einmal zeigen
           if (pfeil) pfeil.setAttribute("visible", true);
-          label(stand.erledigt < N ? "Folge dem Pfeil zu Station " + (stand.erledigt + 1) : "Station " + (i + 1) + " hast du schon geschafft");
+          label(stand.erledigt < N ? "Folge dem Pfeil zur nächsten Station" : "Diese Station hast du schon geschafft");
         } else {                                    // zu weit vorne
-          label("Das ist Station " + (i + 1) + ". Suche zuerst Station " + (stand.erledigt + 1));
+          label("Diese Station kommt später. Suche zuerst den nächsten Aufkleber");
         }
       });
       a.addEventListener("targetLost", () => {
