@@ -30,7 +30,7 @@ const SCHNITZELJAGD = {
       text: "Willkommen an der Wascherde. Hier kommen die Kinder jeden Morgen an. Im Lerncampus lernen die Jahrgänge 5 und 6.",
       bild: "bilder/station1.jpg",
       suchen: "Der erste Aufkleber liegt direkt am Eingang.",
-      frage: { text: "Die Kinder hier tragen ein Schlüsselband. Frage jemanden vom Lerncampus: Was zeigt seine Farbe?", wie: "fragen", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man schon übernimmt", "Die Klasse"], richtig: "Wie viel Verantwortung man schon übernimmt" }
+      frage: { text: "Die Kinder hier tragen ein Schlüsselband. Frage jemanden vom Lerncampus: Was zeigt seine Farbe?", wie: "fragen", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man hat", "Die Klasse"], richtig: "Wie viel Verantwortung man hat" }
     },
     {
       ort: "Kunst- und Musikraum",

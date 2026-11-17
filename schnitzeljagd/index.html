@@ -29,8 +29,7 @@
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
   .stand { font-size: 15px; font-weight: 500; color: var(--tinte); margin-bottom: 8px; }
-  .balken { height: 6px; background: var(--linie); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
-  .balken div { height: 100%; background: var(--logo-blau); border-radius: 3px; transition: width .4s; }
+  .stand { margin-bottom: 16px; }
   .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
@@ -96,8 +95,7 @@
 
   <div id="unterwegs">
     <div class="stand" id="standText"></div>
-    <div class="balken"><div id="balken"></div></div>
-    <button class="taste haupt" id="start">Kamera starten</button>
+    <button class="taste haupt" id="start">Schnitzeljagd starten</button>
     <p class="suchen" id="suchen"></p>
     <p class="fehler" id="fehler" hidden></p>
   </div>
@@ -147,16 +145,19 @@ window.schnitzeljagdStarten = function () {
   stand.erledigt = Math.min(N, stand.erledigt);
   function speichern() { try { localStorage.setItem(SCHLUESSEL, JSON.stringify(stand)); } catch (e) {} }
 
+  // Taste: beim ersten Mal „starten“, danach „fortsetzen“ (die Gesamtzahl der Stationen wird nirgends genannt)
+  function startText() { return stand.erledigt === 0 ? "Schnitzeljagd starten" : "Schnitzeljagd fortsetzen"; }
+
   function zeigen() {
     const e = stand.erledigt, fertig = e >= N;
     $("titel").textContent = fertig ? "Du hast es geschafft." : (e === 0 ? "Kennst du schon die Wascherde?" : "Wo geht es weiter?");
     $("lead").textContent = fertig ? daten.ende : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
     $("unterwegs").hidden = fertig;
     if (!fertig) {
-      $("standText").textContent = "Station " + (e + 1) + " von " + N;
+      $("standText").textContent = "Station " + (e + 1);
+      $("start").textContent = startText();
       $("suchen").textContent = st[e].suchen || "Suche den nächsten runden Aufkleber auf dem Boden.";
     }
-    $("balken").style.width = (e / N * 100) + "%";
     $("besucht").hidden = e === 0;
     let html = "";
     for (let i = e - 1; i >= 0; i--) {
@@ -245,7 +246,7 @@ window.schnitzeljagdStarten = function () {
   function blattZeigen(i) {
     const s = st[i]; aktiveStation = i;
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
-    $("blattNr").textContent = "Station " + (i + 1) + " von " + N;
+    $("blattNr").textContent = "Station " + (i + 1);
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
     frageAufbauen(i);
     $("blatt").scrollTop = 0; $("blatt").classList.add("offen");
@@ -400,7 +401,7 @@ window.schnitzeljagdStarten = function () {
     startZurueck();
   }
 
-  function startZurueck() { $("start").disabled = false; $("start").textContent = "Kamera starten"; }
+  function startZurueck() { $("start").disabled = false; $("start").textContent = startText(); }
   function fehler(t) { $("fehler").hidden = false; $("fehler").textContent = t; }
 
   function arBeenden() {
