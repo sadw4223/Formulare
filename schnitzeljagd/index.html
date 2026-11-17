@@ -250,7 +250,7 @@ window.schnitzeljagdStarten = function () {
     b.classList.toggle("wartet", geloest && !ok);
     const text = geloest && !ok ? "Schaue dich noch um" : (i === N - 1 ? "Ergebnis anzeigen" : "Weiter");
     if (b.textContent !== text) b.textContent = text;
-    const anteil = wartezeit(i) ? 1 - rest / wartezeit(i) : 1;
+    const anteil = wartezeit(i) ? 1 - rest / wartezeit(i) : 0;   // ohne Wartezeit: grau wie gewohnt
     b.style.setProperty("--fortschritt", (anteil * 100).toFixed(1) + "%");
     if (ok && sichtbar === i && pfeile[i]) pfeile[i].setAttribute("visible", true);   // jetzt erst den Weg freigeben
   }

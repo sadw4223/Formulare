@@ -35,6 +35,7 @@ const SCHNITZELJAGD = {
       ort: "Eingangsbereich",
       text: "Willkommen an der Wascherde. Hier beginnt jeder Schultag.",
       bild: "bilder/station1.jpg",
+      warten: 0,          // am ersten Checkpoint keine Wartezeit
       frage: { text: "Was zeigt die Farbe des Schlüsselbands?", wie: "fragen", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man hat", "Die Klasse"], richtig: "Wie viel Verantwortung man hat" }
     },
     {
