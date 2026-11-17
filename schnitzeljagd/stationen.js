@@ -22,33 +22,33 @@
 // (erzeugt die Bilder in „targets“, die Erkennungsdatei „targets/stationen.mind“ und das Druck-PDF).
 
 const SCHNITZELJAGD = {
-  start: "Folge den runden Aufklebern durch die Schule. An jeder Station lernst du einen Raum kennen. Die Antwort auf die Frage findest du vor Ort heraus.",
-  ende: "Du hast alle Stationen gefunden. Zeige diesen Bildschirm hier am Eingang, dann bekommst du eine kleine Überraschung.",
+  start: "Folge den runden Aufklebern durch die Schule. An jeder Station lernst du etwas über die Wascherde. Die Antwort auf die Frage findest du vor Ort heraus.",
+  ende: "Du hast jetzt alle Stationen besucht. Zeige diesen Bildschirm hier am Eingang, dann bekommst du eine kleine Überraschung.",
   stationen: [
     {
       ort: "Eingangsbereich",
-      text: "Willkommen an der Wascherde. Hier kommen die Kinder jeden Morgen an. Im Lerncampus lernen die Jahrgänge 5 und 6.",
+      text: "Willkommen am Lerncampus Wascherde. Hier kommen die Kinder jeden Morgen an. Im Lerncampus lernen derzeit die Jahrgänge 5 und 6.",
       bild: "bilder/station1.jpg",
-      suchen: "Der erste Aufkleber liegt direkt am Eingang.",
-      frage: { text: "Die Kinder hier tragen ein Schlüsselband. Frage jemanden vom Lerncampus: Was zeigt seine Farbe?", wie: "fragen", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man hat", "Die Klasse"], richtig: "Wie viel Verantwortung man hat" }
+      suchen: "Der erste Aufkleber liegt direkt hier am Eingang.",
+      frage: { text: "Die Kinder hier tragen ein Schlüsselband. Frage jemanden vom Lerncampus: Was zeigt seine Farbe?", wie: "fragen", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man hat", "In welcher Klasse man ist"], richtig: "Wie viel Verantwortung man hat" }
     },
     {
       ort: "Kunst- und Musikraum",
       text: "Hier wird gemalt, gebaut und Musik gemacht. In Projekten wählen die Kinder selbst, was sie interessiert.",
       bild: "bilder/station2.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt beim Kunst- und Musikraum.",
-      frage: { text: "Frage jemanden vom Lerncampus: Wie heißt die Bläser-AG der Wascherde?", wie: "fragen", auswahl: ["Blechbande", "WaschBlech", "Tröten-Team"], richtig: "WaschBlech" }
+      frage: { text: "Frage jemanden vom Lerncampus: Wie heißt die Schulband der Wascherde?", wie: "fragen", auswahl: ["Blechbande", "WaschBlech", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
       ort: "Mensa",
-      text: "In der Mensa gibt es Mittagessen. Auch in der Pause ist hier einiges los.",
+      text: "In der Mensa gibt es Mittagessen und Snacks. In den Pausen ist hier ganz schön was los.",
       bild: "bilder/station3.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt in der Mensa.",
       frage: { text: "Frage jemanden vom Lerncampus: Was darf man in der Pause in der Mensa machen?", wie: "fragen", auswahl: ["Fußball spielen", "Essen, Karten spielen und sich unterhalten", "Schlafen"], richtig: "Essen, Karten spielen und sich unterhalten" }
     },
     {
       ort: "Naturwissenschaften",
-      text: "In diesem Raum wird geforscht und experimentiert. Hier gibt es Dinge, die du in keinem anderen Raum findest.",
+      text: "Hier wird viel geforscht und experimentiert. Hier gibt es Dinge, die du in keinen anderen Räumen findest.",
       bild: "bilder/station4.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt bei den Naturwissenschaften.",
       frage: { text: "Frage jemanden vom Lerncampus: Um welche Tiere kümmert sich eine AG an der Wascherde?", wie: "fragen", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
@@ -72,20 +72,20 @@ const SCHNITZELJAGD = {
       text: "Im Lernbüro arbeiten die Kinder an ihren Aufgaben, jedes an seinem eigenen Platz. Bevor sie hineingehen, machen sie etwas, das es an anderen Schulen selten gibt.",
       bild: "bilder/station7.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt vor dem Lernbüro.",
-      frage: { text: "Schaue dich vor der Glastür um: Was ziehen die Kinder an, bevor sie ins Lernbüro gehen?", wie: "schauen", auswahl: ["Turnschuhe", "Eine Jacke", "Hausschuhe"], richtig: "Hausschuhe" }
+      frage: { text: "Schaue dich vor der Glastür um: Was tun die Kinder, bevor sie ins Lernbüro gehen?", wie: "schauen", auswahl: ["Frühstücken", "Lernziele nachschauen", "Hausschuhe anziehen"], richtig: "Hausschuhe anziehen" }
     },
     {
       ort: "Inputräume",
-      text: "In den Inputräumen erklärt eine Lehrkraft einer Lerngruppe etwas Neues. Für jedes Hauptfach gibt es einen eigenen Raum.",
+      text: "In den Inputräumen erklärt eine Lehrkraft einer Lerngruppe etwas Neues. Für jedes Hauptfach gibt es eigene Inputs.",
       bild: "bilder/station8.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt bei den Inputräumen.",
-      frage: { text: "Schaue auf die Türschilder: Für welche Fächer gibt es Inputräume?", wie: "schauen", auswahl: ["Sport, Kunst und Musik", "Deutsch, Mathe und Englisch", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
+      frage: { text: "Für welche Fächer gibt es Inputräume?", wie: "fragen", auswahl: ["Sport, Kunst und Musik", "Deutsch, Mathe und Englisch", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
     },
     {
       ort: "Eingangsbereich",
-      text: "Du bist wieder am Anfang. Jetzt kennst du die wichtigsten Räume des Lerncampus. Zum Schluss wartet hier eine kleine Überraschung auf dich.",
+      text: "Du bist wieder am Anfang. Jetzt kennst du die wichtigsten Orte der Wascherde. Zum Schluss wartet hier eine kleine Überraschung auf dich.",
       bild: "bilder/station9.jpg",
-      suchen: "Folge dem Pfeil zurück zum Eingang. Dort liegt der letzte Aufkleber."
+      suchen: "Folge dem Pfeil zurück zum Eingang. Dort befindet sich der letzte Aufkleber."
     }
   ],
   wegweiser: [
