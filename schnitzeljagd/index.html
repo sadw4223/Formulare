@@ -112,7 +112,7 @@
   </div>
 
   <section id="besucht" hidden>
-    <h2>Deine Stationen</h2>
+    <h2>Deine Checkpoints</h2>
     <ul class="liste" id="karten"></ul>
     <button class="taste neben" id="neu" hidden>Neu starten</button>
   </section>
@@ -172,7 +172,7 @@ window.schnitzeljagdStarten = function () {
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
     $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Geschafft.") : (e === 0 ? "Kennst du schon die Wascherde?" : "Weiter geht’s");
-    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Starte die Kamera und folge dem Pfeil.");
+    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Starte die Kamera und folge dem Pfeil, bis du den nächsten Checkpoint findest.");
     $("ergebnis").hidden = !fertig;
     if (fertig) {
       $("ergebnisZahl").textContent = ev.richtig + " von " + ev.fragen;
@@ -273,7 +273,7 @@ window.schnitzeljagdStarten = function () {
   $("blattWeiter").addEventListener("click", () => {
     $("blatt").classList.remove("offen"); $("arSchliessen").hidden = false; aktiveStation = -1;
     if (stand.erledigt >= N) { arBeenden(); return; }
-    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil" : sucheText()); tippPlanen();
+    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil, bis du den nächsten Checkpoint findest" : sucheText()); tippPlanen();
   });
   // Tastatur auf dem iPhone: Blatt über der Tastatur halten
   if (window.visualViewport) {
@@ -318,8 +318,8 @@ window.schnitzeljagdStarten = function () {
 
   function label(t) { $("arLabel").textContent = t; $("arLabel").hidden = !t; }
   function sucheText() {
-    if (kompassZiel && stand.erledigt < N) return "Folge dem Pfeil";
-    return stand.erledigt < N ? (stand.erledigt === 0 ? "Suche den ersten Aufkleber" : "Suche den nächsten Aufkleber") : "";
+    if (kompassZiel && stand.erledigt < N) return "Folge dem Pfeil, bis du den nächsten Checkpoint findest";
+    return stand.erledigt < N ? (stand.erledigt === 0 ? "Suche den ersten Checkpoint" : "Suche den nächsten Checkpoint") : "";
   }
 
   // ---------- Kompass-Pfeil ----------
@@ -417,7 +417,7 @@ window.schnitzeljagdStarten = function () {
     clearTimeout(tippTimer);
     tippTimer = setTimeout(() => {
       if (!$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N && !kompassZiel)
-        label("Halte die Kamera über den Aufkleber");
+        label("Halte die Kamera über den Checkpoint");
     }, 7000);
   }
 
@@ -480,9 +480,9 @@ window.schnitzeljagdStarten = function () {
           blattZeigen(i);
         } else if (i < stand.erledigt) {            // schon geschafft: Weg noch einmal zeigen
           if (pfeil) pfeil.setAttribute("visible", true);
-          label(stand.erledigt < N ? "Folge dem Pfeil" : "Schon geschafft");
+          label(stand.erledigt < N ? "Folge dem Pfeil, bis du den nächsten Checkpoint findest" : "Schon geschafft");
         } else {                                    // zu weit vorne
-          label("Diese Station kommt später");
+          label("Dieser Checkpoint kommt später");
         }
       });
       a.addEventListener("targetLost", () => {
