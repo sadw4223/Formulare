@@ -83,7 +83,6 @@
   .eingabe input { flex: 1; min-width: 0; height: 54px; font: inherit; font-size: 17px; padding: 0 16px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
   .eingabe input:focus { outline: 2px solid var(--logo-blau); outline-offset: -1px; }
   .eingabe button { width: auto; flex: none; }
-  .rueckmeldung { margin: 12px 0 0; font-size: 15px; color: var(--text); }
   #blattWeiter { margin-top: 16px; }
   @keyframes wackeln { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .wackeln { animation: wackeln .25s ease 2; }
@@ -130,7 +129,6 @@
       <div class="art" id="frageArt"></div>
       <div class="text" id="frageText"></div>
       <div id="frageFeld"></div>
-      <p class="rueckmeldung" id="rueckmeldung">Richtig angekreuzt? Dann erscheint der Pfeil.</p>
     </div>
     <button class="taste haupt" id="blattWeiter" hidden>Weiter</button>
   </div>
@@ -207,7 +205,6 @@ window.schnitzeljagdStarten = function () {
 
   function frageAufbauen(i) {
     const f = st[i].frage; versuche = 0;
-    $("rueckmeldung").hidden = i >= N - 1;
     $("blattWeiter").hidden = true;
     $("frageBox").hidden = !f;
     if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
@@ -243,7 +240,6 @@ window.schnitzeljagdStarten = function () {
   }
 
   function frageGeloest(i, antwort, richtig) {
-    $("rueckmeldung").hidden = true;   // Hinweis nach der richtigen Antwort ausblenden
     if (stand.erledigt === i) {
       stand.erledigt = i + 1; stand.antworten[i] = antwort;
       stand.ersterVersuch = stand.ersterVersuch || [];
