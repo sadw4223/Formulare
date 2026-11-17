@@ -93,7 +93,8 @@
   .eingabe input { flex: 1; min-width: 0; height: 54px; font: inherit; font-size: 17px; padding: 0 16px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
   .eingabe input:focus { outline: 2px solid var(--logo-blau); outline-offset: -1px; }
   .eingabe button { width: auto; flex: none; }
-  #blattWeiter:disabled { opacity: 1; background: var(--linie); color: var(--text-leise); cursor: default; }
+  #blattWeiter:disabled { opacity: 1; background: linear-gradient(to right, #cfdffc var(--fortschritt, 0%), var(--linie) var(--fortschritt, 0%)); color: var(--text-leise); cursor: default; }
+  #blattWeiter.wartet { color: var(--tinte); }
   #blattWeiter { transition: background-color .25s, color .25s; }
   @keyframes wackeln { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .wackeln { animation: wackeln .25s ease 2; }
@@ -229,6 +230,39 @@ window.schnitzeljagdStarten = function () {
 
   let aktiveStation = -1, versuche = 0, geloest = false;   // falsche Versuche an der aktuellen Frage
 
+  // ---------- Mindestzeit an jeder Station ----------
+  // Ab dem Scannen läuft die Zeit (gespeichert, übersteht also auch Neuladen). Vorher gibt es weder „Weiter“ noch einen Pfeil.
+  const TESTMODUS = new URLSearchParams(location.search).has("test");
+  function wartezeit(i) {
+    if (i >= N - 1) return 0;                                    // nach der letzten Station geht es nicht weiter
+    const w = st[i].warten ?? daten.warten ?? 180;
+    return TESTMODUS ? Math.min(w, 5) : w;
+  }
+  function restZeit(i) {
+    const a = (stand.ankunft || [])[i];
+    return a ? Math.max(0, wartezeit(i) - (Date.now() - a) / 1000) : wartezeit(i);
+  }
+  const frei = i => restZeit(i) <= 0;
+  function knopfStand() {
+    const i = aktiveStation; if (i < 0) return;
+    const b = $("blattWeiter"), rest = restZeit(i), ok = geloest && rest <= 0;
+    b.disabled = !ok;
+    b.classList.toggle("wartet", geloest && !ok);
+    const text = geloest && !ok ? "Schaue dich noch um" : (i === N - 1 ? "Ergebnis anzeigen" : "Weiter");
+    if (b.textContent !== text) b.textContent = text;
+    const anteil = wartezeit(i) ? 1 - rest / wartezeit(i) : 1;
+    b.style.setProperty("--fortschritt", (anteil * 100).toFixed(1) + "%");
+    if (ok && sichtbar === i && pfeile[i]) pfeile[i].setAttribute("visible", true);   // jetzt erst den Weg freigeben
+  }
+  setInterval(() => {
+    if (blattOffen()) { knopfStand(); return; }
+    // Seite war zwischendurch zu (neu geladen): Pfeil erscheint, sobald die Zeit um ist
+    const i = sichtbar;
+    if (i !== null && i === stand.erledigt - 1 && stand.erledigt < N && frei(i) && pfeile[i] && pfeile[i].object3D && !pfeile[i].object3D.visible) {
+      pfeile[i].setAttribute("visible", true); label("Folge dem Pfeil, bis du den nächsten Checkpoint findest.");
+    }
+  }, 250);
+
   function frageAufbauen(i) {
     const f = st[i].frage; versuche = 0;
     geloest = false; $("blattWeiter").disabled = true;
@@ -273,23 +307,27 @@ window.schnitzeljagdStarten = function () {
       if (st[i].frage) stand.ersterVersuch[i] = versuche === 0;   // auf Anhieb richtig?
       speichern(); zeigen();
     }
-    geloest = true; $("blattWeiter").disabled = false;
-    // jetzt erst den Weg freigeben
-    if (sichtbar === i && pfeile[i]) pfeile[i].setAttribute("visible", true);
+    geloest = true; knopfStand();
   }
 
   // ---------- halbhohes Blatt ----------
   function blattZeigen(i) {
     kompassZiel = null; proben = []; $("kompass").hidden = true; $("kompassBalken").hidden = true; kompassAn = false;
     const s = st[i]; aktiveStation = i;
+    if (i === stand.erledigt) {                      // erster Besuch: Zeit läuft ab jetzt
+      stand.ankunft = stand.ankunft || [];
+      if (!stand.ankunft[i]) { stand.ankunft[i] = Date.now(); speichern(); }
+    }
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
     frageAufbauen(i);
+    knopfStand();
     $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
     $("arSchliessen").hidden = true; label("");
   }
   const blattOffen = () => $("blatt").classList.contains("offen");
   $("blattWeiter").addEventListener("click", () => {
+    if ($("blattWeiter").disabled) return;
     $("blatt").classList.remove("offen"); $("arSchliessen").hidden = false; aktiveStation = -1;
     if (stand.erledigt >= N) { arBeenden(); return; }
     label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil, bis du den nächsten Checkpoint findest." : sucheText()); tippPlanen();
@@ -545,12 +583,14 @@ window.schnitzeljagdStarten = function () {
       a.addEventListener("targetFound", () => {
         sichtbar = i;
         if (blattOffen()) {                         // Frage ist gerade offen
-          if (i === aktiveStation && i < stand.erledigt && pfeil) pfeil.setAttribute("visible", true);
+          if (i === aktiveStation && i < stand.erledigt && frei(i) && pfeil) pfeil.setAttribute("visible", true);
           return;
         }
         if (i === stand.erledigt) {                 // die gesuchte Station: Info und Frage
           if (navigator.vibrate) navigator.vibrate(30);
           blattZeigen(i);
+        } else if (i < stand.erledigt && !frei(i)) { // Zeit noch nicht um (Seite war zwischendurch zu)
+          label("Schaue dich hier noch um");
         } else if (i < stand.erledigt) {            // schon geschafft: Weg noch einmal zeigen
           if (pfeil) pfeil.setAttribute("visible", true);
           label(stand.erledigt < N ? "Folge dem Pfeil, bis du den nächsten Checkpoint findest." : "Schon geschafft");
@@ -570,7 +610,7 @@ window.schnitzeljagdStarten = function () {
         wwSichtbar = true;
         if (blattOffen()) return;
         // nur auf dem richtigen Weg: Pfeil zeigen, kein Text
-        if ((nach === "alle" && stand.erledigt < N) || stand.erledigt === nach - 1) { pfeil.setAttribute("visible", true); label(""); clearTimeout(tippTimer); }
+        if (((nach === "alle" && stand.erledigt < N) || stand.erledigt === nach - 1) && (stand.erledigt === 0 || frei(stand.erledigt - 1))) { pfeil.setAttribute("visible", true); label(""); clearTimeout(tippTimer); }
       });
       a.addEventListener("targetLost", () => {
         wwSichtbar = false;

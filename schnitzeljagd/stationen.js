@@ -6,6 +6,7 @@
 // bild       Foto des Raums (Ordner „bilder“), Querformat 3:2
 // richtung   (selten nötig) Pfeil in Grad gegenüber dem Rückseiten-Pfeil drehen, im Uhrzeigersinn:
 //            0 = wie auf der Rückseite (Normalfall), 90 = rechts, 180 = zurück, 270 = links. Die letzte Station hat keinen Pfeil.
+// warten     (selten nötig) eigene Mindestzeit in Sekunden für diese Station, z. B. warten: 60
 // frage      Frage zur Station, immer zum Ankreuzen. Kurz halten. wie: "fragen" → über der Frage steht
 //            „Frage jemanden vom Lerncampus“; wie: "schauen" → „Schaue dich um“.
 //            { text: "…", wie: "fragen", auswahl: ["A", "B", "C"], richtig: "B" }
@@ -26,6 +27,9 @@ const SCHNITZELJAGD = {
   regel: "Beantworte jede Frage gleich beim ersten Versuch richtig. Nur dann bekommst du am Ende eine kleine Überraschung.",
   ende: "Zeige diesen Bildschirm am Eingang. Dort wartet eine kleine Überraschung.",
   endeTeilweise: "Zeige diesen Bildschirm am Eingang.",
+  // Mindestzeit an jeder Station in Sekunden (ab dem Scannen). Erst danach gibt es „Weiter“ und den Pfeil.
+  // Zum Ausprobieren: Adresse mit ?test am Ende öffnen, dann sind es nur 5 Sekunden.
+  warten: 180,
   stationen: [
     {
       ort: "Eingangsbereich",
