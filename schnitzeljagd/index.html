@@ -60,7 +60,6 @@
   /* Kompass-Pfeil: zeigt weiter die Richtung, wenn der Aufkleber nicht mehr im Bild ist */
   #kompass { position: absolute; z-index: 20; left: 50%; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 92px); width: 132px; height: 132px; margin-left: -66px; border-radius: 50%; background: var(--grund); border: 2px solid var(--linie); }
   #kompass svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  #kompass .pfeil-svg { transition: transform .12s linear; }
   #kompassBalken { position: absolute; z-index: 20; left: 50%; width: 132px; margin-left: -66px; height: 8px; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 70px); border-radius: 4px; background: var(--grund); overflow: hidden; }
   #kompassRest { height: 100%; width: 100%; background: #f47b20; border-radius: 4px; transition: width .15s linear; }
   #arSchliessen { position: absolute; z-index: 20; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); width: auto; background: var(--grund); color: var(--tinte); }
@@ -338,6 +337,17 @@ window.schnitzeljagdStarten = function () {
   // (über die Lage des iPhones). Ist der Aufkleber weg, zeigt ein Pfeil unten weiter in diese Richtung
   // und dreht sich mit, wenn sich das Kind dreht. Gilt nur für die Richtung, nicht für die Entfernung.
   let lage = null, kompassZiel = null, kompassTimer = null, proben = [], kompassZeit = 0, letzteLage = null, kompassAn = false;
+  let sollWinkel = null, istWinkel = null;
+  // Pfeil weich nachführen (60-mal pro Sekunde), immer über den kürzeren Weg drehen – kein Springen, kein Kreiseln
+  (function nachfuehren() {
+    if (kompassAn && sollWinkel !== null) {
+      if (istWinkel === null) istWinkel = sollWinkel;
+      const d = ((sollWinkel - istWinkel) % 360 + 540) % 360 - 180;
+      istWinkel += d * 0.2;
+      $("kompass").querySelector(".pfeil-svg").style.transform = "rotate(" + istWinkel.toFixed(1) + "deg)";
+    }
+    requestAnimationFrame(nachfuehren);
+  })();
   const KOMPASS_SEKUNDEN = 30;      // so lange bleibt der Kompass nach dem letzten Aufkleber sichtbar
   function drehe(o, v) {            // Gerät → Raum (W3C: R = Rz(alpha) · Rx(beta) · Ry(gamma))
     const r = Math.PI / 180, a = o.a * r, b = o.b * r, g = o.g * r;
@@ -371,13 +381,18 @@ window.schnitzeljagdStarten = function () {
       const v = new T.Vector3(0, 1, 0).transformDirection(p.object3D.matrixWorld);   // Pfeilrichtung, Kamera = Gerät
       const w = drehe(lage, bildschirm([v.x, v.y, v.z])), l = Math.hypot(w[0], w[1]);
       if (l < 0.35) continue;                                                        // nur die Richtung am Boden
+      // Wie frontal sieht die Kamera den Aufkleber? Schräg gesehen ist die Erkennung ungenauer → weniger Gewicht
+      const n = new T.Vector3(0, 0, 1).transformDirection(p.object3D.matrixWorld);
+      const blick = new T.Vector3(0, 0, 0).applyMatrix4(p.object3D.matrixWorld).normalize();
+      const frontal = Math.abs(n.dot(blick));
+      if (frontal < 0.3) continue;
       const jetzt = Date.now();
-      proben.push({ t: jetzt, x: w[0] / l, y: w[1] / l });
+      proben.push({ t: jetzt, x: w[0] / l, y: w[1] / l, g: frontal * frontal });
       proben = proben.filter(p => jetzt - p.t < 2000);
       // Mittelwert der letzten zwei Sekunden, ohne die allerletzten Bilder
       // (kurz bevor der Aufkleber aus dem Bild rutscht, ist die Erkennung am ungenauesten)
       const gut = proben.filter(p => jetzt - p.t > 300), nutz = gut.length >= 3 ? gut : proben;
-      let sx = 0, sy = 0; nutz.forEach(p => { sx += p.x; sy += p.y; });
+      let sx = 0, sy = 0; nutz.forEach(p => { sx += p.x * p.g; sy += p.y * p.g; });
       const sl = Math.hypot(sx, sy); if (sl > 0) kompassZiel = [sx / sl, sy / sl];
       kompassZeit = jetzt;
       // Wo und wie groß ist die Scheibe gerade auf dem Bildschirm? (für den nahtlosen Übergang zum Kompass)
@@ -401,7 +416,7 @@ window.schnitzeljagdStarten = function () {
     const zeigen = kompassZiel && lage && !$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N;
     const k = $("kompass");
     if (zeigen && !kompassAn) {
-      k.hidden = false;
+      k.hidden = false; istWinkel = null;
       // Von der letzten Stelle der Scheibe zur Kompass-Position gleiten
       if (letzteLage && Date.now() - letzteLage.t < 1500) {
         const z = k.getBoundingClientRect(), s = Math.max(0.2, letzteLage.d / z.width);
@@ -420,7 +435,7 @@ window.schnitzeljagdStarten = function () {
     let fx = v[0] + o[0], fy = v[1] + o[1]; const l = Math.hypot(fx, fy); if (l < 1e-3) return; fx /= l; fy /= l;
     const [zx, zy] = kompassZiel;
     const winkel = Math.atan2(fx * zy - fy * zx, fx * zx + fy * zy) * 180 / Math.PI;      // links positiv
-    $("kompass").querySelector(".pfeil-svg").style.transform = "rotate(" + (-winkel) + "deg)";
+    sollWinkel = -winkel;
     const rest = Math.max(0, 1 - (Date.now() - kompassZeit) / (KOMPASS_SEKUNDEN * 1000));
     $("kompassRest").style.width = (rest * 100).toFixed(1) + "%";
   }
