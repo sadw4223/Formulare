@@ -34,23 +34,19 @@
   .ergebnis .was { font-size: 15px; font-weight: 500; margin-top: 4px; }
   .ergebnis.alle { border-color: var(--gruen); }
   .ergebnis.alle .zahl { color: var(--gruen); }
-  .karte .antwort.ok .marke { color: var(--gruen); font-weight: 800; }
-  .karte .antwort.nok .marke { color: var(--rot); font-weight: 800; }
+  .liste { list-style: none; margin: 0; padding: 0; background: var(--flaeche); border-radius: 12px; }
+  .liste li { display: flex; gap: 12px; align-items: center; padding: 12px 16px; color: var(--tinte); }
+  .liste li + li { border-top: 1px solid var(--linie); }
+  .liste .marke { width: 20px; text-align: center; font-weight: 800; }
+  .liste .ok .marke { color: var(--gruen); } .liste .nok .marke { color: var(--rot); }
   .stand { font-size: 15px; font-weight: 500; color: var(--tinte); margin-bottom: 8px; }
   .balken { height: 6px; background: var(--linie); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
   .balken div { height: 100%; background: var(--logo-blau); border-radius: 3px; transition: width .4s; }
   .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
-  .suchen { font-size: 15px; margin: 12px 0 0; }
   .fehler { color: var(--tinte); font-size: 15px; font-weight: 500; margin: 12px 0 0; padding: 12px 16px; background: var(--flaeche); border-radius: 12px; }
   h2 { font-size: 22px; font-weight: 700; color: var(--tinte); margin: 40px 0 12px; }
-  .karte { background: var(--flaeche); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-  .karte img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 8px; background: var(--linie); }
-  .karte h3 { font-size: 20px; color: var(--tinte); margin: 12px 8px 4px; }
-  .karte p { margin: 0 8px 8px; }
-  .karte .antwort { font-size: 15px; }
-  .karte .antwort b { color: var(--tinte); font-weight: 500; }
   .leise { background: none; border: 0; font: inherit; font-size: 15px; font-weight: 500; color: var(--tinte); text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: 3px; padding: 12px 0; cursor: pointer; }
   .hinweisleiste { position: fixed; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); max-width: 34rem; margin: 0 auto; background: var(--tinte); color: #fff; border-radius: 12px; padding: 12px 12px 12px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; z-index: 5; }
   .hinweisleiste button { background: none; border: 0; color: #fff; text-decoration: underline; font: inherit; font-weight: 700; padding: 4px 8px; cursor: pointer; }
@@ -70,6 +66,7 @@
   #blatt h3 { font-size: 24px; line-height: 1.2; color: var(--tinte); margin: 16px 0 8px; }
   #blatt p { margin: 0; }
   .frage { border-top: 1px solid var(--linie); margin-top: 16px; padding-top: 16px; }
+  .frage .art { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
   .frage .text { font-weight: 700; color: var(--tinte); margin-bottom: 12px; }
   .auswahl { background: var(--flaeche); border-radius: 12px; overflow: hidden; }
   .auswahl button { display: flex; width: 100%; align-items: center; gap: 14px; text-align: left; min-height: 52px; padding: 12px 16px; border: 0; background: none; font: inherit; color: var(--tinte); cursor: pointer; }
@@ -101,21 +98,20 @@
   <h1 id="titel"></h1>
   <div class="ergebnis" id="ergebnis" hidden>
     <div class="zahl" id="ergebnisZahl"></div>
-    <div class="was">Fragen gleich beim ersten Versuch richtig</div>
+    <div class="was">Fragen gleich richtig</div>
   </div>
   <p class="lead" id="lead"></p>
 
   <div id="unterwegs">
     <div class="balken"><div id="balken"></div></div>
     <button class="taste haupt" id="start">Schnitzeljagd starten</button>
-    <p class="suchen" id="suchen"></p>
     <p class="fehler" id="fehler" hidden></p>
   </div>
 
   <section id="besucht" hidden>
     <h2>Deine Stationen</h2>
-    <div id="karten"></div>
-    <button class="leise" id="neu">Von vorn beginnen</button>
+    <ul class="liste" id="karten"></ul>
+    <button class="leise" id="neu" hidden>Von vorn beginnen</button>
   </section>
 </main>
 
@@ -131,9 +127,10 @@
     <h3 id="blattOrt"></h3>
     <p id="blattText"></p>
     <div class="frage" id="frageBox">
+      <div class="art" id="frageArt"></div>
       <div class="text" id="frageText"></div>
       <div id="frageFeld"></div>
-      <p class="rueckmeldung" id="rueckmeldung">Wenn deine Antwort richtig ist, erscheint der Pfeil zur nächsten Station.</p>
+      <p class="rueckmeldung" id="rueckmeldung">Richtig angekreuzt? Dann erscheint der Pfeil.</p>
     </div>
     <button class="taste haupt" id="blattWeiter" hidden>Weiter</button>
   </div>
@@ -169,8 +166,8 @@ window.schnitzeljagdStarten = function () {
   function zeigen() {
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
-    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Du hast es geschafft.") : (e === 0 ? "Kennst du schon die Wascherde?" : "Wo geht es weiter?");
-    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
+    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Geschafft.") : (e === 0 ? "Kennst du schon die Wascherde?" : "Weiter geht’s");
+    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Starte die Kamera und folge dem Pfeil.");
     $("ergebnis").hidden = !fertig;
     if (fertig) {
       $("ergebnisZahl").textContent = ev.richtig + " von " + ev.fragen;
@@ -179,14 +176,14 @@ window.schnitzeljagdStarten = function () {
     $("unterwegs").hidden = fertig;
     if (!fertig) {
       $("start").textContent = startText();
-      $("suchen").textContent = st[e].suchen || "Suche den nächsten runden Aufkleber auf dem Boden.";
     }
     $("besucht").hidden = e === 0;
+    $("neu").hidden = !fertig;   // „Von vorn“ nur am Ende, damit niemand aus Versehen alles löscht
     let html = "";
-    for (let i = e - 1; i >= 0; i--) {
-      const s = st[i], a = stand.antworten[i], ok = (stand.ersterVersuch || [])[i];
-      html += `<div class="karte"><img src="${esc(s.bild)}" alt="${esc(s.ort)}" loading="lazy"><h3>${esc(s.ort)}</h3><p>${esc(s.text)}</p>`
-            + (s.frage && a ? `<p class="antwort ${ok ? "ok" : "nok"}"><span class="marke">${ok ? "✓" : "✗"}</span> ${ok ? "Gleich richtig" : "Nicht gleich richtig"}: <b>${esc(a)}</b></p>` : "") + `</div>`;
+    for (let i = 0; i < e; i++) {
+      const s = st[i], ok = (stand.ersterVersuch || [])[i];
+      if (!s.frage) continue;
+      html += `<li class="${ok ? "ok" : "nok"}"><span class="marke">${ok ? "✓" : "✗"}</span>${esc(s.ort)}</li>`;
     }
     $("karten").innerHTML = html;
     $("balken").style.width = (e / N * 100) + "%";
@@ -215,6 +212,7 @@ window.schnitzeljagdStarten = function () {
     $("frageBox").hidden = !f;
     if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
     $("frageText").textContent = f.text;
+    $("frageArt").textContent = f.wie === "fragen" ? "Frage jemanden vom Lerncampus" : "Schaue dich um";
     if (f.auswahl) {
       // Antworten zufällig mischen, damit die richtige nicht immer an derselben Stelle steht
       const reihe = f.auswahl.map((_, k) => k);
@@ -252,7 +250,7 @@ window.schnitzeljagdStarten = function () {
       if (st[i].frage) stand.ersterVersuch[i] = versuche === 0;   // auf Anhieb richtig?
       speichern(); zeigen();
     }
-    $("blattWeiter").textContent = i === N - 1 ? "Abschließen" : "Weiter";
+    $("blattWeiter").textContent = i === N - 1 ? "Ergebnis anzeigen" : "Weiter";
     $("blattWeiter").hidden = false;
     // jetzt erst den Weg freigeben
     if (sichtbar === i && pfeile[i]) pfeile[i].setAttribute("visible", true);
@@ -271,7 +269,7 @@ window.schnitzeljagdStarten = function () {
   $("blattWeiter").addEventListener("click", () => {
     $("blatt").classList.remove("offen"); $("arSchliessen").hidden = false; aktiveStation = -1;
     if (stand.erledigt >= N) { arBeenden(); return; }
-    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil zur nächsten Station" : sucheText()); tippPlanen();
+    label(sichtbar !== null && sichtbar < stand.erledigt ? "Folge dem Pfeil" : sucheText()); tippPlanen();
   });
   // Tastatur auf dem iPhone: Blatt über der Tastatur halten
   if (window.visualViewport) {
@@ -318,14 +316,14 @@ window.schnitzeljagdStarten = function () {
     clearTimeout(tippTimer);
     tippTimer = setTimeout(() => {
       if (!$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N)
-        label("Halte die Kamera direkt über den Aufkleber");
+        label("Halte die Kamera über den Aufkleber");
     }, 7000);
   }
 
   async function arStarten() {
     $("fehler").hidden = true;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      fehler("Hier geht die Kamera nicht. Öffne die Seite bitte in Safari.");
+      fehler("Hier geht die Kamera nicht. Öffne die Seite in Safari.");
       return;
     }
     $("start").disabled = true; $("start").textContent = "Wird geladen …";
@@ -336,7 +334,7 @@ window.schnitzeljagdStarten = function () {
         skripteGeladen = true;
       }
     } catch (e) {
-      fehler("Die Seite ist nicht ganz geladen. Prüfe das Internet und versuche es noch einmal.");
+      fehler("Kein Internet. Versuche es noch einmal.");
       startZurueck(); return;
     }
     pfeilKomponente();
@@ -384,9 +382,9 @@ window.schnitzeljagdStarten = function () {
           blattZeigen(i);
         } else if (i < stand.erledigt) {            // schon geschafft: Weg noch einmal zeigen
           if (pfeil) pfeil.setAttribute("visible", true);
-          label(stand.erledigt < N ? "Folge dem Pfeil zur nächsten Station" : "Diese Station hast du schon geschafft");
+          label(stand.erledigt < N ? "Folge dem Pfeil" : "Schon geschafft");
         } else {                                    // zu weit vorne
-          label("Diese Station kommt später. Suche zuerst den nächsten Aufkleber");
+          label("Diese Station kommt später");
         }
       });
       a.addEventListener("targetLost", () => {
