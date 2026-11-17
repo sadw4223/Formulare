@@ -66,10 +66,12 @@
   #arSchliessen { position: absolute; z-index: 20; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); width: auto; background: var(--grund); color: var(--tinte); }
 
   /* halbhohes Blatt mit Infos und Frage */
-  #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 82%; overflow-y: auto; -webkit-overflow-scrolling: touch; background: var(--grund); border-radius: 17px 17px 0 0; padding: 12px 20px max(20px, env(safe-area-inset-bottom)); transform: translateY(105%); transition: transform .35s ease; }
+  #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 90%; display: flex; flex-direction: column; background: var(--grund); border-radius: 17px 17px 0 0; transform: translateY(105%); transition: transform .35s ease; }
+  .blatt-inhalt { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 20px 4px; }
+  .blatt-fuss { flex: none; padding: 12px 20px max(20px, env(safe-area-inset-bottom)); border-top: 1px solid var(--linie); background: var(--grund); }
   #blatt.offen { transform: none; }
   #blatt .griff { width: 36px; height: 5px; border-radius: 3px; background: var(--linie); margin: 0 auto 12px; }
-  #blatt img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: 24vh; object-fit: cover; border-radius: 12px; background: var(--linie); }
+  #blatt img { display: block; width: 100%; aspect-ratio: 3 / 2; max-height: 22vh; object-fit: cover; border-radius: 12px; background: var(--linie); }
   #blatt h3 { font-size: 24px; line-height: 1.2; color: var(--tinte); margin: 16px 0 8px; }
   #blatt p { margin: 0; }
   .frage { border-top: 1px solid var(--linie); margin-top: 16px; padding-top: 16px; }
@@ -90,7 +92,8 @@
   .eingabe input { flex: 1; min-width: 0; height: 54px; font: inherit; font-size: 17px; padding: 0 16px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
   .eingabe input:focus { outline: 2px solid var(--logo-blau); outline-offset: -1px; }
   .eingabe button { width: auto; flex: none; }
-  #blattWeiter { margin-top: 16px; }
+  #blattWeiter:disabled { opacity: 1; background: var(--linie); color: var(--text-leise); cursor: default; }
+  #blattWeiter { transition: background-color .25s, color .25s; }
   @keyframes wackeln { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .wackeln { animation: wackeln .25s ease 2; }
 </style>
@@ -133,16 +136,19 @@
   <div id="kompassBalken" hidden aria-hidden="true"><div id="kompassRest"></div></div>
   <button class="taste" id="arSchliessen">Schließen</button>
   <div id="blatt" role="dialog">
-    <div class="griff"></div>
-    <img id="blattBild" alt="">
-    <h3 id="blattOrt"></h3>
-    <p id="blattText"></p>
-    <div class="frage" id="frageBox">
-      <div class="art" id="frageArt"></div>
-      <div class="text" id="frageText"></div>
-      <div id="frageFeld"></div>
+    <div class="blatt-inhalt" id="blattInhalt">
+      <div class="griff"></div>
+      <img id="blattBild" alt="">
+      <h3 id="blattOrt"></h3>
+      <p id="blattText"></p>
+      <div class="frage" id="frageBox">
+        <div class="art" id="frageArt"></div>
+        <div class="text" id="frageText"></div>
+        <div id="frageFeld"></div>
+      </div>
     </div>
-    <button class="taste haupt" id="blattWeiter" hidden>Weiter</button>
+    <!-- „Weiter“ steht immer sichtbar unten: grau, bis die Antwort richtig ist -->
+    <div class="blatt-fuss"><button class="taste haupt" id="blattWeiter" disabled>Weiter</button></div>
   </div>
 </div>
 
@@ -213,11 +219,12 @@ window.schnitzeljagdStarten = function () {
     .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
     .replace(/[^a-z0-9 ]/g, "").replace(/^(im|in der|in dem|in den|der|die|das|den|dem|ein|eine)\s+/, "").replace(/\s+/g, " ");
 
-  let aktiveStation = -1, versuche = 0;   // falsche Versuche an der aktuellen Frage
+  let aktiveStation = -1, versuche = 0, geloest = false;   // falsche Versuche an der aktuellen Frage
 
   function frageAufbauen(i) {
     const f = st[i].frage; versuche = 0;
-    $("blattWeiter").hidden = true;
+    geloest = false; $("blattWeiter").disabled = true;
+    $("blattWeiter").textContent = i === N - 1 ? "Ergebnis anzeigen" : "Weiter";
     $("frageBox").hidden = !f;
     if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
     $("frageText").textContent = f.text;
@@ -228,7 +235,7 @@ window.schnitzeljagdStarten = function () {
       for (let x = reihe.length - 1; x > 0; x--) { const y = Math.floor(Math.random() * (x + 1)); [reihe[x], reihe[y]] = [reihe[y], reihe[x]]; }
       $("frageFeld").innerHTML = `<div class="auswahl">${reihe.map(k => [f.auswahl[k], k]).map(([a, k]) => `<button type="button" data-k="${k}"><span class="kasten"><svg viewBox="0 0 16 16"><path d="M2 2 L14 14 M14 2 L2 14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><span>${esc(a)}</span></button>`).join("")}</div>`;
       $("frageFeld").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
-        if (!$("blattWeiter").hidden || b.classList.contains("falsch")) return;
+        if (geloest || b.classList.contains("falsch")) return;
         const wahl = f.auswahl[Number(b.dataset.k)];
         if (wahl === f.richtig) { b.classList.add("richtig"); frageGeloest(i, wahl, true); }
         else { b.classList.add("falsch"); falsch(); }
@@ -237,7 +244,7 @@ window.schnitzeljagdStarten = function () {
       $("frageFeld").innerHTML = `<form class="eingabe" id="eingabeForm" autocomplete="off"><input id="eingabe" enterkeyhint="done" autocapitalize="sentences" autocorrect="off" spellcheck="false" placeholder="Deine Antwort" aria-label="Deine Antwort"><button class="taste haupt" type="submit">Antworten</button></form>`;
       $("eingabeForm").addEventListener("submit", ev => {
         ev.preventDefault();
-        if (!$("blattWeiter").hidden) return;
+        if (geloest) return;
         const w = $("eingabe").value; if (!w.trim()) return;
         if (f.antwort.some(a => normal(a) === normal(w))) { $("eingabe").blur(); frageGeloest(i, f.antwort[0], true); }
         else falsch();
@@ -258,8 +265,7 @@ window.schnitzeljagdStarten = function () {
       if (st[i].frage) stand.ersterVersuch[i] = versuche === 0;   // auf Anhieb richtig?
       speichern(); zeigen();
     }
-    $("blattWeiter").textContent = i === N - 1 ? "Ergebnis anzeigen" : "Weiter";
-    $("blattWeiter").hidden = false;
+    geloest = true; $("blattWeiter").disabled = false;
     // jetzt erst den Weg freigeben
     if (sichtbar === i && pfeile[i]) pfeile[i].setAttribute("visible", true);
   }
@@ -271,7 +277,7 @@ window.schnitzeljagdStarten = function () {
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
     frageAufbauen(i);
-    $("blatt").scrollTop = 0; $("blatt").classList.add("offen");
+    $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
     $("arSchliessen").hidden = true; label("");
   }
   const blattOffen = () => $("blatt").classList.contains("offen");
