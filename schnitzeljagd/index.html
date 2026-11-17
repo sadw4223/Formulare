@@ -261,7 +261,7 @@ window.schnitzeljagdStarten = function () {
 
   // ---------- halbhohes Blatt ----------
   function blattZeigen(i) {
-    kompassZiel = null; $("kompass").hidden = true;
+    kompassZiel = null; proben = []; $("kompass").hidden = true;
     const s = st[i]; aktiveStation = i;
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
@@ -322,7 +322,8 @@ window.schnitzeljagdStarten = function () {
   // Solange ein Pfeil in der Kamera zu sehen ist, merkt sich die Seite seine Richtung im Raum
   // (über die Lage des iPhones). Ist der Aufkleber weg, zeigt ein Pfeil unten weiter in diese Richtung
   // und dreht sich mit, wenn sich das Kind dreht. Gilt nur für die Richtung, nicht für die Entfernung.
-  let lage = null, kompassZiel = null, kompassTimer = null;
+  let lage = null, kompassZiel = null, kompassTimer = null, proben = [], kompassZeit = 0;
+  const KOMPASS_SEKUNDEN = 30;      // so lange bleibt der Kompass nach dem letzten Aufkleber sichtbar
   function drehe(o, v) {            // Gerät → Raum (W3C: R = Rz(alpha) · Rx(beta) · Ry(gamma))
     const r = Math.PI / 180, a = o.a * r, b = o.b * r, g = o.g * r;
     let [x, y, z] = v;
@@ -354,10 +355,24 @@ window.schnitzeljagdStarten = function () {
       if (!p.object3D || !p.object3D.visible || !p.parentEl.parentEl.object3D.visible) continue;
       const v = new T.Vector3(0, 1, 0).transformDirection(p.object3D.matrixWorld);   // Pfeilrichtung, Kamera = Gerät
       const w = drehe(lage, bildschirm([v.x, v.y, v.z])), l = Math.hypot(w[0], w[1]);
-      if (l > 0.35) kompassZiel = [w[0] / l, w[1] / l];                             // nur die Richtung am Boden
+      if (l < 0.35) continue;                                                        // nur die Richtung am Boden
+      const jetzt = Date.now();
+      proben.push({ t: jetzt, x: w[0] / l, y: w[1] / l });
+      proben = proben.filter(p => jetzt - p.t < 2000);
+      // Mittelwert der letzten zwei Sekunden, ohne die allerletzten Bilder
+      // (kurz bevor der Aufkleber aus dem Bild rutscht, ist die Erkennung am ungenauesten)
+      const gut = proben.filter(p => jetzt - p.t > 300), nutz = gut.length >= 3 ? gut : proben;
+      let sx = 0, sy = 0; nutz.forEach(p => { sx += p.x; sy += p.y; });
+      const sl = Math.hypot(sx, sy); if (sl > 0) kompassZiel = [sx / sl, sy / sl];
+      kompassZeit = jetzt;
     }
   }
   function kompassZeigen() {
+    // Nach einer Weile ohne Aufkleber ausblenden – der Kompass kennt keine Kurven
+    if (kompassZiel && sichtbar === null && !wwSichtbar && Date.now() - kompassZeit > KOMPASS_SEKUNDEN * 1000) {
+      kompassZiel = null; proben = [];
+      if (!blattOffen() && !$("ar").hidden) label(sucheText());
+    }
     const zeigen = kompassZiel && lage && !$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N;
     $("kompass").hidden = !zeigen;
     if (!zeigen) return;
