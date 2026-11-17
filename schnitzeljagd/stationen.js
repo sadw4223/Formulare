@@ -60,7 +60,7 @@ const SCHNITZELJAGD = {
     {
       ort: "Lernflur",
       text: "Auch auf dem Flur wird gelernt.",
-      bild: "bilder/station6.jpg",
+      bild: "bilder/station6.jpg?v=2",
       frage: { text: "Wann darf man im Flur arbeiten?", wie: "fragen", auswahl: ["In der Pause", "In der Lernzeit", "Nach der Schule"], richtig: "In der Lernzeit" }
     },
     {
