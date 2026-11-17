@@ -13,6 +13,7 @@
     --logo-blau: #2f7bf6; --logo-orange: #f47b20;
     --tinte: #243746; --text: #5a6672; --text-leise: #8a97a5;
     --linie: #dbe3ec; --grund: #ffffff; --flaeche: #f4f7fa;
+    --gruen: #008932; --rot: #d7262e;   /* nur für richtige / falsche Antworten */
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; }
@@ -28,6 +29,13 @@
 
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
+  .ergebnis { background: var(--flaeche); border: 2px solid var(--linie); border-radius: 12px; padding: 16px 20px; margin: 0 0 16px; }
+  .ergebnis .zahl { font-size: 44px; line-height: 1.1; font-weight: 800; color: var(--tinte); }
+  .ergebnis .was { font-size: 15px; font-weight: 500; margin-top: 4px; }
+  .ergebnis.alle { border-color: var(--gruen); }
+  .ergebnis.alle .zahl { color: var(--gruen); }
+  .karte .antwort.ok .marke { color: var(--gruen); font-weight: 800; }
+  .karte .antwort.nok .marke { color: var(--rot); font-weight: 800; }
   .stand { font-size: 15px; font-weight: 500; color: var(--tinte); margin-bottom: 8px; }
   .balken { height: 6px; background: var(--linie); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
   .balken div { height: 100%; background: var(--logo-blau); border-radius: 3px; transition: width .4s; }
@@ -70,14 +78,15 @@
   .kasten { flex: none; width: 24px; height: 24px; border: 2px solid var(--tinte); border-radius: 3px; background: var(--grund); position: relative; }
   .kasten svg { position: absolute; inset: 2px; width: 16px; height: 16px; display: none; }
   .auswahl button.richtig .kasten svg, .auswahl button.falsch .kasten svg { display: block; }
-  .auswahl button.richtig { font-weight: 700; }
-  .auswahl button.falsch { color: var(--text-leise); text-decoration: line-through; }
-  .auswahl button.falsch .kasten { border-color: var(--text-leise); }
+  .auswahl button.richtig { font-weight: 700; color: var(--gruen); }
+  .auswahl button.richtig .kasten { border-color: var(--gruen); }
+  .auswahl button.falsch { color: var(--rot); text-decoration: line-through; }
+  .auswahl button.falsch .kasten { border-color: var(--rot); }
   .eingabe { display: flex; gap: 8px; }
   .eingabe input { flex: 1; min-width: 0; height: 54px; font: inherit; font-size: 17px; padding: 0 16px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
   .eingabe input:focus { outline: 2px solid var(--logo-blau); outline-offset: -1px; }
   .eingabe button { width: auto; flex: none; }
-  .rueckmeldung { min-height: 22px; margin: 12px 0 0; font-size: 15px; font-weight: 700; color: var(--tinte); }
+  .rueckmeldung { margin: 12px 0 0; font-size: 15px; color: var(--text); }
   #blattWeiter { margin-top: 16px; }
   @keyframes wackeln { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .wackeln { animation: wackeln .25s ease 2; }
@@ -90,6 +99,10 @@
     <div><div class="kopftitel">Schnitzeljagd</div><div class="wortmarke"><span class="l">LERNCAMPUS</span> <span class="w">WASCHERDE</span></div></div>
   </header>
   <h1 id="titel"></h1>
+  <div class="ergebnis" id="ergebnis" hidden>
+    <div class="zahl" id="ergebnisZahl"></div>
+    <div class="was">Fragen gleich beim ersten Versuch richtig</div>
+  </div>
   <p class="lead" id="lead"></p>
 
   <div id="unterwegs">
@@ -120,7 +133,7 @@
     <div class="frage" id="frageBox">
       <div class="text" id="frageText"></div>
       <div id="frageFeld"></div>
-      <p class="rueckmeldung" id="rueckmeldung"></p>
+      <p class="rueckmeldung" id="rueckmeldung">Wenn deine Antwort richtig ist, erscheint der Pfeil zur nächsten Station.</p>
     </div>
     <button class="taste haupt" id="blattWeiter" hidden>Weiter</button>
   </div>
@@ -146,10 +159,23 @@ window.schnitzeljagdStarten = function () {
   // Taste: beim ersten Mal „starten“, danach „fortsetzen“ (die Gesamtzahl der Stationen wird nirgends genannt)
   function startText() { return stand.erledigt === 0 ? "Schnitzeljagd starten" : "Schnitzeljagd fortsetzen"; }
 
+  // Wie viele Fragen wurden gleich beim ersten Versuch richtig beantwortet?
+  function auswertung() {
+    let fragen = 0, richtig = 0;
+    st.forEach((s, i) => { if (s.frage) { fragen++; if ((stand.ersterVersuch || [])[i]) richtig++; } });
+    return { fragen, richtig, alle: fragen > 0 && richtig === fragen };
+  }
+
   function zeigen() {
     const e = stand.erledigt, fertig = e >= N;
-    $("titel").textContent = fertig ? "Du hast es geschafft." : (e === 0 ? "Kennst du schon die Wascherde?" : "Wo geht es weiter?");
-    $("lead").textContent = fertig ? daten.ende : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
+    const ev = auswertung();
+    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Du hast es geschafft.") : (e === 0 ? "Kennst du schon die Wascherde?" : "Wo geht es weiter?");
+    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
+    $("ergebnis").hidden = !fertig;
+    if (fertig) {
+      $("ergebnisZahl").textContent = ev.richtig + " von " + ev.fragen;
+      $("ergebnis").classList.toggle("alle", ev.alle);
+    }
     $("unterwegs").hidden = fertig;
     if (!fertig) {
       $("start").textContent = startText();
@@ -158,9 +184,9 @@ window.schnitzeljagdStarten = function () {
     $("besucht").hidden = e === 0;
     let html = "";
     for (let i = e - 1; i >= 0; i--) {
-      const s = st[i], a = stand.antworten[i];
+      const s = st[i], a = stand.antworten[i], ok = (stand.ersterVersuch || [])[i];
       html += `<div class="karte"><img src="${esc(s.bild)}" alt="${esc(s.ort)}" loading="lazy"><h3>${esc(s.ort)}</h3><p>${esc(s.text)}</p>`
-            + (s.frage && a ? `<p class="antwort">Antwort: <b>${esc(a)}</b></p>` : "") + `</div>`;
+            + (s.frage && a ? `<p class="antwort ${ok ? "ok" : "nok"}"><span class="marke">${ok ? "✓" : "✗"}</span> ${ok ? "Gleich richtig" : "Nicht gleich richtig"}: <b>${esc(a)}</b></p>` : "") + `</div>`;
     }
     $("karten").innerHTML = html;
     $("balken").style.width = (e / N * 100) + "%";
@@ -180,11 +206,11 @@ window.schnitzeljagdStarten = function () {
     .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
     .replace(/[^a-z0-9 ]/g, "").replace(/^(im|in der|in dem|in den|der|die|das|den|dem|ein|eine)\s+/, "").replace(/\s+/g, " ");
 
-  let fehlversuche = 0, aktiveStation = -1;
+  let aktiveStation = -1, versuche = 0;   // falsche Versuche an der aktuellen Frage
 
   function frageAufbauen(i) {
-    const f = st[i].frage; fehlversuche = 0;
-    $("rueckmeldung").textContent = ""; $("rueckmeldung").className = "rueckmeldung";
+    const f = st[i].frage; versuche = 0;
+    $("rueckmeldung").hidden = i >= N - 1;
     $("blattWeiter").hidden = true;
     $("frageBox").hidden = !f;
     if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
@@ -198,10 +224,7 @@ window.schnitzeljagdStarten = function () {
         if (!$("blattWeiter").hidden || b.classList.contains("falsch")) return;
         const wahl = f.auswahl[Number(b.dataset.k)];
         if (wahl === f.richtig) { b.classList.add("richtig"); frageGeloest(i, wahl, true); }
-        else { b.classList.add("falsch"); falsch(i, () => {
-          const r = [...$("frageFeld").querySelectorAll("button")].find(x => f.auswahl[Number(x.dataset.k)] === f.richtig);
-          r.classList.add("richtig");
-        }); }
+        else { b.classList.add("falsch"); falsch(); }
       }));
     } else {
       $("frageFeld").innerHTML = `<form class="eingabe" id="eingabeForm" autocomplete="off"><input id="eingabe" enterkeyhint="done" autocapitalize="sentences" autocorrect="off" spellcheck="false" placeholder="Deine Antwort" aria-label="Deine Antwort"><button class="taste haupt" type="submit">Antworten</button></form>`;
@@ -210,30 +233,25 @@ window.schnitzeljagdStarten = function () {
         if (!$("blattWeiter").hidden) return;
         const w = $("eingabe").value; if (!w.trim()) return;
         if (f.antwort.some(a => normal(a) === normal(w))) { $("eingabe").blur(); frageGeloest(i, f.antwort[0], true); }
-        else falsch(i, () => { $("eingabe").value = f.antwort[0]; $("eingabe").blur(); });
+        else falsch();
       });
     }
   }
 
-  function falsch(i, aufloesen) {
-    fehlversuche++;
+  // Falsche Antwort: nur rot durchstreichen und kurz wackeln, kein Text. Weiter geht es erst mit der richtigen Antwort.
+  function falsch() {
+    versuche++;
     const feld = $("frageFeld"); feld.classList.remove("wackeln"); void feld.offsetWidth; feld.classList.add("wackeln");
-    if (fehlversuche >= 2) {
-      aufloesen();
-      $("rueckmeldung").textContent = "Hier siehst du die richtige Antwort.";
-      $("rueckmeldung").className = "rueckmeldung";
-      frageGeloest(i, st[i].frage.richtig || st[i].frage.antwort[0], false);
-    } else {
-      $("rueckmeldung").textContent = st[i].frage.wie === "fragen"
-        ? "Das stimmt noch nicht. Frage noch einmal nach."
-        : "Das stimmt noch nicht. Schaue noch einmal genau hin.";
-      $("rueckmeldung").className = "rueckmeldung";
-    }
   }
 
   function frageGeloest(i, antwort, richtig) {
-    if (richtig) { $("rueckmeldung").textContent = "Richtig."; $("rueckmeldung").className = "rueckmeldung"; }
-    if (stand.erledigt === i) { stand.erledigt = i + 1; stand.antworten[i] = antwort; speichern(); zeigen(); }
+    $("rueckmeldung").hidden = true;   // Hinweis nach der richtigen Antwort ausblenden
+    if (stand.erledigt === i) {
+      stand.erledigt = i + 1; stand.antworten[i] = antwort;
+      stand.ersterVersuch = stand.ersterVersuch || [];
+      if (st[i].frage) stand.ersterVersuch[i] = versuche === 0;   // auf Anhieb richtig?
+      speichern(); zeigen();
+    }
     $("blattWeiter").textContent = i === N - 1 ? "Abschließen" : "Weiter";
     $("blattWeiter").hidden = false;
     // jetzt erst den Weg freigeben
@@ -383,7 +401,7 @@ window.schnitzeljagdStarten = function () {
         wwSichtbar = true;
         if (blattOffen()) return;
         // nur auf dem richtigen Weg: Pfeil zeigen, kein Text
-        if (stand.erledigt === nach - 1) { pfeil.setAttribute("visible", true); label(""); clearTimeout(tippTimer); }
+        if ((nach === "alle" && stand.erledigt < N) || stand.erledigt === nach - 1) { pfeil.setAttribute("visible", true); label(""); clearTimeout(tippTimer); }
       });
       a.addEventListener("targetLost", () => {
         wwSichtbar = false;
