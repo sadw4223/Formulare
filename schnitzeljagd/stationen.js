@@ -33,52 +33,52 @@ const SCHNITZELJAGD = {
   stationen: [
     {
       ort: "Eingangsbereich",
-      text: "Willkommen an der Wascherde. Hier beginnt jeder Schultag.",
+      text: "Willkommen an der Wascherde. Hier beginnt der Schultag für die Kinder.",
       bild: "bilder/station1.jpg",
       warten: 0,          // am ersten Checkpoint keine Wartezeit
-      frage: { text: "Was zeigt die Farbe des Schlüsselbands?", wie: "fragen", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man hat", "Die Klasse"], richtig: "Wie viel Verantwortung man hat" }
+      frage: { text: "Wie heißt der Schulleiter der Schule an der Wascherde?", wie: "fragen", auswahl: ["Herr Wellstein", "Herr Seim", "Herr Scherrer"], richtig: "Herr Wellstein" }
     },
     {
       ort: "Kunst- und Musikraum",
-      text: "Hier wird gemalt, gebaut und Musik gemacht.",
+      text: "Hier wird gemalt, gebaut oder Musik gemacht.",
       bild: "bilder/station2.jpg",
-      frage: { text: "Wie heißt die Bläser-AG?", wie: "fragen", auswahl: ["Blechbande", "WaschBlech", "Tröten-Team"], richtig: "WaschBlech" }
+      frage: { text: "Wie heißt die Schulband an der Wascherde?", wie: "fragen", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
       ort: "Mensa",
-      text: "Hier gibt es Mittagessen.",
+      text: "Hier gibt es Mittagessen und Snacks.",
       bild: "bilder/station3.jpg",
-      frage: { text: "Was darf man in der Pause in der Mensa machen?", wie: "fragen", auswahl: ["Fußball spielen", "Essen und Karten spielen", "Schlafen"], richtig: "Essen und Karten spielen" }
+      frage: { text: "Was kann man in der Pause in der Mensa machen?", wie: "fragen", auswahl: ["Essen, Karten spielen, sich unterhalten", "Am Handy schreiben oder spielen", "Eine Pizza bestellen"], richtig: "Essen, Karten spielen, sich unterhalten" }
     },
     {
       ort: "Naturwissenschaften",
-      text: "Hier wird geforscht und experimentiert.",
+      text: "Hier wird geforscht, untersucht und experimentiert.",
       bild: "bilder/station4.jpg",
       frage: { text: "Um welche Tiere kümmert sich eine AG?", wie: "fragen", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
     },
     {
       ort: "Lernwelt",
-      text: "Hier arbeiten die Kinder zusammen.",
+      text: "Hier arbeiten die Kinder zusammen, lesen oder üben.",
       bild: "bilder/station5.jpg",
-      frage: { text: "Worauf kann man hier sitzen?", wie: "schauen", auswahl: ["Nur auf Holzstühlen", "Auf Schaukeln", "Auf Sofas und Sitzkissen"], richtig: "Auf Sofas und Sitzkissen" }
+      frage: { text: "Wofür ist die Lernwelt gedacht?", wie: "fragen", auswahl: ["Für Einzel- und Gruppenarbeiten", "Für Klassenunterricht", "Für handwerkliche Projekte"], richtig: "Für Einzel- und Gruppenarbeiten" }
     },
     {
       ort: "Lernflur",
-      text: "Auch auf dem Flur wird gelernt.",
+      text: "Auch auf dem Flur wird bei uns gelernt.",
       bild: "bilder/station6.jpg?v=2",
-      frage: { text: "Wann darf man im Flur arbeiten?", wie: "fragen", auswahl: ["In der Pause", "In der Lernzeit", "Nach der Schule"], richtig: "In der Lernzeit" }
+      frage: { text: "Wann darf man im Flur arbeiten?", wie: "fragen", auswahl: ["In der Lernzeit und während Inputs", "Nur in den Pausen", "Nur vor und nach dem Unterricht"], richtig: "In der Lernzeit und während Inputs" }
     },
     {
       ort: "Lernbüro",
       text: "Hier hat jedes Kind seinen eigenen Arbeitsplatz.",
       bild: "bilder/station7.jpg",
-      frage: { text: "Was ziehen die Kinder vor dem Lernbüro an?", wie: "schauen", auswahl: ["Turnschuhe", "Eine Jacke", "Hausschuhe"], richtig: "Hausschuhe" }
+      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", wie: "fragen", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Lesen und Schreiben lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
     },
     {
       ort: "Inputräume",
-      text: "Hier lernen die Kinder in Inputs neue Inhalte.",
+      text: "Hier lernen die Kinder in Inputs neue Lerninhalte.",
       bild: "bilder/station8.jpg",
-      frage: { text: "In welchen Fächern gibt es Inputs?", wie: "fragen", auswahl: ["Sport, Kunst und Musik", "Deutsch, Mathe und Englisch", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
+      frage: { text: "In welchen Fächern gibt es Inputs?", wie: "fragen", auswahl: ["Deutsch, Mathe und Englisch", "Sport, Kunst und Musik", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
     },
     {
       ort: "Eingangsbereich",
