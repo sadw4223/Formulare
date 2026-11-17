@@ -1,28 +1,39 @@
-// Inhalte der Schnitzeljagd – hier werden alle Stationen gepflegt.
-// pfeil: "rechts", "links", "oben", "unten", "zurueck" (zeigt aus dem Plakat heraus = „Drehen Sie sich um“)
-//        oder eine Gradzahl (0 = rechts, 90 = oben, 180 = links, 270 = unten, z. B. 45 = schräg rechts oben)
+// Inhalte der Schnitzeljagd – hier werden alle Stationen gepflegt, in der Reihenfolge des Rundgangs.
+//
+// ort        Name des Raums (Überschrift der Infokarte)
+// text       Infotext, der nach dem Scannen erscheint
+// bild       Foto des Raums (Ordner „bilder“), Querformat 3:2
+// suchen     kurzer Hinweis, wo der Aufkleber dieser Station liegt (erscheint, solange man ihn sucht)
+// richtung   Richtung des Pfeils in Grad, im Uhrzeigersinn ab der blauen Spitze des Aufklebers.
+//            0 = geradeaus (Normalfall: Aufkleber so kleben, dass die Spitze in Laufrichtung zeigt),
+//            90 = rechts, 180 = zurück, 270 = links. Die letzte Station hat keinen Pfeil.
+//
+// Die Bilder für die Kamera-Erkennung liegen in „targets“ (station1.png …) und sind
+// zusammen in „targets/stationen.mind“ übersetzt. Neue Station = neues Bild + neu übersetzen.
+
 const SCHNITZELJAGD = {
-  titel: "Schnitzeljagd am Lerncampus",
-  loesungswort: "CAMPUS", // BEISPIEL – ein Buchstabe je Station
-  stationen: {
-    1: {
+  start: "Willkommen am Lerncampus Wascherde! Folgen Sie den runden Aufklebern auf dem Boden – an jeder Station erfahren Sie etwas über unsere Schule.",
+  ende: "Sie haben alle Stationen besucht. Vielen Dank für Ihren Besuch – bei Fragen sprechen Sie uns gern an.",
+  stationen: [
+    { // BEISPIEL
       ort: "Haupteingang",
-      titel: "Willkommen!",
-      text: "Schön, dass Sie da sind. Diese Schnitzeljagd führt Sie in sechs Stationen durch den Lerncampus Wascherde. An jeder Station hängt ein Plakat. Halten Sie Ihr Handy darauf – dann zeigt sich ein Buchstabe und ein Pfeil weist Ihnen den Weg.",
-      buchstabe: "C",
-      pfeil: "rechts",
-      weiter: "Station 2: Lernbüro",
-      ziel: false,
-      truhe: true // NUR FÜR DEN TEST: Truhe schon an Station 1 zeigen
+      text: "Willkommen! Hier beginnt der Rundgang durch den Lerncampus. Der Pfeil zeigt Ihnen den Weg zur nächsten Station.",
+      bild: "bilder/station1.jpg",
+      suchen: "Der erste Aufkleber liegt direkt am Eingang.",
+      richtung: 0
     },
-    6: {
+    { // BEISPIEL
+      ort: "Lernbüro",
+      text: "Im Lernbüro arbeiten die Kinder selbstständig an ihren Aufgaben. Lernbegleiterinnen und Lernbegleiter unterstützen sie dabei.",
+      bild: "bilder/station2.jpg",
+      suchen: "Folgen Sie dem Pfeil. Der nächste Aufkleber liegt vor dem Lernbüro.",
+      richtung: 0
+    },
+    { // BEISPIEL
       ort: "Aula",
-      titel: "Geschafft!",
-      text: "Sie haben alle Stationen gefunden. Stellen Sie die Schatztruhe in Ihren Raum – und holen Sie sich mit dem Lösungswort Ihre kleine Überraschung am Infostand ab.",
-      buchstabe: "S",
-      pfeil: "zurueck",
-      weiter: "Infostand",
-      ziel: true
+      text: "In der Aula kommen alle zusammen – zu Versammlungen, Aufführungen und Festen.",
+      bild: "bilder/station3.jpg",
+      suchen: "Folgen Sie dem Pfeil. Der letzte Aufkleber liegt in der Aula."
     }
-  }
+  ]
 };
