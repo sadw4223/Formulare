@@ -58,10 +58,11 @@
   #kamera { position: absolute; inset: 0; overflow: hidden; }
   #arLabel { position: absolute; z-index: 20; top: max(16px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); width: max-content; background: var(--tinte); color: #fff; border-radius: 12px; padding: 10px 16px; font-size: 15px; font-weight: 500; text-align: center; }
   /* Kompass-Pfeil: zeigt weiter die Richtung, wenn der Aufkleber nicht mehr im Bild ist */
-  #kompass { position: absolute; z-index: 20; left: 50%; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 74px); width: 132px; height: 132px; margin-left: -66px; border-radius: 50%; background: var(--grund); border: 2px solid var(--linie); }
+  #kompass { position: absolute; z-index: 20; left: 50%; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 92px); width: 132px; height: 132px; margin-left: -66px; border-radius: 50%; background: var(--grund); border: 2px solid var(--linie); }
   #kompass svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   #kompass .pfeil-svg { transition: transform .12s linear; }
-  #kompass #countdown { transition: stroke-dashoffset .15s linear; }
+  #kompassBalken { position: absolute; z-index: 20; left: 50%; width: 132px; margin-left: -66px; height: 8px; bottom: calc(max(20px, env(safe-area-inset-bottom)) + 70px); border-radius: 4px; background: var(--grund); overflow: hidden; }
+  #kompassRest { height: 100%; width: 100%; background: #f47b20; border-radius: 4px; transition: width .15s linear; }
   #arSchliessen { position: absolute; z-index: 20; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); width: auto; background: var(--grund); color: var(--tinte); }
 
   /* halbhohes Blatt mit Infos und Frage */
@@ -127,10 +128,9 @@
   <div id="arLabel"></div>
   <div id="kompass" hidden aria-hidden="true">
     <svg class="pfeil-svg" viewBox="-50 -50 100 100"><path d="M0 -38 L24 -6 H9 V36 H-9 V-6 H-24 Z" fill="#f47b20"/></svg>
-    <!-- Countdown: der Bogen wird in 30 Sekunden immer kürzer, dann verschwindet der Kompass -->
-    <svg class="ring-svg" viewBox="-50 -50 100 100"><circle r="46" fill="none" stroke="#f47b20" stroke-width="5" stroke-linecap="round"
-      transform="rotate(-90)" stroke-dasharray="289.03" stroke-dashoffset="0" id="countdown"/></svg>
   </div>
+  <!-- Countdown unter dem Kompass: der Balken wird in 30 Sekunden kürzer, dann verschwindet der Kompass -->
+  <div id="kompassBalken" hidden aria-hidden="true"><div id="kompassRest"></div></div>
   <button class="taste" id="arSchliessen">Schließen</button>
   <div id="blatt" role="dialog">
     <div class="griff"></div>
@@ -266,7 +266,7 @@ window.schnitzeljagdStarten = function () {
 
   // ---------- halbhohes Blatt ----------
   function blattZeigen(i) {
-    kompassZiel = null; proben = []; $("kompass").hidden = true;
+    kompassZiel = null; proben = []; $("kompass").hidden = true; $("kompassBalken").hidden = true; kompassAn = false;
     const s = st[i]; aktiveStation = i;
     $("blattBild").src = s.bild; $("blattBild").alt = s.ort;
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
@@ -407,7 +407,7 @@ window.schnitzeljagdStarten = function () {
       }
     }
     kompassAn = zeigen;
-    k.hidden = !zeigen;
+    k.hidden = !zeigen; $("kompassBalken").hidden = !zeigen;
     if (!zeigen) return;
     // Blickrichtung waagerecht: Kamera nach vorn (iPhone aufrecht) plus Oberkante (iPhone flach)
     const v = drehe(lage, [0, 0, -1]), o = drehe(lage, bildschirm([0, 1, 0]));
@@ -416,7 +416,7 @@ window.schnitzeljagdStarten = function () {
     const winkel = Math.atan2(fx * zy - fy * zx, fx * zx + fy * zy) * 180 / Math.PI;      // links positiv
     $("kompass").querySelector(".pfeil-svg").style.transform = "rotate(" + (-winkel) + "deg)";
     const rest = Math.max(0, 1 - (Date.now() - kompassZeit) / (KOMPASS_SEKUNDEN * 1000));
-    $("countdown").setAttribute("stroke-dashoffset", (289.03 * (1 - rest)).toFixed(1));
+    $("kompassRest").style.width = (rest * 100).toFixed(1) + "%";
   }
   // Wird eine Weile nichts erkannt: Tipp zur Haltung
   let tippTimer = null;
@@ -534,7 +534,7 @@ window.schnitzeljagdStarten = function () {
       szene.remove();
     }
     $("kamera").innerHTML = ""; $("blatt").classList.remove("offen"); sichtbar = null; wwSichtbar = false; aktiveStation = -1; pfeile = [];
-    clearInterval(kompassTimer); $("kompass").hidden = true;
+    clearInterval(kompassTimer); $("kompass").hidden = true; $("kompassBalken").hidden = true; kompassAn = false;
     $("ar").hidden = true; window.scrollTo(0, 0);
   }
 
