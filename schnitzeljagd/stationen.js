@@ -7,10 +7,10 @@
 // suchen     kurzer Hinweis, wo der Aufkleber dieser Station liegt
 // richtung   (selten nötig) Pfeil in Grad gegenüber dem Rückseiten-Pfeil drehen, im Uhrzeigersinn:
 //            0 = wie auf der Rückseite (Normalfall), 90 = rechts, 180 = zurück, 270 = links. Die letzte Station hat keinen Pfeil.
-// frage      Frage zur Station. wie: "fragen" (jemanden vom Lerncampus fragen) oder "schauen" (im Raum umschauen) –
-//            davon hängt der Hinweis bei einer falschen Antwort ab. Zwei Arten zu antworten:
-//            Auswahl:  { text: "…", auswahl: ["A", "B", "C"], richtig: "B" }
-//            Eingabe:  { text: "…", antwort: ["Lernbüro", "Lernbuero"] }   (Groß-/Kleinschreibung egal; mehrere Schreibweisen möglich)
+// frage      Frage zur Station, immer zum Ankreuzen. wie: "fragen" (jemanden vom Lerncampus fragen) oder
+//            "schauen" (im Raum umschauen) – davon hängt der Hinweis bei einer falschen Antwort ab.
+//            { text: "…", wie: "fragen", auswahl: ["A", "B", "C"], richtig: "B" }
+//            Die Reihenfolge der Antworten wird bei jedem Kind zufällig gemischt.
 //            Nach zwei falschen Versuchen wird die richtige Antwort gezeigt, damit niemand hängen bleibt.
 //
 // WEGWEISER (kleine Aufkleber mit orangem Rand, für Wand oder Boden): Beim Scannen erscheint nur der Pfeil, ohne Text,
@@ -37,7 +37,7 @@ const SCHNITZELJAGD = {
       text: "Hier wird gemalt, gebaut und Musik gemacht. In Projekten wählen die Kinder selbst, was sie interessiert.",
       bild: "bilder/station2.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt beim Kunst- und Musikraum.",
-      frage: { text: "Frage jemanden vom Lerncampus: Wie heißt die Bläser-AG der Wascherde?", wie: "fragen", antwort: ["WaschBlech", "Wasch Blech", "Waschblech AG"] }
+      frage: { text: "Frage jemanden vom Lerncampus: Wie heißt die Bläser-AG der Wascherde?", wie: "fragen", auswahl: ["Blechbande", "WaschBlech", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
       ort: "Mensa",
@@ -51,7 +51,7 @@ const SCHNITZELJAGD = {
       text: "In diesem Raum wird geforscht und experimentiert. Hier gibt es Dinge, die du in keinem anderen Raum findest.",
       bild: "bilder/station4.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt bei den Naturwissenschaften.",
-      frage: { text: "Frage jemanden vom Lerncampus: Um welche Tiere kümmert sich eine AG an der Wascherde?", wie: "fragen", antwort: ["Bienen", "Biene", "Honigbienen"] }
+      frage: { text: "Frage jemanden vom Lerncampus: Um welche Tiere kümmert sich eine AG an der Wascherde?", wie: "fragen", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
     },
     {
       ort: "Lernwelt",
@@ -72,7 +72,7 @@ const SCHNITZELJAGD = {
       text: "Im Lernbüro arbeiten die Kinder an ihren Aufgaben, jedes an seinem eigenen Platz. Bevor sie hineingehen, machen sie etwas, das es an anderen Schulen selten gibt.",
       bild: "bilder/station7.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt vor dem Lernbüro.",
-      frage: { text: "Schaue dich vor der Glastür um: Was ziehen die Kinder an, bevor sie ins Lernbüro gehen?", wie: "schauen", antwort: ["Hausschuhe", "Hausschuh", "Puschen", "Pantoffeln", "Schlappen"] }
+      frage: { text: "Schaue dich vor der Glastür um: Was ziehen die Kinder an, bevor sie ins Lernbüro gehen?", wie: "schauen", auswahl: ["Turnschuhe", "Eine Jacke", "Hausschuhe"], richtig: "Hausschuhe" }
     },
     {
       ort: "Inputräume",

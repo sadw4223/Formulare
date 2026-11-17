@@ -191,7 +191,10 @@ window.schnitzeljagdStarten = function () {
     if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
     $("frageText").textContent = f.text;
     if (f.auswahl) {
-      $("frageFeld").innerHTML = `<div class="auswahl">${f.auswahl.map((a, k) => `<button type="button" data-k="${k}"><span class="kasten"><svg viewBox="0 0 16 16"><path d="M2 2 L14 14 M14 2 L2 14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><span>${esc(a)}</span></button>`).join("")}</div>`;
+      // Antworten zufällig mischen, damit die richtige nicht immer an derselben Stelle steht
+      const reihe = f.auswahl.map((_, k) => k);
+      for (let x = reihe.length - 1; x > 0; x--) { const y = Math.floor(Math.random() * (x + 1)); [reihe[x], reihe[y]] = [reihe[y], reihe[x]]; }
+      $("frageFeld").innerHTML = `<div class="auswahl">${reihe.map(k => [f.auswahl[k], k]).map(([a, k]) => `<button type="button" data-k="${k}"><span class="kasten"><svg viewBox="0 0 16 16"><path d="M2 2 L14 14 M14 2 L2 14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><span>${esc(a)}</span></button>`).join("")}</div>`;
       $("frageFeld").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
         if (!$("blattWeiter").hidden || b.classList.contains("falsch")) return;
         const wahl = f.auswahl[Number(b.dataset.k)];
