@@ -66,12 +66,15 @@
   .frage { border-top: 1px solid var(--linie); margin-top: 16px; padding-top: 16px; }
   .frage .text { font-weight: 700; color: var(--tinte); margin-bottom: 12px; }
   .auswahl { background: var(--flaeche); border-radius: 12px; overflow: hidden; }
-  .auswahl button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; text-align: left; min-height: 52px; padding: 12px 16px; border: 0; background: none; font: inherit; color: var(--tinte); cursor: pointer; }
+  .auswahl button { display: flex; width: 100%; align-items: center; gap: 14px; text-align: left; min-height: 52px; padding: 12px 16px; border: 0; background: none; font: inherit; color: var(--tinte); cursor: pointer; }
   .auswahl button + button { border-top: 1px solid var(--linie); }
+  /* klassisches Ankreuzkästchen: angetippt = Kreuz im Kästchen */
+  .kasten { flex: none; width: 24px; height: 24px; border: 2px solid var(--tinte); border-radius: 3px; background: var(--grund); position: relative; }
+  .kasten svg { position: absolute; inset: 2px; width: 16px; height: 16px; display: none; }
+  .auswahl button.richtig .kasten svg, .auswahl button.falsch .kasten svg { display: block; }
   .auswahl button.richtig { font-weight: 700; }
-  .auswahl button.richtig .zeichen { color: var(--logo-blau); }
   .auswahl button.falsch { color: var(--text-leise); text-decoration: line-through; }
-  .auswahl button .zeichen { flex: none; font-weight: 800; }
+  .auswahl button.falsch .kasten { border-color: var(--text-leise); }
   .eingabe { display: flex; gap: 8px; }
   .eingabe input { flex: 1; min-width: 0; height: 54px; font: inherit; font-size: 17px; padding: 0 16px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
   .eingabe input:focus { outline: 2px solid var(--logo-blau); outline-offset: -1px; }
@@ -127,9 +130,12 @@
   </div>
 </div>
 
-<script src="stationen.js"></script>
 <script>
-(function () {
+  // Inhalte immer frisch laden (sonst zeigt Safari nach Änderungen evtl. noch eine alte Fassung)
+  (function () { var s = document.createElement("script"); s.src = "stationen.js?t=" + Date.now(); s.onload = function () { window.schnitzeljagdStarten(); }; document.head.appendChild(s); })();
+</script>
+<script>
+window.schnitzeljagdStarten = function () {
   const daten = SCHNITZELJAGD, st = daten.stationen, N = st.length, WW = daten.wegweiser || [];
   const $ = id => document.getElementById(id);
   const esc = t => String(t).replace(/[&<>"]/g, z => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[z]));
@@ -156,7 +162,7 @@
     for (let i = e - 1; i >= 0; i--) {
       const s = st[i], a = stand.antworten[i];
       html += `<div class="karte"><img src="${esc(s.bild)}" alt="${esc(s.ort)}" loading="lazy"><div class="nr">Station ${i + 1}</div><h3>${esc(s.ort)}</h3><p>${esc(s.text)}</p>`
-            + (s.frage && a ? `<p class="antwort">${esc(s.frage.text)} <b>${esc(a)}</b></p>` : "") + `</div>`;
+            + (s.frage && a ? `<p class="antwort">Antwort: <b>${esc(a)}</b></p>` : "") + `</div>`;
     }
     $("karten").innerHTML = html;
   }
@@ -185,14 +191,14 @@
     if (!f) { $("frageText").textContent = ""; $("frageFeld").innerHTML = ""; frageGeloest(i, ""); return; }
     $("frageText").textContent = f.text;
     if (f.auswahl) {
-      $("frageFeld").innerHTML = `<div class="auswahl">${f.auswahl.map((a, k) => `<button type="button" data-k="${k}"><span>${esc(a)}</span><span class="zeichen"></span></button>`).join("")}</div>`;
+      $("frageFeld").innerHTML = `<div class="auswahl">${f.auswahl.map((a, k) => `<button type="button" data-k="${k}"><span class="kasten"><svg viewBox="0 0 16 16"><path d="M2 2 L14 14 M14 2 L2 14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><span>${esc(a)}</span></button>`).join("")}</div>`;
       $("frageFeld").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
         if (!$("blattWeiter").hidden || b.classList.contains("falsch")) return;
         const wahl = f.auswahl[Number(b.dataset.k)];
-        if (wahl === f.richtig) { b.classList.add("richtig"); b.querySelector(".zeichen").textContent = "✓"; frageGeloest(i, wahl, true); }
+        if (wahl === f.richtig) { b.classList.add("richtig"); frageGeloest(i, wahl, true); }
         else { b.classList.add("falsch"); falsch(i, () => {
           const r = [...$("frageFeld").querySelectorAll("button")].find(x => f.auswahl[Number(x.dataset.k)] === f.richtig);
-          r.classList.add("richtig"); r.querySelector(".zeichen").textContent = "✓";
+          r.classList.add("richtig");
         }); }
       }));
     } else {
@@ -216,7 +222,9 @@
       $("rueckmeldung").className = "rueckmeldung";
       frageGeloest(i, st[i].frage.richtig || st[i].frage.antwort[0], false);
     } else {
-      $("rueckmeldung").textContent = "Achtung, schaue noch einmal genau hin.";
+      $("rueckmeldung").textContent = st[i].frage.wie === "fragen"
+        ? "Das stimmt noch nicht. Frage noch einmal nach."
+        : "Das stimmt noch nicht. Schaue noch einmal genau hin.";
       $("rueckmeldung").className = "rueckmeldung";
     }
   }
@@ -332,7 +340,7 @@
           <a-entity boden-pfeil></a-entity></a-entity></a-entity></a-entity>`;
     });
     $("kamera").innerHTML = `
-      <a-scene mindar-image="imageTargetSrc: targets/stationen.mind; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.0001; filterBeta: 0.001"
+      <a-scene mindar-image="imageTargetSrc: targets/stationen.mind?v=${N}-${WW.length}; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.0001; filterBeta: 0.001"
                color-space="sRGB" renderer="colorManagement: true; antialias: true" vr-mode-ui="enabled: false" xr-mode-ui="enabled: false"
                device-orientation-permission-ui="enabled: false" embedded>
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -357,9 +365,9 @@
           blattZeigen(i);
         } else if (i < stand.erledigt) {            // schon geschafft: Weg noch einmal zeigen
           if (pfeil) pfeil.setAttribute("visible", true);
-          label(stand.erledigt < N ? "Folge dem Pfeil zu Station " + (stand.erledigt + 1) : "Station " + (i + 1) + " hast du schon geschafft.");
+          label(stand.erledigt < N ? "Folge dem Pfeil zu Station " + (stand.erledigt + 1) : "Station " + (i + 1) + " hast du schon geschafft");
         } else {                                    // zu weit vorne
-          label("Das ist Station " + (i + 1) + ". Suche zuerst Station " + (stand.erledigt + 1) + ".");
+          label("Das ist Station " + (i + 1) + ". Suche zuerst Station " + (stand.erledigt + 1));
         }
       });
       a.addEventListener("targetLost", () => {
@@ -373,16 +381,8 @@
       a.addEventListener("targetFound", () => {
         wwSichtbar = true;
         if (blattOffen()) return;
-        if (stand.erledigt === nach - 1) {          // genau auf diesem Weg: Pfeil zeigen
-          pfeil.setAttribute("visible", true);
-          label("Folge dem Pfeil zu Station " + nach);
-        } else if (stand.erledigt >= N) {
-          label("Du hast schon alle Stationen geschafft.");
-        } else if (nach - 1 < stand.erledigt) {     // Weg schon geschafft
-          label("Diesen Weg kennst du schon. Suche Station " + (stand.erledigt + 1) + ".");
-        } else {                                    // Weg kommt erst später
-          label("Hier geht es später weiter. Suche zuerst Station " + (stand.erledigt + 1) + ".");
-        }
+        // nur auf dem richtigen Weg: Pfeil zeigen, kein Text
+        if (stand.erledigt === nach - 1) { pfeil.setAttribute("visible", true); label(""); clearTimeout(tippTimer); }
       });
       a.addEventListener("targetLost", () => {
         wwSichtbar = false;
@@ -414,7 +414,7 @@
 
   $("start").addEventListener("click", arStarten);
   $("arSchliessen").addEventListener("click", arBeenden);
-})();
+};
 </script>
 </body>
 </html>
