@@ -143,7 +143,7 @@
 
   function zeigen() {
     const e = stand.erledigt, fertig = e >= N;
-    $("titel").textContent = fertig ? "Du hast es geschafft." : (e === 0 ? "Kennst du schon deine neue Schule?" : "Wo geht es weiter?");
+    $("titel").textContent = fertig ? "Du hast es geschafft." : (e === 0 ? "Kennst du schon die Wascherde?" : "Wo geht es weiter?");
     $("lead").textContent = fertig ? daten.ende : (e === 0 ? daten.start : "Folge dem Pfeil zur nächsten Station.");
     $("unterwegs").hidden = fertig;
     if (!fertig) {
@@ -291,7 +291,7 @@
     clearTimeout(tippTimer);
     tippTimer = setTimeout(() => {
       if (!$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N)
-        label("Halte das iPhone direkt über den Aufkleber");
+        label("Halte die Kamera direkt über den Aufkleber");
     }, 7000);
   }
 

@@ -26,14 +26,14 @@ const SCHNITZELJAGD = {
   stationen: [
     {
       ort: "Eingangsbereich",
-      text: "Willkommen an der Wascherde. Hier kommst du jeden Morgen an. Im Lerncampus lernen die Kinder aus Jahrgang 5 und 6, bald auch du.",
+      text: "Willkommen an der Wascherde. Hier kommen die Kinder jeden Morgen an. Im Lerncampus lernen die Jahrgänge 5 und 6.",
       bild: "bilder/station1.jpg",
       suchen: "Der erste Aufkleber liegt direkt am Eingang.",
       frage: { text: "Frage ein Schulkind: Was zeigt die Farbe des Schlüsselbands?", auswahl: ["Die Lieblingsfarbe", "Wie viel Verantwortung man schon übernimmt", "Die Klasse"], richtig: "Wie viel Verantwortung man schon übernimmt" }
     },
     {
       ort: "Kunst- und Musikraum",
-      text: "Hier wird gemalt, gebaut und Musik gemacht. In Projekten wählst du selbst, was dich interessiert.",
+      text: "Hier wird gemalt, gebaut und Musik gemacht. In Projekten wählen die Kinder selbst, was sie interessiert.",
       bild: "bilder/station2.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt beim Kunst- und Musikraum.",
       frage: { text: "Frage hier nach: Wie heißt die Bläser-AG der Wascherde?", antwort: ["WaschBlech", "Wasch Blech", "Waschblech AG"] }
@@ -61,21 +61,21 @@ const SCHNITZELJAGD = {
     },
     {
       ort: "Lernflur",
-      text: "Auch auf dem Flur wird gelernt. Hier findest du einen Platz, der zu dir passt.",
+      text: "Auch auf dem Flur wird gelernt. Hier findet jedes Kind einen Platz, der zu ihm passt.",
       bild: "bilder/station6.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt im Lernflur.",
       frage: { text: "Frage ein Schulkind: Wann darf man im Flur arbeiten?", auswahl: ["In der Pause", "In der Lernzeit", "Nach der Schule"], richtig: "In der Lernzeit" }
     },
     {
       ort: "Lernbüro",
-      text: "Im Lernbüro arbeitest du an deinen Aufgaben, jedes Kind an seinem eigenen Platz. Bevor du hineingehst, machst du etwas, das es an anderen Schulen selten gibt.",
+      text: "Im Lernbüro arbeiten die Kinder an ihren Aufgaben, jedes an seinem eigenen Platz. Bevor sie hineingehen, machen sie etwas, das es an anderen Schulen selten gibt.",
       bild: "bilder/station7.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt vor dem Lernbüro.",
       frage: { text: "Schaue dich vor der Glastür um: Was ziehen die Kinder an, bevor sie ins Lernbüro gehen?", antwort: ["Hausschuhe", "Hausschuh", "Puschen", "Pantoffeln", "Schlappen"] }
     },
     {
       ort: "Inputräume",
-      text: "In den Inputräumen erklärt dir eine Lehrkraft Neues, zusammen mit deiner Lerngruppe. Für jedes Hauptfach gibt es einen eigenen Raum.",
+      text: "In den Inputräumen erklärt eine Lehrkraft einer Lerngruppe etwas Neues. Für jedes Hauptfach gibt es einen eigenen Raum.",
       bild: "bilder/station8.jpg",
       suchen: "Folge dem Pfeil. Der nächste Aufkleber liegt bei den Inputräumen.",
       frage: { text: "Schaue auf die Türschilder: Für welche Fächer gibt es Inputräume?", auswahl: ["Sport, Kunst und Musik", "Deutsch, Mathe und Englisch", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
