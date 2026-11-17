@@ -22,7 +22,8 @@
 // (erzeugt die Bilder in „targets“, die Erkennungsdatei „targets/stationen.mind“ und das Druck-PDF).
 
 const SCHNITZELJAGD = {
-  start: "Finde die runden Checkpoints und beantworte die Fragen. Alles richtig? Dann wartet am Ende eine kleine Überraschung.",
+  start: "Finde die runden Checkpoints und beantworte die Fragen.",
+  regel: "Beantworte jede Frage gleich beim ersten Versuch richtig. Nur dann bekommst du am Ende eine kleine Überraschung.",
   ende: "Zeige diesen Bildschirm am Eingang. Dort wartet eine kleine Überraschung.",
   endeTeilweise: "Zeige diesen Bildschirm am Eingang.",
   stationen: [
