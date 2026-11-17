@@ -296,17 +296,21 @@ window.schnitzeljagdStarten = function () {
   };
 
   function pfeilKomponente() {
-    if (AFRAME.components["boden-pfeil"]) return;
-    // Flacher Pfeil, der hinter dem Aufkleber auf dem Boden liegt
-    AFRAME.registerComponent("boden-pfeil", {
+    if (AFRAME.components["pfeil-scheibe"]) return;
+    // Weißer Kreis mit orangem Pfeil – genau so groß wie der Aufkleber und im selben Design wie der Kompass
+    AFRAME.registerComponent("pfeil-scheibe", {
       init: function () {
-        const T = AFRAME.THREE, f = new T.Shape();
-        const sb = 0.13, sl = 1.15, kb = 0.36, kl = 0.5;   // Schaft- und Kopfmaße (Aufkleber = 1 breit)
-        f.moveTo(-sb, 0); f.lineTo(sb, 0); f.lineTo(sb, sl); f.lineTo(kb, sl); f.lineTo(0, sl + kl);
-        f.lineTo(-kb, sl); f.lineTo(-sb, sl); f.lineTo(-sb, 0);
-        const g = new T.ExtrudeGeometry(f, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 3 });
-        const m = new T.MeshStandardMaterial({ color: 0xf47b20, roughness: 0.5, metalness: 0.0, emissive: 0x7a3300, emissiveIntensity: 0.25 });
-        this.el.setObject3D("mesh", new T.Mesh(g, m));
+        const T = AFRAME.THREE, gruppe = new T.Group(), R = 0.52;             // etwas größer als der Aufkleber (Radius 0,492), damit nichts durchblitzt
+        const flach = farbe => new T.MeshBasicMaterial({ color: farbe, side: T.DoubleSide });
+        const scheibe = new T.Mesh(new T.CircleGeometry(R, 96), flach(0xffffff)); scheibe.position.z = 0.002;
+        const rand = new T.Mesh(new T.RingGeometry(R * 0.985, R, 96), flach(0xdbe3ec)); rand.position.z = 0.003;
+        // Pfeil wie im Kompass (dort viewBox −50…50, Kreis = Radius 66 px von 132 px)
+        const k = R / 50, f = new T.Shape();
+        [[0, 38], [24, 6], [9, 6], [9, -36], [-9, -36], [-9, 6], [-24, 6]].forEach(([x, y], n) => n ? f.lineTo(x * k, y * k) : f.moveTo(x * k, y * k));
+        f.closePath();
+        const pfeil = new T.Mesh(new T.ShapeGeometry(f), flach(0xf47b20)); pfeil.position.z = 0.004;
+        gruppe.add(scheibe, rand, pfeil);
+        this.el.setObject3D("mesh", gruppe);
       },
       remove: function () { this.el.removeObject3D("mesh"); }
     });
@@ -322,7 +326,7 @@ window.schnitzeljagdStarten = function () {
   // Solange ein Pfeil in der Kamera zu sehen ist, merkt sich die Seite seine Richtung im Raum
   // (über die Lage des iPhones). Ist der Aufkleber weg, zeigt ein Pfeil unten weiter in diese Richtung
   // und dreht sich mit, wenn sich das Kind dreht. Gilt nur für die Richtung, nicht für die Entfernung.
-  let lage = null, kompassZiel = null, kompassTimer = null, proben = [], kompassZeit = 0;
+  let lage = null, kompassZiel = null, kompassTimer = null, proben = [], kompassZeit = 0, letzteLage = null, kompassAn = false;
   const KOMPASS_SEKUNDEN = 30;      // so lange bleibt der Kompass nach dem letzten Aufkleber sichtbar
   function drehe(o, v) {            // Gerät → Raum (W3C: R = Rz(alpha) · Rx(beta) · Ry(gamma))
     const r = Math.PI / 180, a = o.a * r, b = o.b * r, g = o.g * r;
@@ -365,6 +369,16 @@ window.schnitzeljagdStarten = function () {
       let sx = 0, sy = 0; nutz.forEach(p => { sx += p.x; sy += p.y; });
       const sl = Math.hypot(sx, sy); if (sl > 0) kompassZiel = [sx / sl, sy / sl];
       kompassZeit = jetzt;
+      // Wo und wie groß ist die Scheibe gerade auf dem Bildschirm? (für den nahtlosen Übergang zum Kompass)
+      try {
+        const szene = document.querySelector("#kamera a-scene"), cam = szene.camera, r = szene.canvas.getBoundingClientRect();
+        const pix = q => ({ x: r.left + (q.x + 1) / 2 * r.width, y: r.top + (1 - q.y) / 2 * r.height });
+        const mitte = pix(new T.Vector3(0, 0, 0).applyMatrix4(p.object3D.matrixWorld).project(cam));
+        const randP = pix(new T.Vector3(0.492, 0, 0).applyMatrix4(p.object3D.matrixWorld).project(cam));
+        const randQ = pix(new T.Vector3(0, 0.492, 0).applyMatrix4(p.object3D.matrixWorld).project(cam));
+        const d = 2 * Math.max(Math.hypot(randP.x - mitte.x, randP.y - mitte.y), Math.hypot(randQ.x - mitte.x, randQ.y - mitte.y));
+        letzteLage = { x: mitte.x, y: mitte.y, d, t: jetzt };
+      } catch (e) {}
     }
   }
   function kompassZeigen() {
@@ -374,7 +388,21 @@ window.schnitzeljagdStarten = function () {
       if (!blattOffen() && !$("ar").hidden) label(sucheText());
     }
     const zeigen = kompassZiel && lage && !$("ar").hidden && sichtbar === null && !wwSichtbar && !blattOffen() && stand.erledigt < N;
-    $("kompass").hidden = !zeigen;
+    const k = $("kompass");
+    if (zeigen && !kompassAn) {
+      k.hidden = false;
+      // Von der letzten Stelle der Scheibe zur Kompass-Position gleiten
+      if (letzteLage && Date.now() - letzteLage.t < 1500) {
+        const z = k.getBoundingClientRect(), s = Math.max(0.2, letzteLage.d / z.width);
+        k.style.transition = "none";
+        k.style.transform = `translate(${letzteLage.x - (z.left + z.width / 2)}px, ${letzteLage.y - (z.top + z.height / 2)}px) scale(${s})`;
+        void k.offsetWidth;
+        k.style.transition = "transform .45s ease";
+        k.style.transform = "none";
+      }
+    }
+    kompassAn = zeigen;
+    k.hidden = !zeigen;
     if (!zeigen) return;
     // Blickrichtung waagerecht: Kamera nach vorn (iPhone aufrecht) plus Oberkante (iPhone flach)
     const v = drehe(lage, [0, 0, -1]), o = drehe(lage, bildschirm([0, 1, 0]));
@@ -417,18 +445,14 @@ window.schnitzeljagdStarten = function () {
     let anker = "";
     for (let i = 0; i < N; i++) {
       const pfeil = i < N - 1
-        ? `<a-entity rotation="0 0 ${-(st[i].richtung || 0)}"><a-entity class="pfeil" visible="false" position="0 0.6 0.02"
-             animation="property: position; from: 0 0.6 0.02; to: 0 0.85 0.02; dir: alternate; loop: true; dur: 650; easing: easeInOutSine">
-             <a-entity boden-pfeil></a-entity></a-entity></a-entity>`
+        ? `<a-entity rotation="0 0 ${-(st[i].richtung || 0)}"><a-entity class="pfeil" visible="false"><a-entity pfeil-scheibe></a-entity></a-entity></a-entity>`
         : "";
       anker += `<a-entity class="anker" data-i="${i}" mindar-image-target="targetIndex: ${i}">${pfeil}</a-entity>`;
     }
     // Wegweiser: Bilder nach den Stationen, zeigen nur den Pfeil
     WW.forEach((w, j) => {
       anker += `<a-entity class="anker-ww" data-j="${j}" mindar-image-target="targetIndex: ${N + j}">
-        <a-entity rotation="0 0 ${-(w.richtung || 0)}"><a-entity class="pfeil" visible="false" position="0 0.6 0.02"
-          animation="property: position; from: 0 0.6 0.02; to: 0 0.85 0.02; dir: alternate; loop: true; dur: 650; easing: easeInOutSine">
-          <a-entity boden-pfeil></a-entity></a-entity></a-entity></a-entity>`;
+        <a-entity rotation="0 0 ${-(w.richtung || 0)}"><a-entity class="pfeil" visible="false"><a-entity pfeil-scheibe></a-entity></a-entity></a-entity></a-entity>`;
     });
     $("kamera").innerHTML = `
       <a-scene mindar-image="imageTargetSrc: targets/stationen.mind?v=${N}-${WW.length}; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.0001; filterBeta: 0.001"
