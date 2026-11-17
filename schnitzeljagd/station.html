@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schnitzeljagd – Lerncampus Wascherde</title>
+<style>
+  :root { --blau: #1d4f91; --orange: #e8820c; --grau: #6b6b6b; --linie: #dcdcdc; --hell: #f4f6f9; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1c1c1c; background: #fff; line-height: 1.45; -webkit-text-size-adjust: 100%; }
+  main { max-width: 34rem; margin: 0 auto; padding: max(1.25rem, env(safe-area-inset-top)) 1.25rem 3rem; }
+  .marke { font-weight: 700; letter-spacing: .08em; font-size: .8rem; }
+  .marke .l { color: var(--blau); } .marke .w { color: var(--orange); }
+  .ort { margin-top: 1.5rem; color: var(--grau); font-size: .95rem; }
+  h1 { margin: .15rem 0 .6rem; font-size: 1.9rem; line-height: 1.15; color: var(--blau); }
+  p { margin: 0 0 1rem; }
+  section { border-top: 1px solid var(--linie); padding: 1.25rem 0 .5rem; }
+  h2 { font-size: 1.1rem; margin: 0 0 .5rem; display: flex; align-items: center; gap: .6rem; }
+  .nr { display: inline-flex; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--blau); color: #fff; align-items: center; justify-content: center; font-size: .9rem; flex: none; }
+  button.haupt { width: 100%; font: inherit; font-weight: 600; font-size: 1.05rem; color: #fff; background: var(--orange); border: 0; border-radius: .6rem; padding: .95rem 1rem; cursor: pointer; }
+  button.haupt:active { filter: brightness(.92); }
+  .leise { background: none; border: 0; color: var(--blau); font: inherit; font-size: .9rem; text-decoration: underline; padding: .6rem 0; cursor: pointer; }
+  .eingabe { display: flex; gap: .6rem; }
+  .eingabe input { width: 4.2rem; height: 3.6rem; font-size: 2rem; text-align: center; text-transform: uppercase; border: 2px solid var(--linie); border-radius: .5rem; font-weight: 700; color: var(--blau); }
+  .eingabe input:focus { outline: none; border-color: var(--blau); }
+  .eingabe button { flex: 1; }
+  .meldung { min-height: 1.5rem; margin: .6rem 0 0; font-weight: 600; }
+  .meldung.gut { color: #2d7a3a; } .meldung.nein { color: #b03a1a; }
+  .wort { display: flex; gap: .4rem; flex-wrap: wrap; margin: .3rem 0 1rem; }
+  .wort span { width: 2.4rem; height: 2.8rem; border: 2px solid var(--linie); border-radius: .4rem; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.4rem; color: var(--blau); }
+  .wort span.da { border-color: var(--blau); background: var(--hell); }
+  .weiter { background: var(--hell); border-left: 4px solid var(--orange); padding: .8rem 1rem; margin: .5rem 0 1rem; }
+  .ersatz { background: var(--hell); padding: .8rem 1rem; margin-top: .5rem; }
+  model-viewer { width: 100%; height: 300px; background: var(--hell); --poster-color: transparent; }
+  .klein { font-size: .85rem; color: var(--grau); }
+  [hidden] { display: none !important; }
+
+  /* AR-Ansicht */
+  #ar { position: fixed; inset: 0; background: #000; z-index: 10; }
+  #ar .kamera { position: absolute; inset: 0; overflow: hidden; }
+  #ar .oben { position: absolute; top: 0; left: 0; right: 0; z-index: 20; padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem; background: linear-gradient(rgba(0,0,0,.65), rgba(0,0,0,0)); color: #fff; text-align: center; font-weight: 600; font-size: 1.05rem; }
+  #ar .unten { position: absolute; left: 1rem; right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 20; }
+  #ar .rahmen { position: absolute; z-index: 15; left: 50%; top: 50%; width: min(70vw, 55vh); aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px dashed rgba(255,255,255,.8); border-radius: .5rem; pointer-events: none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="marke"><span class="l">LERNCAMPUS</span> <span class="w">WASCHERDE</span></div>
+  <div class="ort" id="ort"></div>
+  <h1 id="titel"></h1>
+  <p id="text"></p>
+
+  <section>
+    <h2><span class="nr">1</span>Plakat scannen</h2>
+    <p>Tippen Sie auf den Knopf und halten Sie die Kamera auf das Bild auf dem Plakat.</p>
+    <button class="haupt" id="start">Kamera starten</button>
+    <p class="meldung nein" id="kamerafehler" hidden></p>
+    <button class="leise" id="ohne">Die Kamera funktioniert nicht?</button>
+    <div class="ersatz" id="ersatz" hidden></div>
+  </section>
+
+  <section>
+    <h2><span class="nr">2</span>Buchstaben eintragen</h2>
+    <p>Welcher Buchstabe ist erschienen?</p>
+    <form class="eingabe" id="form" autocomplete="off">
+      <input id="buchstabe" maxlength="1" inputmode="text" autocapitalize="characters" aria-label="Buchstabe">
+      <button class="haupt" type="submit">Eintragen</button>
+    </form>
+    <p class="meldung" id="meldung"></p>
+    <div class="weiter" id="weiter" hidden></div>
+  </section>
+
+  <section>
+    <h2>Ihr Lösungswort</h2>
+    <div class="wort" id="wort"></div>
+  </section>
+
+  <section id="truhe" hidden>
+    <h2>Die Schatztruhe</h2>
+    <p id="truhetext">Stellen Sie die Schatztruhe in Ihren Raum.</p>
+    <model-viewer id="mv" src="modelle/schatztruhe.glb" alt="Schatztruhe" ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" camera-controls auto-rotate shadow-intensity="1" camera-orbit="30deg 70deg auto">
+      <button slot="ar-button" class="haupt" style="position:absolute;left:.75rem;right:.75rem;bottom:.75rem;width:auto">In meinen Raum stellen</button>
+    </model-viewer>
+    <p class="klein" id="truhehinweis"></p>
+  </section>
+</main>
+
+<div id="ar" hidden>
+  <div class="kamera" id="kamera"></div>
+  <div class="rahmen" id="rahmen"></div>
+  <div class="oben" id="arHinweis">Halten Sie die Kamera auf das Bild.</div>
+  <div class="unten"><button class="haupt" id="fertig">Fertig</button></div>
+</div>
+
+<script src="stationen.js"></script>
+<script>
+(function () {
+  const daten = SCHNITZELJAGD;
+  const nr = parseInt(new URLSearchParams(location.search).get("s") || "1", 10);
+  const st = daten.stationen[nr];
+  const $ = id => document.getElementById(id);
+  if (!st) { $("titel").textContent = "Station nicht gefunden"; return; }
+
+  const anzahl = daten.loesungswort.length;
+  $("ort").textContent = "Station " + nr + " von " + anzahl + " · " + st.ort;
+  $("titel").textContent = st.titel;
+  $("text").textContent = st.text;
+  document.title = "Station " + nr + " – " + daten.titel;
+
+  // ---------- Fortschritt (bleibt im Browser des Besuchers) ----------
+  const speicherSchluessel = "schnitzeljagd-wascherde";
+  let gefunden = {};
+  try { gefunden = JSON.parse(localStorage.getItem(speicherSchluessel) || "{}"); } catch (e) {}
+  function speichern() { try { localStorage.setItem(speicherSchluessel, JSON.stringify(gefunden)); } catch (e) {} }
+  function wortZeigen() {
+    const w = $("wort"); w.innerHTML = "";
+    for (let i = 1; i <= anzahl; i++) {
+      const s = document.createElement("span");
+      if (gefunden[i]) { s.textContent = gefunden[i]; s.className = "da"; }
+      w.appendChild(s);
+    }
+  }
+  wortZeigen();
+
+  // ---------- Richtung des Pfeils ----------
+  const woerter = { rechts: 0, oben: 90, links: 180, unten: 270 };
+  const richtungText = p => p === "zurueck" ? "Drehen Sie sich um" :
+    ({ 0: "Gehen Sie nach rechts", 90: "Gehen Sie geradeaus bzw. nach oben", 180: "Gehen Sie nach links", 270: "Gehen Sie nach unten" }[woerter[p] ?? p] || "Folgen Sie dem Pfeil");
+
+  function weiterZeigen() {
+    $("weiter").hidden = false;
+    $("weiter").innerHTML = st.ziel
+      ? "<strong>Sie haben es geschafft!</strong> Gehen Sie mit Ihrem Lösungswort zum " + st.weiter + "."
+      : "<strong>Als Nächstes:</strong> " + st.weiter + ". " + richtungText(st.pfeil) + " – der Pfeil hat es Ihnen gezeigt.";
+  }
+  if (gefunden[nr]) { $("buchstabe").value = gefunden[nr]; $("meldung").textContent = "Richtig!"; $("meldung").className = "meldung gut"; weiterZeigen(); }
+
+  $("form").addEventListener("submit", e => {
+    e.preventDefault();
+    const b = $("buchstabe").value.trim().toUpperCase();
+    if (!b) return;
+    if (b === st.buchstabe.toUpperCase()) {
+      gefunden[nr] = st.buchstabe.toUpperCase(); speichern(); wortZeigen();
+      $("meldung").textContent = "Richtig!"; $("meldung").className = "meldung gut";
+      weiterZeigen(); $("buchstabe").blur();
+    } else {
+      $("meldung").textContent = "Das ist nicht der Buchstabe. Schauen Sie noch einmal genau hin!"; $("meldung").className = "meldung nein";
+    }
+  });
+
+  // ---------- Ersatz ohne Kamera ----------
+  $("ohne").addEventListener("click", () => {
+    $("ersatz").hidden = false;
+    $("ersatz").innerHTML = "Kein Problem. Ihr Buchstabe ist <strong>" + st.buchstabe + "</strong>. " + richtungText(st.pfeil) + ", um zu " + st.weiter + " zu kommen.";
+    $("ohne").hidden = true;
+  });
+
+  // ---------- Schatztruhe (3D im Raum, wo das Gerät es kann) ----------
+  if (st.ziel || st.truhe) {
+    $("truhe").hidden = false;
+    const mv = $("mv");
+    mv.addEventListener("load", () => {
+      $("truhehinweis").textContent = mv.canActivateAR
+        ? "Tippen Sie auf „In meinen Raum stellen“ und richten Sie die Kamera auf den Boden."
+        : "Auf diesem Gerät können Sie die Truhe mit dem Finger drehen. Mit der Kamera erscheint sie außerdem auf dem Plakat.";
+    });
+  }
+
+  // ---------- AR mit Plakat-Erkennung ----------
+  function hinweisBild(text, unter) {
+    const c = document.createElement("canvas"); c.width = 1024; c.height = 440;
+    const g = c.getContext("2d");
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, c.width, c.height);
+    g.strokeStyle = "#1d4f91"; g.lineWidth = 18; g.strokeRect(9, 9, c.width - 18, c.height - 18);
+    g.fillStyle = "#6b6b6b"; g.font = "600 64px -apple-system, Segoe UI, Roboto, Arial, sans-serif"; g.textAlign = "center";
+    g.fillText(unter, c.width / 2, 110);
+    g.fillStyle = "#1d4f91"; g.font = "800 260px -apple-system, Segoe UI, Roboto, Arial, sans-serif";
+    g.fillText(text, c.width / 2, 380);
+    return c.toDataURL("image/png");
+  }
+
+  const pfeilFarbe = 'material="color: #e8820c; emissive: #7a3d00; emissiveIntensity: 0.35"';
+  function pfeilHtml(p) {
+    if (p === "zurueck") {
+      // Wende-Pfeil („Drehen Sie sich um“), wippt auf und ab
+      return `<a-entity animation="property: position; from: 0 0 0; to: 0 0.08 0; dir: alternate; loop: true; dur: 700; easing: easeInOutSine">
+        <a-torus radius="0.17" radius-tubular="0.045" arc="180" segments-tubular="32" ${pfeilFarbe}></a-torus>
+        <a-cylinder radius="0.045" height="0.12" position="0.17 -0.06 0" ${pfeilFarbe}></a-cylinder>
+        <a-cone radius-bottom="0.11" radius-top="0" height="0.2" rotation="0 0 180" position="-0.17 -0.08 0" ${pfeilFarbe}></a-cone>
+      </a-entity>`;
+    }
+    const grad = woerter[p] ?? (Number(p) || 0);
+    // Pfeil zeigt in seiner Grundform nach rechts; Mittelpunkt in der Mitte, damit er nach jeder Drehung sichtbar bleibt
+    return `<a-entity rotation="0 0 ${grad}">
+      <a-entity animation="property: position; from: -0.08 0 0; to: 0.08 0 0; dir: alternate; loop: true; dur: 700; easing: easeInOutSine">
+        <a-cylinder radius="0.05" height="0.36" rotation="0 0 -90" position="-0.08 0 0" ${pfeilFarbe}></a-cylinder>
+        <a-cone radius-bottom="0.13" radius-top="0" height="0.24" rotation="0 0 -90" position="0.2 0 0" ${pfeilFarbe}></a-cone>
+      </a-entity>
+    </a-entity>`;
+  }
+
+  let skripteGeladen = false;
+  function ladeSkript(src) {
+    return new Promise((ok, fehler) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = fehler; document.head.appendChild(s); });
+  }
+
+  function kameraFehler(text) {
+    $("kamerafehler").hidden = false; $("kamerafehler").textContent = text;
+  }
+
+  async function arStarten() {
+    $("kamerafehler").hidden = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      kameraFehler("Dieser Browser erlaubt keinen Kamerazugriff. Bitte öffnen Sie die Seite in Safari (oft über „…“ → „In Safari öffnen“).");
+      return;
+    }
+    $("start").disabled = true; $("start").textContent = "Wird geladen …";
+    try {
+      if (!skripteGeladen) {
+        await ladeSkript("vendor/aframe-v1.5.0.min.js");
+        await ladeSkript("vendor/mindar-image-aframe.prod.js");
+        skripteGeladen = true;
+      }
+    } catch (e) {
+      kameraFehler("Die Seite konnte nicht vollständig geladen werden. Bitte prüfen Sie die Internetverbindung.");
+      $("start").disabled = false; $("start").textContent = "Kamera starten"; return;
+    }
+
+    $("ar").hidden = false; $("rahmen").hidden = false;
+    $("arHinweis").textContent = "Halten Sie die Kamera auf das Bild.";
+    const zeigeTruhe = st.ziel || st.truhe;
+    $("kamera").innerHTML = `
+      <a-scene mindar-image="imageTargetSrc: targets/station${nr}.mind; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.0001; filterBeta: 0.001"
+               color-space="sRGB" renderer="colorManagement: true; antialias: true" vr-mode-ui="enabled: false" xr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-entity light="type: ambient; intensity: 0.9"></a-entity>
+        <a-entity light="type: directional; intensity: 0.8" position="0.5 1 1"></a-entity>
+        <a-entity id="ziel" mindar-image-target="targetIndex: 0">
+          <a-entity id="inhalt" scale="0.001 0.001 0.001"
+                    animation__auf="property: scale; to: 1 1 1; dur: 600; easing: easeOutBack; startEvents: zeigen"
+                    animation__zu="property: scale; to: 0.001 0.001 0.001; dur: 1; startEvents: verstecken">
+            <a-image src="${hinweisBild(st.buchstabe, "Ihr Buchstabe")}" width="0.75" height="0.32" position="0 0.75 0.05"></a-image>
+            <a-entity position="0 -0.72 0.12">${pfeilHtml(st.pfeil)}</a-entity>
+            ${zeigeTruhe ? `<a-gltf-model src="modelle/schatztruhe.glb" position="0 -0.25 0.15" rotation="35 0 0" scale="0.9 0.9 0.9"
+                 animation="property: rotation; from: 35 0 0; to: 35 360 0; loop: true; dur: 9000; easing: linear"></a-gltf-model>` : ""}
+          </a-entity>
+        </a-entity>
+      </a-scene>`;
+
+    const szene = $("kamera").querySelector("a-scene");
+    const ziel = szene.querySelector("#ziel");
+    const inhalt = szene.querySelector("#inhalt");
+    const textGefunden = st.pfeil === "zurueck"
+      ? "Merken Sie sich den Buchstaben – dann drehen Sie sich um."
+      : "Merken Sie sich den Buchstaben und folgen Sie dem Pfeil.";
+    ziel.addEventListener("targetFound", () => { $("rahmen").hidden = true; $("arHinweis").textContent = textGefunden; inhalt.emit("zeigen"); });
+    ziel.addEventListener("targetLost", () => { $("rahmen").hidden = false; $("arHinweis").textContent = "Halten Sie die Kamera auf das Bild."; inhalt.emit("verstecken"); });
+    szene.addEventListener("arError", () => {
+      arBeenden();
+      kameraFehler("Die Kamera konnte nicht gestartet werden. Bitte erlauben Sie den Kamerazugriff und versuchen Sie es noch einmal.");
+    });
+    $("start").disabled = false; $("start").textContent = "Kamera starten";
+  }
+
+  // Resize-Listener mitschreiben, die MindAR beim Start anmeldet – beim Beenden werden sie wieder entfernt
+  let resizeListener = [];
+  const origAdd = window.addEventListener;
+  window.addEventListener = function (typ, fn, opt) {
+    if (typ === "resize" && !$("ar").hidden) resizeListener.push(fn);
+    return origAdd.call(window, typ, fn, opt);
+  };
+  function arBeenden() {
+    const szene = $("kamera").querySelector("a-scene");
+    if (szene) {
+      try { szene.systems["mindar-image-system"].stop(); } catch (e) {}
+      resizeListener.forEach(fn => window.removeEventListener("resize", fn)); resizeListener = [];
+      document.querySelectorAll("video").forEach(v => { try { v.srcObject && v.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {} v.remove(); });
+      szene.remove();
+    }
+    $("kamera").innerHTML = "";
+    $("ar").hidden = true;
+  }
+
+  $("start").addEventListener("click", arStarten);
+  $("fertig").addEventListener("click", arBeenden);
+})();
+</script>
+<script type="module" src="vendor/model-viewer.min.js"></script>
+</body>
+</html>
