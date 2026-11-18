@@ -295,7 +295,7 @@ window.schnitzeljagdStarten = function () {
       let da = false;
       try { da = !!(await caches.match("targets/stationen.mind", { ignoreSearch: true })); } catch (e) {}
       $("offline").hidden = false;
-      $("offline").textContent = da ? "Gespeichert – funktioniert jetzt auch ohne Internet." : "Wird für unterwegs gespeichert …";
+      $("offline").textContent = da ? "Fertig – Jetzt kannst du loslegen!" : "Ich bereite alles vor. Gleich geht’s los.";
       if (!da) setTimeout(offlinePruefen, 1500);
     })();
   }
