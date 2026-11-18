@@ -57,6 +57,7 @@
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
   .taste.neben { background: var(--flaeche); color: var(--tinte); border: 1px solid var(--linie); margin-top: 24px; }
+  .offline { font-size: 13px; color: var(--text-leise); text-align: center; margin: 10px 0 0; }
   .fehler { color: var(--tinte); font-size: 15px; font-weight: 500; margin: 12px 0 0; padding: 12px 16px; background: var(--flaeche); border-radius: 12px; }
   h2 { font-size: 22px; font-weight: 700; color: var(--tinte); margin: 40px 0 12px; }
   .leise { background: none; border: 0; font: inherit; font-size: 15px; font-weight: 500; color: var(--tinte); text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: 3px; padding: 12px 0; cursor: pointer; }
@@ -90,10 +91,10 @@
   #arSchliessen { width: 100%; max-width: 34rem; margin-top: 12px; }
 
   /* halbhohes Blatt mit Infos und Frage */
-  #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 90%; display: flex; flex-direction: column; background: var(--grund); border-radius: 17px 17px 0 0; box-shadow: 0 -4px 24px rgba(36, 55, 70, .14); transform: translateY(105%); transition: transform .35s ease; }
+  #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 90%; display: flex; flex-direction: column; background: var(--grund); border-radius: 17px 17px 0 0; box-shadow: 0 -4px 24px rgba(36, 55, 70, .14); transform: translateY(105%); transition: transform .3s cubic-bezier(.4, 0, 1, 1); }
   .blatt-inhalt { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 20px 4px; }
   .blatt-fuss { flex: none; padding: 12px 20px max(20px, env(safe-area-inset-bottom)); border-top: 1px solid var(--linie); background: var(--grund); }
-  #blatt.offen { transform: none; }
+  #blatt.offen { transform: none; transition: transform .45s cubic-bezier(.32, .72, 0, 1); }
   #blatt .griff { width: 36px; height: 5px; border-radius: 3px; background: var(--linie); margin: 0 auto 12px; }
   #blatt h3 { font-size: 24px; line-height: 1.2; color: var(--tinte); margin: 4px 0 8px; }
   #blatt p { margin: 0; }
@@ -142,6 +143,7 @@
   <div id="unterwegs">
     <button class="taste haupt" id="start">Schnitzeljagd starten</button>
     <p class="fehler" id="fehler" hidden></p>
+    <p class="offline" id="offline" hidden></p>
   </div>
 
   <section id="besucht" hidden>
@@ -209,6 +211,12 @@ window.schnitzeljagdStarten = function () {
   const emSpeichern = () => { try { localStorage.setItem(EM_SCHLUESSEL, JSON.stringify(einm)); } catch (e) {} };
   const peilungCP = i => (i >= 0 && i < N - 1) ? (einm.c[i + 1] ?? st[i].peilung ?? null) : null;
   const peilungWW = j => einm.w[WW[j].nr] ?? WW[j].peilung ?? null;
+  // Kleine Checkpoints auf dem Weg: „Checkpoint auf dem Weg zu „Mensa“ – 1“
+  function wwName(j) {
+    const nach = WW[j].nach; if (!nach) return "Checkpoint auf dem Weg " + WW[j].nr;
+    const teil = WW.slice(0, j + 1).filter(w => w.nach === nach).length;
+    return `Checkpoint auf dem Weg zu „${st[nach - 1].ort}“${nach === N ? " (Ziel)" : ""} – ${teil}`;
+  }
   const norm360 = a => ((a % 360) + 360) % 360;
   const winkelDiff = (a, b) => ((a - b) % 360 + 540) % 360 - 180;
   const RICHTUNGEN = ["Nord", "Nordost", "Ost", "Südost", "Süd", "Südwest", "West", "Nordwest"];
@@ -264,13 +272,13 @@ window.schnitzeljagdStarten = function () {
     const zeile = (name, wert) => `<li class="${wert === null ? "nok" : "ok"}"><span class="marke">${wert === null ? "–" : "✓"}</span>${esc(name)}<span class="wert">${wert === null ? "fehlt" : Math.round(wert) + "° " + richtungsName(wert)}</span></li>`;
     let html = "";
     for (let i = 0; i < N - 1; i++) html += zeile(`Checkpoint ${i + 1} · ${st[i].ort}`, peilungCP(i));
-    WW.forEach((w, j) => html += zeile(`Wegweiser ${w.nr}`, peilungWW(j)));
+    WW.forEach((w, j) => html += zeile(wwName(j), peilungWW(j)));
     $("karten").innerHTML = html;
   }
   function einmessText() {
     const z = ["Schnitzeljagd – eingemessene Richtungen (" + new Date().toLocaleDateString("de-DE") + ")"];
     for (let i = 0; i < N - 1; i++) { const p = peilungCP(i); z.push(`Checkpoint ${i + 1} (${st[i].ort}): ${p === null ? "fehlt" : Math.round(p)}`); }
-    WW.forEach((w, j) => { const p = peilungWW(j); z.push(`Wegweiser ${w.nr}: ${p === null ? "fehlt" : Math.round(p)}`); });
+    WW.forEach((w, j) => { const p = peilungWW(j); z.push(`${wwName(j)} [Nr. ${w.nr}]: ${p === null ? "fehlt" : Math.round(p)}`); });
     return z.join("\n");
   }
   $("teilen").addEventListener("click", () => {
@@ -279,6 +287,18 @@ window.schnitzeljagdStarten = function () {
     else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => { $("teilen").textContent = "Kopiert"; setTimeout(() => $("teilen").textContent = "Werte teilen", 2000); });
   });
   zeigen();
+
+  // ---------- Ohne Internet: alles beim ersten Öffnen auf dem Gerät speichern ----------
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+    (async function offlinePruefen() {
+      let da = false;
+      try { da = !!(await caches.match("targets/stationen.mind", { ignoreSearch: true })); } catch (e) {}
+      $("offline").hidden = false;
+      $("offline").textContent = da ? "Gespeichert – funktioniert jetzt auch ohne Internet." : "Wird für unterwegs gespeichert …";
+      if (!da) setTimeout(offlinePruefen, 1500);
+    })();
+  }
 
   // Von vorn beginnen – sofort ausführen, kurz „Rückgängig“ anbieten
   let vorher = null, rueckTimer = null;
@@ -378,10 +398,16 @@ window.schnitzeljagdStarten = function () {
     $("blattOrt").textContent = s.ort; $("blattText").textContent = s.text;
     frageAufbauen(i);
     knopfStand();
-    $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
+    blattHoehe(); $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
     kompassZeigen();
   }
   const blattOffen = () => $("blatt").classList.contains("offen");
+  // Das Blatt reicht bis über die Textzeile („Suche den nächsten Checkpoint.“) – der Pfeil oben bleibt frei
+  function blattHoehe() {
+    const oben = $("arLabel").getBoundingClientRect().top;
+    if (oben > 0) $("blatt").style.height = Math.max(320, Math.round(window.innerHeight - oben + 16)) + "px";
+  }
+  window.addEventListener("resize", () => { if (blattOffen()) blattHoehe(); });
   $("blattWeiter").addEventListener("click", () => {
     if ($("blattWeiter").disabled) return;
     if (messen) { messTaste(); return; }
@@ -409,11 +435,11 @@ window.schnitzeljagdStarten = function () {
   function messenZeigen(art, k) {
     messen = { art, k, gespeichert: false }; messProben = [];
     aktiveStation = -1;
-    $("blattOrt").textContent = art === "c" ? `Checkpoint ${k + 1} · ${st[k].ort}` : `Wegweiser ${WW[k].nr}`;
+    $("blattOrt").textContent = art === "c" ? `Checkpoint ${k + 1} · ${st[k].ort}` : wwName(k);
     $("blattText").textContent = "Halte das Gerät in die Richtung, in die die Kinder von hier loslaufen sollen.";
     $("frageBox").hidden = true; $("messung").hidden = false;
     $("blattWeiter").classList.remove("wartet"); $("blattWeiter").style.removeProperty("--fortschritt");
-    $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
+    blattHoehe(); $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
     clearInterval(messTimer); messTimer = setInterval(messAnzeige, 200); messAnzeige();
   }
   function messWert() { return messen.art === "c" ? peilungCP(messen.k) : peilungWW(messen.k); }
@@ -456,15 +482,22 @@ window.schnitzeljagdStarten = function () {
       const b = tonKontext.createBuffer(1, 1, 22050), q = tonKontext.createBufferSource(); q.buffer = b; q.connect(tonKontext.destination); q.start(0);
     } catch (e) {}
   }
-  function ton() {                   // zwei kurze, helle Töne
+  function ton() {                   // kurzer, heller Bestätigungston: zwei glockige Töne aufwärts (eigener Klang)
     if (!tonKontext) return;
     try {
-      const t0 = tonKontext.currentTime;
-      [[880, 0], [1320, 0.11]].forEach(([f, d]) => {
-        const o = tonKontext.createOscillator(), g = tonKontext.createGain();
-        o.type = "sine"; o.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.35, t0 + d + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.16);
-        o.connect(g); g.connect(tonKontext.destination); o.start(t0 + d); o.stop(t0 + d + 0.18);
+      const t0 = tonKontext.currentTime + 0.01, ziel = tonKontext.createGain();
+      ziel.gain.value = 0.22; ziel.connect(tonKontext.destination);
+      [[1174.7, 0], [1568.0, 0.085]].forEach(([f, d]) => {
+        // Grundton plus leise Obertöne → klingt wie eine kleine Glocke
+        [[1, 1], [2.0, 0.28], [3.01, 0.08]].forEach(([m, lautst]) => {
+          const o = tonKontext.createOscillator(), g = tonKontext.createGain();
+          o.type = "sine"; o.frequency.value = f * m;
+          const dauer = m === 1 ? 0.55 : 0.25;
+          g.gain.setValueAtTime(0.0001, t0 + d);
+          g.gain.exponentialRampToValueAtTime(lautst, t0 + d + 0.008);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + dauer);
+          o.connect(g); g.connect(ziel); o.start(t0 + d); o.stop(t0 + d + dauer + 0.02);
+        });
       });
     } catch (e) {}
   }
@@ -493,7 +526,7 @@ window.schnitzeljagdStarten = function () {
   function label(t) { clearTimeout(labelTimer); $("arLabel").textContent = t; }
   function kurzLabel(t) { label(t); labelTimer = setTimeout(() => label(sucheText()), 2500); }
   function sucheText() {
-    if (EINMESSEN) return "Scanne einen Checkpoint oder Wegweiser.";
+    if (EINMESSEN) return "Scanne einen Checkpoint.";
     if (stand.erledigt >= N) return "";
     if (stand.peilung != null) return "Folge dem Pfeil bis zum nächsten Checkpoint!";
     return stand.erledigt === 0 ? "Suche den ersten Checkpoint." : "Suche den nächsten Checkpoint.";
@@ -626,27 +659,29 @@ window.schnitzeljagdStarten = function () {
         if (blattOffen()) return;
         if (i === stand.erledigt) {                 // der gesuchte Checkpoint: Info und Frage
           treffer("c" + i); blattZeigen(i);
-        } else if (i === stand.erledigt - 1 && stand.erledigt < N) {   // gerade geschafft: Richtung noch einmal holen
-          if (!frei(i)) { kurzLabel("Schaue dich hier noch um."); return; }
-          const p = peilungCP(i);
-          if (p !== null) { treffer("c" + i); stand.peilung = p; speichern(); label(sucheText()); kompassZeigen(); }
-        } else if (i < stand.erledigt) {
-          kurzLabel("Hier warst du schon.");
+        } else if (i < stand.erledigt) {            // schon besucht
+          if (i === stand.erledigt - 1 && stand.erledigt < N && frei(i) && peilungCP(i) !== null) { stand.peilung = peilungCP(i); speichern(); kompassZeigen(); }
+          kurzLabel("An diesem Checkpoint warst du schon.");
         } else {
-          kurzLabel("Dieser Checkpoint kommt später.");
+          kurzLabel("Dieser Checkpoint kommt erst später.");
         }
       });
       a.addEventListener("targetLost", () => { if (sichtbar === i) sichtbar = null; });
     });
     szene.querySelectorAll(".anker-ww").forEach(a => {
-      const j = Number(a.dataset.j), nach = WW[j].nach ?? "alle";
+      const j = Number(a.dataset.j), nach = WW[j].nach ?? null;
       a.addEventListener("targetFound", () => {
         if (EINMESSEN) { if (blattOffen()) return; treffer("w" + j); messenZeigen("w", j); return; }
         if (blattOffen()) return;
-        // nur auf dem richtigen Weg und erst, wenn die Zeit am letzten Checkpoint um ist
-        if (((nach === "alle" && stand.erledigt < N) || stand.erledigt === nach - 1) && (stand.erledigt === 0 || frei(stand.erledigt - 1))) {
+        const gesucht = stand.erledigt + 1;           // Nummer des Checkpoints, zu dem das Kind gerade unterwegs ist
+        if (stand.erledigt < N && (nach === null || nach === gesucht)) {
+          if (stand.erledigt > 0 && !frei(stand.erledigt - 1)) return;   // Zeit am letzten Checkpoint noch nicht um
           const p = peilungWW(j);
           if (p !== null) { treffer("w" + j); stand.peilung = p; speichern(); label(sucheText()); kompassZeigen(); }
+        } else if (nach !== null && nach > gesucht) {
+          kurzLabel("Dieser Checkpoint kommt erst später.");
+        } else {
+          kurzLabel("An diesem Checkpoint warst du schon.");
         }
       });
     });

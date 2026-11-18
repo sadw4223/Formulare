@@ -1,6 +1,7 @@
 // Inhalte der Schnitzeljagd – hier werden alle Stationen gepflegt, in der Reihenfolge des Rundgangs.
 // Zielgruppe: künftige Schulkinder (du-Form, kurze Sätze).
 //
+// CHECKPOINTS MIT FRAGE (große Aufkleber Ø 19 cm, blauer Rand), in der Reihenfolge des Rundgangs:
 // ort        Name des Raums (Überschrift der Infokarte)
 // text       Infotext, der nach dem Scannen erscheint
 // peilung    Himmelsrichtung in Grad (0 = Nord, 90 = Ost …), in die die Kinder von hier loslaufen. Wird vor Ort
@@ -11,11 +12,10 @@
 //            { text: "…", auswahl: ["A", "B", "C"], richtig: "B" }
 //            Die Reihenfolge der Antworten wird bei jedem Kind zufällig gemischt.
 //
-// WEGWEISER (kleine Aufkleber mit orangem Rand, für Wand oder Boden), durchnummeriert, jedes Motiv nur einmal aufkleben.
-// Beim Scannen erscheint nur der Pfeil, ohne Text. Jeder Wegweiser wird wie die Checkpoints eingemessen.
-//   { nr: 3, peilung: 90 }              Wegweiser 3 zeigt nach Osten – egal, zwischen welchen Checkpoints er hängt.
-//   { nr: 4, peilung: 180, nach: 6 }    (selten nötig) gilt nur auf dem Weg zu Checkpoint 6, falls an einer Stelle
-//                                       zwei Wege in verschiedene Richtungen vorbeiführen.
+// CHECKPOINTS AUF DEM WEG (Liste „wegweiser“; kleine Aufkleber Ø 12 cm mit orangem Rand, für Wand oder Boden):
+// je zwei zwischen zwei Checkpoints, ohne Frage – sie stellen nur den Pfeil neu ein. nach = Nummer des Checkpoints,
+// zu dem der Weg führt. Auf dem Druck steht z. B. „Checkpoint auf dem Weg zu „Mensa“ – 1“. Jeder wird eingemessen.
+// Gehört er zu einem späteren Weg, steht über dem Scanfenster „Dieser Checkpoint kommt erst später.“
 //
 // Nach jeder Änderung an Stationen oder Wegweisern: python3 bauen.py <ordner schnitzeljagd>
 // (erzeugt die Bilder in „targets“, die Erkennungsdatei „targets/stationen.mind“ und das Druck-PDF).
@@ -75,7 +75,13 @@ const SCHNITZELJAGD = {
     }
   ],
   wegweiser: [
-    { nr: 1 }, { nr: 2 }, { nr: 3 }, { nr: 4 }, { nr: 5 },
-    { nr: 6 }, { nr: 7 }, { nr: 8 }, { nr: 9 }, { nr: 10 }
+    { nr: 1, nach: 2 }, { nr: 2, nach: 2 },
+    { nr: 3, nach: 3 }, { nr: 4, nach: 3 },
+    { nr: 5, nach: 4 }, { nr: 6, nach: 4 },
+    { nr: 7, nach: 5 }, { nr: 8, nach: 5 },
+    { nr: 9, nach: 6 }, { nr: 10, nach: 6 },
+    { nr: 11, nach: 7 }, { nr: 12, nach: 7 },
+    { nr: 13, nach: 8 }, { nr: 14, nach: 8 },
+    { nr: 15, nach: 9 }, { nr: 16, nach: 9 }
   ]
 };
