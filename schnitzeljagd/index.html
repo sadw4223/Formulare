@@ -656,13 +656,19 @@ window.schnitzeljagdStarten = function () {
     [x, y] = [Math.cos(a) * x - Math.sin(a) * y, Math.sin(a) * x + Math.cos(a) * y];    // Rz
     return [x, y, z];
   }
+  let absolutDa = false;             // Android: Lage kommt schon nach Norden ausgerichtet
   function lageMerken(e) {
-    if (e.alpha === null) return;
+    if (e.alpha === null || e.alpha === undefined) return;
+    // Android (Chrome, Samsung Internet): „deviceorientationabsolute“ – Winkel beziehen sich auf Norden.
+    // Sobald es diese Daten gibt, die anderen (nicht ausgerichteten) nicht mehr mischen.
+    const absolut = e.type === "deviceorientationabsolute" || e.absolute === true;
+    if (absolut) absolutDa = true; else if (absolutDa) return;
     lage = { a: e.alpha, b: e.beta, g: e.gamma };
+    if (absolut) { nord = 0; kompassGenau = null; }
     // Eingebauter Kompass (iPhone/iPad): bezieht sich auf die Oberkante des Geräts. Daraus wird nur der Versatz
     // zwischen Raumwinkel und Norden bestimmt – gedreht wird über den Lagesensor (ruhig, egal wie man das Gerät hält).
     const kh = e.webkitCompassHeading, ka = e.webkitCompassAccuracy;
-    if (typeof kh === "number" && !isNaN(kh) && !(typeof ka === "number" && ka < 0)) {
+    if (!absolut && typeof kh === "number" && !isNaN(kh) && !(typeof ka === "number" && ka < 0)) {
       kompassGenau = typeof ka === "number" ? ka : null;
       const o = drehe(lage, [0, 1, 0]);
       if (Math.hypot(o[0], o[1]) > 0.5) {         // Gerät nicht senkrecht: Oberkante zeigt waagerecht
@@ -675,6 +681,7 @@ window.schnitzeljagdStarten = function () {
   }
   function lageErlauben() {         // iPhone/iPad fragt einmal nach – muss direkt beim Tippen passieren
     window.addEventListener("deviceorientation", lageMerken);   // Daten kommen erst, wenn erlaubt
+    window.addEventListener("deviceorientationabsolute", lageMerken);   // Android
     try {
       if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function")
         DeviceOrientationEvent.requestPermission().catch(() => {});
