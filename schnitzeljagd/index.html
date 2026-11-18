@@ -87,7 +87,7 @@
   .gross-kompass.wartet .pfeil-svg { opacity: 0; }
   #arLabel { text-align: center; color: var(--tinte); font-weight: 700; font-size: 19px; line-height: 1.3; margin: 0 0 4px; max-width: 24rem; min-height: 50px; }
   #arHinweis { text-align: center; font-size: 15px; margin: 12px 0 0; min-height: 21px; }
-  #arSchliessen { margin-top: 4px; }
+  #arSchliessen { width: 100%; max-width: 34rem; margin-top: 12px; }
 
   /* halbhohes Blatt mit Infos und Frage */
   #blatt { position: absolute; z-index: 30; left: 0; right: 0; bottom: 0; max-height: 90%; display: flex; flex-direction: column; background: var(--grund); border-radius: 17px 17px 0 0; box-shadow: 0 -4px 24px rgba(36, 55, 70, .14); transform: translateY(105%); transition: transform .35s ease; }
@@ -165,7 +165,7 @@
     <div id="rund"><div id="kamera"></div></div>
   </div>
   <p id="arHinweis"></p>
-  <button class="leise" id="arSchliessen">Schließen</button>
+  <button class="taste neben" id="arSchliessen">Pause machen</button>
   <div id="blatt" role="dialog">
     <div class="blatt-inhalt" id="blattInhalt">
       <div class="griff"></div>
@@ -229,7 +229,7 @@ window.schnitzeljagdStarten = function () {
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
     $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Geschafft.") : (e === 0 ? "Kennst du schon die Wascherde?" : "Weiter geht’s");
-    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Starte die Kamera und folge dem Pfeil, bis du den nächsten Checkpoint findest.");
+    $("lead").textContent = fertig ? (ev.alle ? daten.ende : daten.endeTeilweise) : (e === 0 ? daten.start : "Folge dem Pfeil bis zum nächsten Checkpoint!");
     $("regel").hidden = e !== 0;
     $("regelText").textContent = daten.regel;
     $("ergebnis").hidden = !fertig;
@@ -495,7 +495,7 @@ window.schnitzeljagdStarten = function () {
   function sucheText() {
     if (EINMESSEN) return "Scanne einen Checkpoint oder Wegweiser.";
     if (stand.erledigt >= N) return "";
-    if (stand.peilung != null) return "Folge dem Pfeil, bis du den nächsten Checkpoint findest.";
+    if (stand.peilung != null) return "Folge dem Pfeil bis zum nächsten Checkpoint!";
     return stand.erledigt === 0 ? "Suche den ersten Checkpoint." : "Suche den nächsten Checkpoint.";
   }
 
