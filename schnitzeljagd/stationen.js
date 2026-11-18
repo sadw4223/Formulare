@@ -3,21 +3,19 @@
 //
 // ort        Name des Raums (Überschrift der Infokarte)
 // text       Infotext, der nach dem Scannen erscheint
-// bild       Foto des Raums (Ordner „bilder“), Querformat 3:2
-// richtung   (selten nötig) Pfeil in Grad gegenüber dem Rückseiten-Pfeil drehen, im Uhrzeigersinn:
-//            0 = wie auf der Rückseite (Normalfall), 90 = rechts, 180 = zurück, 270 = links. Die letzte Station hat keinen Pfeil.
+// peilung    Himmelsrichtung in Grad (0 = Nord, 90 = Ost …), in die die Kinder von hier loslaufen. Wird vor Ort
+//            mit dem Einmess-Modus gemessen (Adresse mit ?einmessen am Ende) – nicht von Hand ausdenken.
+//            Die letzte Station braucht keine.
 // warten     (selten nötig) eigene Mindestzeit in Sekunden für diese Station, z. B. warten: 60
-// frage      Frage zur Station, immer zum Ankreuzen. Kurz halten. wie: "fragen" → über der Frage steht
-//            „Frage jemanden vom Lerncampus“; wie: "schauen" → „Schaue dich um“.
-//            { text: "…", wie: "fragen", auswahl: ["A", "B", "C"], richtig: "B" }
+// frage      Frage zur Station, immer zum Ankreuzen. Kurz halten.
+//            { text: "…", auswahl: ["A", "B", "C"], richtig: "B" }
 //            Die Reihenfolge der Antworten wird bei jedem Kind zufällig gemischt.
 //
-// WEGWEISER (kleine Aufkleber mit orangem Rand, für Wand oder Boden): Beim Scannen erscheint nur der Pfeil, ohne Text,
-// (bei einem Wegweiser für einen bestimmten Weg nur, wenn das Kind gerade auf diesem Weg ist). Der Pfeil zeigt immer in die Richtung,
-// die beim Befestigen der Pfeil auf der Rückseite angegeben hat.
-//   { nach: "alle", wo: "…" }   Wegweiser für alle Wege: zeigt immer den Pfeil – beliebig oft ausdrucken und überall
-//                                befestigen, wo es nötig ist (Pfeil auf der Rückseite in Laufrichtung).
-//   { nach: 2, wo: "…" }        Wegweiser nur für den Weg zu Station 2 (falls sich Wege kreuzen). wo = nur für dich.
+// WEGWEISER (kleine Aufkleber mit orangem Rand, für Wand oder Boden), durchnummeriert, jedes Motiv nur einmal aufkleben.
+// Beim Scannen erscheint nur der Pfeil, ohne Text. Jeder Wegweiser wird wie die Checkpoints eingemessen.
+//   { nr: 3, peilung: 90 }              Wegweiser 3 zeigt nach Osten – egal, zwischen welchen Checkpoints er hängt.
+//   { nr: 4, peilung: 180, nach: 6 }    (selten nötig) gilt nur auf dem Weg zu Checkpoint 6, falls an einer Stelle
+//                                       zwei Wege in verschiedene Richtungen vorbeiführen.
 //
 // Nach jeder Änderung an Stationen oder Wegweisern: python3 bauen.py <ordner schnitzeljagd>
 // (erzeugt die Bilder in „targets“, die Erkennungsdatei „targets/stationen.mind“ und das Druck-PDF).
@@ -28,65 +26,56 @@ const SCHNITZELJAGD = {
   ende: "Zeige diesen Bildschirm am Eingang. Dort wartet eine kleine Überraschung.",
   endeTeilweise: "Zeige diesen Bildschirm am Eingang.",
   // Mindestzeit an jeder Station in Sekunden (ab dem Scannen). Erst danach gibt es „Weiter“ und den Pfeil.
-  // Zum Ausprobieren: Adresse mit ?test am Ende öffnen, dann sind es nur 5 Sekunden.
-  warten: 180,
+  // 0 = keine Wartezeit (z. B. 180 = 3 Minuten). Mit ?test am Ende der Adresse sind es höchstens 5 Sekunden.
+  warten: 0,
   stationen: [
     {
       ort: "Eingangsbereich",
       text: "Willkommen an der Wascherde. Hier beginnt der Schultag für die Kinder.",
-      bild: "bilder/station1.jpg",
-      warten: 0,          // am ersten Checkpoint keine Wartezeit
-      frage: { text: "Wie heißt der Schulleiter der Schule an der Wascherde?", wie: "fragen", auswahl: ["Herr Wellstein", "Herr Seim", "Herr Scherrer"], richtig: "Herr Wellstein" }
+      frage: { text: "Wie heißt der Schulleiter der Schule an der Wascherde?", auswahl: ["Herr Wellstein", "Herr Seim", "Herr Scherrer"], richtig: "Herr Wellstein" }
     },
     {
       ort: "Kunst- und Musikraum",
       text: "Hier wird gemalt, gebaut oder Musik gemacht.",
-      bild: "bilder/station2.jpg",
-      frage: { text: "Wie heißt die Schulband an der Wascherde?", wie: "fragen", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
+      frage: { text: "Wie heißt die Schulband an der Wascherde?", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
       ort: "Mensa",
       text: "Hier gibt es Mittagessen und Snacks.",
-      bild: "bilder/station3.jpg",
-      frage: { text: "Was kann man in der Pause in der Mensa machen?", wie: "fragen", auswahl: ["Essen, Karten spielen, sich unterhalten", "Am Handy schreiben oder spielen", "Eine Pizza bestellen"], richtig: "Essen, Karten spielen, sich unterhalten" }
+      frage: { text: "Was kann man in der Pause in der Mensa machen?", auswahl: ["Essen, Karten spielen, sich unterhalten", "Am Handy schreiben oder spielen", "Eine Pizza bestellen"], richtig: "Essen, Karten spielen, sich unterhalten" }
     },
     {
       ort: "Naturwissenschaften",
       text: "Hier wird geforscht, untersucht und experimentiert.",
-      bild: "bilder/station4.jpg",
-      frage: { text: "Um welche Tiere kümmert sich eine AG?", wie: "fragen", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
+      frage: { text: "Um welche Tiere kümmert sich eine AG?", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
     },
     {
       ort: "Lernwelt",
       text: "Hier arbeiten die Kinder zusammen, lesen oder üben.",
-      bild: "bilder/station5.jpg",
-      frage: { text: "Wofür ist die Lernwelt gedacht?", wie: "fragen", auswahl: ["Für Einzel- und Gruppenarbeiten", "Für Klassenunterricht", "Für handwerkliche Projekte"], richtig: "Für Einzel- und Gruppenarbeiten" }
+      frage: { text: "Wofür ist die Lernwelt gedacht?", auswahl: ["Für Einzel- und Gruppenarbeiten", "Für Klassenunterricht", "Für handwerkliche Projekte"], richtig: "Für Einzel- und Gruppenarbeiten" }
     },
     {
       ort: "Lernflur",
       text: "Auch auf dem Flur wird bei uns gelernt.",
-      bild: "bilder/station6.jpg?v=2",
-      frage: { text: "Wann darf man im Flur arbeiten?", wie: "fragen", auswahl: ["In der Lernzeit und während Inputs", "Nur in den Pausen", "Nur vor und nach dem Unterricht"], richtig: "In der Lernzeit und während Inputs" }
+      frage: { text: "Wann darf man im Flur arbeiten?", auswahl: ["In der Lernzeit und während Inputs", "Nur in den Pausen", "Nur vor und nach dem Unterricht"], richtig: "In der Lernzeit und während Inputs" }
     },
     {
       ort: "Lernbüro",
       text: "Hier hat jedes Kind seinen eigenen Arbeitsplatz.",
-      bild: "bilder/station7.jpg",
-      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", wie: "fragen", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Lesen und Schreiben lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
+      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Lesen und Schreiben lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
     },
     {
       ort: "Inputräume",
       text: "Hier lernen die Kinder in Inputs neue Lerninhalte.",
-      bild: "bilder/station8.jpg",
-      frage: { text: "In welchen Fächern gibt es Inputs?", wie: "fragen", auswahl: ["Deutsch, Mathe und Englisch", "Sport, Kunst und Musik", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
+      frage: { text: "In welchen Fächern gibt es Inputs?", auswahl: ["Deutsch, Mathe und Englisch", "Sport, Kunst und Musik", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
     },
     {
       ort: "Eingangsbereich",
       text: "Du bist wieder am Eingang. Jetzt kennst du die wichtigsten Räume.",
-      bild: "bilder/station9.jpg"
     }
   ],
   wegweiser: [
-    { nach: "alle", wo: "für alle Wege – beliebig oft drucken" }
+    { nr: 1 }, { nr: 2 }, { nr: 3 }, { nr: 4 }, { nr: 5 },
+    { nr: 6 }, { nr: 7 }, { nr: 8 }, { nr: 9 }, { nr: 10 }
   ]
 };
