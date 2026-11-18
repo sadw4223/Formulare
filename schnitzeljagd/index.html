@@ -56,6 +56,7 @@
   .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
+  .taste.haupt:disabled { opacity: 1; background: var(--linie); color: var(--text-leise); cursor: default; }
   .taste.neben { background: var(--flaeche); color: var(--tinte); border: 1px solid var(--linie); margin-top: 24px; }
   .offline { font-size: 13px; color: var(--text-leise); text-align: center; margin: 10px 0 0; }
   .fehler { color: var(--tinte); font-size: 15px; font-weight: 500; margin: 12px 0 0; padding: 12px 16px; background: var(--flaeche); border-radius: 12px; }
@@ -65,11 +66,22 @@
   .hinweisleiste button { background: none; border: 0; color: #fff; text-decoration: underline; font: inherit; font-weight: 700; padding: 4px 8px; cursor: pointer; }
   [hidden] { display: none !important; }
 
-  /* Einmessen */
-  #messung { border-top: 1px solid var(--linie); margin-top: 16px; padding-top: 16px; color: var(--tinte); }
-  #messung .jetzt { font-size: 34px; font-weight: 800; line-height: 1.1; }
-  #messung .klein { font-size: 15px; color: var(--text); margin-top: 6px; }
-  #messung .warnung { color: var(--rot); }
+  /* Einmessen: Kamera oben, darunter Richtung und Taste, ganz unten die Liste */
+  body.einmessen #ar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  body.einmessen #ar .weg, body.einmessen #grossKompass, body.einmessen #arLabel, body.einmessen #arSchliessen, body.einmessen #blatt { display: none; }
+  body.einmessen .rund-rahmen { width: min(62vw, 34vh, 280px); margin: 8px auto 0; }
+  #messPanel { width: 100%; max-width: 34rem; padding-bottom: 24px; }
+  .mess-karte { text-align: center; margin: 16px 0; color: var(--tinte); }
+  .mess-name { font-size: 17px; font-weight: 700; }
+  .mess-jetzt { font-size: 34px; font-weight: 800; line-height: 1.15; margin-top: 4px; min-height: 39px; }
+  .mess-klein { font-size: 15px; color: var(--text); margin-top: 4px; min-height: 20px; }
+  .mess-klein.warnung { color: var(--rot); }
+  #messUpload { text-align: center; margin: 10px 0 0; }
+  #messPanel h2 { margin-top: 32px; }
+  .liste .offen-wert { color: #c55300; }
+  #ghFeld { display: flex; gap: 8px; margin-top: 12px; }
+  #ghFeld input { flex: 1; min-width: 0; height: 48px; font: inherit; font-size: 15px; padding: 0 14px; border: 1px solid var(--linie); border-radius: 12px; background: var(--flaeche); color: var(--tinte); }
+  #ghFeld .taste { width: auto; min-height: 48px; margin: 0; }
   .liste .wert { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--text); }
 
   /* Unterwegs: runder Kamera-Ausschnitt, Pfeil darüber */
@@ -150,7 +162,6 @@
     <h2 id="besuchtTitel">Deine Checkpoints</h2>
     <ul class="liste" id="karten"></ul>
     <button class="taste neben" id="neu" hidden>Neu starten</button>
-    <button class="taste neben" id="teilen" hidden>Werte teilen</button>
   </section>
 </main>
 
@@ -168,6 +179,22 @@
   </div>
   <p id="arHinweis"></p>
   <button class="taste neben" id="arSchliessen">Pause machen</button>
+  <section id="messPanel" hidden>
+    <div class="mess-karte">
+      <div class="mess-name" id="messName">Scanne einen Checkpoint.</div>
+      <div class="mess-jetzt" id="messJetzt"></div>
+      <div class="mess-klein" id="messStand"></div>
+      <div class="mess-klein" id="messGenau"></div>
+    </div>
+    <button class="taste haupt" id="messSpeichern" disabled>Richtung speichern</button>
+    <p class="mess-klein" id="messUpload"></p>
+    <h2>Stand</h2>
+    <ul class="liste" id="messListe"></ul>
+    <h2>GitHub</h2>
+    <p class="mess-klein" id="ghText"></p>
+    <div id="ghFeld" hidden><input id="ghEingabe" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…" aria-label="GitHub-Schlüssel"><button class="taste neben" id="ghSpeichern">Speichern</button></div>
+    <button class="leise" id="ghEntfernen" hidden>Schlüssel entfernen</button>
+  </section>
   <div id="blatt" role="dialog">
     <div class="blatt-inhalt" id="blattInhalt">
       <div class="griff"></div>
@@ -177,7 +204,6 @@
         <div class="text" id="frageText"></div>
         <div id="frageFeld"></div>
       </div>
-      <div id="messung" hidden><div class="jetzt" id="messJetzt"></div><div class="klein" id="messStand"></div><div class="klein" id="messGenau"></div></div>
     </div>
     <!-- „Weiter“ steht immer sichtbar unten: grau, bis die Antwort richtig ist -->
     <div class="blatt-fuss"><button class="taste haupt" id="blattWeiter" disabled>Weiter</button></div>
@@ -202,15 +228,20 @@ window.schnitzeljagdStarten = function () {
   function speichern() { try { localStorage.setItem(SCHLUESSEL, JSON.stringify(stand)); } catch (e) {} }
 
   // ---------- Eingemessene Himmelsrichtungen ----------
-  // In stationen.js (peilung) für alle Geräte. Was im Einmess-Modus gemessen wird, gilt sofort auf diesem Gerät
-  // (zum Ausprobieren vor Ort) und wird mit „Werte teilen“ weitergegeben, damit es in stationen.js kommt.
+  // Einmess-Modus (Adresse mit ?einmessen): Richtung speichern → gilt sofort auf diesem Gerät und wird direkt
+  // zu GitHub hochgeladen (peilungen.json). Von dort holen sich alle Geräte die Richtungen.
   const EINMESSEN = new URLSearchParams(location.search).has("einmessen");
   const EM_SCHLUESSEL = "schnitzeljagd-einmessen";
   let einm = { c: {}, w: {} };
   try { const x = JSON.parse(localStorage.getItem(EM_SCHLUESSEL) || "null"); if (x && x.c && x.w) einm = x; } catch (e) {}
   const emSpeichern = () => { try { localStorage.setItem(EM_SCHLUESSEL, JSON.stringify(einm)); } catch (e) {} };
-  const peilungCP = i => (i >= 0 && i < N - 1) ? (einm.c[i + 1] ?? st[i].peilung ?? null) : null;
-  const peilungWW = j => einm.w[WW[j].nr] ?? WW[j].peilung ?? null;
+  // peilungen.json: eingemessene Richtungen für alle Geräte (schreibt die Einmess-Seite direkt zu GitHub)
+  let fern = { c: {}, w: {} };
+  fetch("peilungen.json?t=" + Date.now()).then(r => r.ok ? r.json() : null)
+    .then(x => { if (x && x.c && x.w) { fern = x; if (EINMESSEN) einmessListe(); } }).catch(() => {});
+  // Reihenfolge: noch nicht hochgeladen (nur dieses Gerät) → peilungen.json → stationen.js
+  const peilungCP = i => (i >= 0 && i < N - 1) ? (einm.c[i + 1] ?? fern.c[i + 1] ?? st[i].peilung ?? null) : null;
+  const peilungWW = j => einm.w[WW[j].nr] ?? fern.w[WW[j].nr] ?? WW[j].peilung ?? null;
   // Kleine Checkpoints auf dem Weg: „Checkpoint auf dem Weg zu „Mensa“ – 1“
   function wwName(j) {
     const nach = WW[j].nach; if (!nach) return "Checkpoint auf dem Weg " + WW[j].nr;
@@ -233,7 +264,7 @@ window.schnitzeljagdStarten = function () {
   }
 
   function zeigen() {
-    if (EINMESSEN) { einmessSeite(); return; }
+    if (EINMESSEN) { einmessListe(); return; }
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
     $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Geschafft.") : (e === 0 ? "Kennst du schon die Wascherde?" : "Weiter geht’s");
@@ -263,40 +294,50 @@ window.schnitzeljagdStarten = function () {
       w.querySelector(".gefahren").style.width = anteil; w.querySelector(".ort").style.left = anteil;
     });
   }
-  function einmessSeite() {
-    $("titel").textContent = "Einmessen";
-    $("lead").textContent = "Scanne einen Aufkleber, halte das Gerät in die Richtung, in die die Kinder loslaufen sollen, und tippe auf „Richtung speichern“. Erneut scannen misst neu ein.";
-    $("regel").hidden = true; $("ergebnis").hidden = true; document.querySelector("main > .weg").hidden = true; document.querySelector("#ar .weg").hidden = true;
-    $("unterwegs").hidden = false; $("start").textContent = "Kamera starten";
-    $("besucht").hidden = false; $("besuchtTitel").textContent = "Stand"; $("neu").hidden = true; $("teilen").hidden = false;
-    const zeile = (name, wert) => `<li class="${wert === null ? "nok" : "ok"}"><span class="marke">${wert === null ? "–" : "✓"}</span>${esc(name)}<span class="wert">${wert === null ? "fehlt" : Math.round(wert) + "° " + richtungsName(wert)}</span></li>`;
-    let html = "";
-    for (let i = 0; i < N - 1; i++) html += zeile(`Checkpoint ${i + 1} · ${st[i].ort}`, peilungCP(i));
-    WW.forEach((w, j) => html += zeile(wwName(j), peilungWW(j)));
-    $("karten").innerHTML = html;
+  // Reihenfolge des Rundgangs: Checkpoint 1, die beiden auf dem Weg zu 2, Checkpoint 2, … (Ziel braucht keine Richtung)
+  function einmessReihe() {
+    const reihe = [];
+    for (let i = 0; i < N - 1; i++) {
+      reihe.push({ name: `Checkpoint ${i + 1} · ${st[i].ort}`, wert: peilungCP(i), offen: einm.c[i + 1] != null });
+      WW.forEach((w, j) => { if (w.nach === i + 2) reihe.push({ name: wwName(j), wert: peilungWW(j), offen: einm.w[w.nr] != null }); });
+    }
+    WW.forEach((w, j) => { if (!w.nach || w.nach < 2 || w.nach > N) reihe.push({ name: wwName(j), wert: peilungWW(j), offen: einm.w[w.nr] != null }); });
+    return reihe;
   }
-  function einmessText() {
-    const z = ["Schnitzeljagd – eingemessene Richtungen (" + new Date().toLocaleDateString("de-DE") + ")"];
-    for (let i = 0; i < N - 1; i++) { const p = peilungCP(i); z.push(`Checkpoint ${i + 1} (${st[i].ort}): ${p === null ? "fehlt" : Math.round(p)}`); }
-    WW.forEach((w, j) => { const p = peilungWW(j); z.push(`${wwName(j)} [Nr. ${w.nr}]: ${p === null ? "fehlt" : Math.round(p)}`); });
-    return z.join("\n");
+  function einmessListe() {
+    const zeile = r => {
+      const offen = r.offen ? " offen-wert" : "";
+      const wert = r.wert === null ? "fehlt" : Math.round(r.wert) + "° " + richtungsName(r.wert) + (r.offen ? " · nicht hochgeladen" : "");
+      return `<li class="${r.wert === null ? "nok" : "ok"}"><span class="marke">${r.wert === null ? "–" : "✓"}</span>${esc(r.name)}<span class="wert${offen}">${wert}</span></li>`;
+    };
+    $("messListe").innerHTML = einmessReihe().map(zeile).join("");
   }
-  $("teilen").addEventListener("click", () => {
-    const text = einmessText();
-    if (navigator.share) navigator.share({ text }).catch(() => {});
-    else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => { $("teilen").textContent = "Kopiert"; setTimeout(() => $("teilen").textContent = "Werte teilen", 2000); });
-  });
   zeigen();
 
+  // ---------- Ohne Internet  zeigen();
+
   // ---------- Ohne Internet: alles beim ersten Öffnen auf dem Gerät speichern ----------
+  // Solange geladen wird: Taste grau, Hinweis sichtbar. Danach Taste blau, „Fertig“ nur kurz.
+  // Ist schon alles gespeichert, erscheint gar kein Hinweis. Klappt das Speichern nicht, geht es nach 60 s trotzdem los.
+  let bereit = true;
+  function freigeben(mitHinweis) {
+    if (bereit) return;
+    bereit = true; startZurueck();
+    if (mitHinweis) { $("offline").textContent = "Fertig – Jetzt kannst du loslegen!"; setTimeout(() => $("offline").hidden = true, 3000); }
+    else $("offline").hidden = true;
+  }
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    bereit = false; $("start").disabled = true;
+    const beginn = Date.now();
+    navigator.serviceWorker.register("sw.js").catch(() => freigeben(false));
     (async function offlinePruefen() {
+      if (bereit) return;
       let da = false;
-      try { da = !!(await caches.match("targets/stationen.mind", { ignoreSearch: true })); } catch (e) {}
-      $("offline").hidden = false;
-      $("offline").textContent = da ? "Fertig – Jetzt kannst du loslegen!" : "Ich bereite alles vor. Gleich geht’s los.";
-      if (!da) setTimeout(offlinePruefen, 1500);
+      try { da = !!(await caches.match("targets/stationen.mind", { ignoreSearch: true })); } catch (e) { return freigeben(false); }
+      if (da) return freigeben(Date.now() - beginn > 800);        // war schon gespeichert: kein Hinweis
+      if (Date.now() - beginn > 600 && $("offline").hidden) { $("offline").hidden = false; $("offline").textContent = "Ich bereite alles vor. Gleich geht’s los."; }
+      if (Date.now() - beginn > 60000) return freigeben(false);
+      setTimeout(offlinePruefen, 700);
     })();
   }
 
@@ -389,7 +430,6 @@ window.schnitzeljagdStarten = function () {
   // ---------- halbhohes Blatt ----------
   function blattZeigen(i) {
     const s = st[i]; aktiveStation = i;
-    $("messung").hidden = true; messen = null;
     if (i === stand.erledigt) {                      // erster Besuch: Zeit läuft ab jetzt
       stand.peilung = null;                          // angekommen: der alte Pfeil gilt nicht mehr
       stand.ankunft = stand.ankunft || [];
@@ -410,7 +450,6 @@ window.schnitzeljagdStarten = function () {
   window.addEventListener("resize", () => { if (blattOffen()) blattHoehe(); });
   $("blattWeiter").addEventListener("click", () => {
     if ($("blattWeiter").disabled) return;
-    if (messen) { messTaste(); return; }
     const i = aktiveStation;
     $("blatt").classList.remove("offen"); aktiveStation = -1;
     if (stand.erledigt >= N) { arBeenden(); return; }
@@ -424,8 +463,8 @@ window.schnitzeljagdStarten = function () {
     visualViewport.addEventListener("resize", anpassen); visualViewport.addEventListener("scroll", anpassen);
   }
 
-  // ---------- Einmessen: Blatt mit Live-Richtung ----------
-  let messen = null, messProben = [], messTimer = null;
+  // ---------- Einmessen: Kamera, Richtung, Taste, Liste ----------
+  let messen = null, messProben = [];
   function blickAbsolut() {          // waagerechte Blickrichtung als Himmelsrichtung (Grad) oder null
     if (!lage || nord === null) return null;
     const v = drehe(lage, [0, 0, -1]), o = drehe(lage, bildschirm([0, 1, 0]));
@@ -433,31 +472,28 @@ window.schnitzeljagdStarten = function () {
     return norm360(Math.atan2(fx, fy) * 180 / Math.PI + nord);
   }
   function messenZeigen(art, k) {
+    if (messen && messen.art === art && messen.k === k) return;
     messen = { art, k, gespeichert: false }; messProben = [];
-    aktiveStation = -1;
-    $("blattOrt").textContent = art === "c" ? `Checkpoint ${k + 1} · ${st[k].ort}` : wwName(k);
-    $("blattText").textContent = "Halte das Gerät in die Richtung, in die die Kinder von hier loslaufen sollen.";
-    $("frageBox").hidden = true; $("messung").hidden = false;
-    $("blattWeiter").classList.remove("wartet"); $("blattWeiter").style.removeProperty("--fortschritt");
-    blattHoehe(); $("blattInhalt").scrollTop = 0; $("blatt").classList.add("offen");
-    clearInterval(messTimer); messTimer = setInterval(messAnzeige, 200); messAnzeige();
+    $("messUpload").textContent = ""; messAnzeige();
   }
   function messWert() { return messen.art === "c" ? peilungCP(messen.k) : peilungWW(messen.k); }
   function messAnzeige() {
-    if (!messen) return;
-    const h = blickAbsolut(), alt = messWert();
-    $("messJetzt").textContent = h === null ? "Kompass startet …" : Math.round(h) + "° " + richtungsName(h);
-    $("messStand").textContent = messen.gespeichert ? "Gespeichert." : (alt === null ? "Noch nicht eingemessen." : "Bisher: " + Math.round(alt) + "° " + richtungsName(alt));
+    const h = blickAbsolut();
+    $("messName").textContent = messen ? (messen.art === "c" ? `Checkpoint ${messen.k + 1} · ${st[messen.k].ort}` : wwName(messen.k)) : "Scanne einen Checkpoint.";
+    $("messJetzt").textContent = h === null ? "" : Math.round(h) + "° " + richtungsName(h);
+    const alt = messen ? messWert() : null;
+    $("messStand").textContent = !messen ? "" : messen.gespeichert ? "Gespeichert." : (alt === null ? "Noch nicht eingemessen." : "Bisher: " + Math.round(alt) + "° " + richtungsName(alt));
     const ungenau = kompassGenau !== null && kompassGenau > 25;
-    $("messGenau").textContent = h === null ? "Bewege das Gerät kurz in Form einer Acht." : (ungenau ? "Kompass ungenau (±" + Math.round(kompassGenau) + "°): Bewege das Gerät in Form einer Acht." : (kompassGenau !== null ? "Genauigkeit ±" + Math.round(kompassGenau) + "°" : ""));
-    $("messGenau").classList.toggle("warnung", h === null || ungenau);
-    if (!messen.gespeichert) { $("blattWeiter").textContent = "Richtung speichern"; $("blattWeiter").disabled = h === null; }
+    $("messGenau").textContent = !lage ? "Tippe einmal auf den Bildschirm, um den Kompass einzuschalten."
+      : h === null ? "Bewege das Gerät kurz in Form einer Acht."
+      : ungenau ? "Kompass ungenau (±" + Math.round(kompassGenau) + "°): Bewege das Gerät in Form einer Acht."
+      : (kompassGenau !== null ? "Genauigkeit ±" + Math.round(kompassGenau) + "°" : "");
+    $("messGenau").classList.toggle("warnung", !lage || h === null || ungenau);
+    $("messSpeichern").disabled = !messen || h === null;
   }
-  function messTaste() {
-    if (messen.gespeichert) {                     // „Fertig“
-      messen = null; clearInterval(messTimer);
-      $("blatt").classList.remove("offen"); label(sucheText()); zeigen(); return;
-    }
+  if (EINMESSEN) setInterval(messAnzeige, 200);
+  $("messSpeichern").addEventListener("click", () => {
+    if (!messen) return;
     // Mittelwert der letzten Sekunde (über Sinus/Kosinus, damit 359° und 1° nicht 180° ergeben)
     const jetzt = performance.now(), nutz = messProben.filter(q => jetzt - q.t < 1000);
     let sx = 0, sy = 0; nutz.forEach(q => { sx += Math.sin(q.h * Math.PI / 180); sy += Math.cos(q.h * Math.PI / 180); });
@@ -465,12 +501,76 @@ window.schnitzeljagdStarten = function () {
     if (h === null) return;
     const wert = Math.round(h);
     if (messen.art === "c") einm.c[messen.k + 1] = wert; else einm.w[WW[messen.k].nr] = wert;
-    emSpeichern(); messen.gespeichert = true;
-    ton();
-    $("blattWeiter").textContent = "Fertig"; $("blattWeiter").disabled = false; messAnzeige();
-    $("messJetzt").textContent = wert + "° " + richtungsName(wert);
-  }
+    emSpeichern(); messen.gespeichert = true; ton();
+    messAnzeige(); $("messJetzt").textContent = wert + "° " + richtungsName(wert);
+    einmessListe(); hochladen();
+  });
 
+  // ---------- Einmessen: direkt zu GitHub hochladen ----------
+  // Schreibt schnitzeljagd/peilungen.json im Repo. Der Schlüssel bleibt nur auf diesem Gerät.
+  const GH = { repo: "sadw4223/Formulare", pfad: "schnitzeljagd/peilungen.json", zweig: "main" };
+  const GH_SCHLUESSEL = "schnitzeljagd-github";
+  const ghSchluessel = () => { try { return localStorage.getItem(GH_SCHLUESSEL) || ""; } catch (e) { return ""; } };
+  const ghKopf = t => ({ Authorization: "Bearer " + t, Accept: "application/vnd.github+json" });
+  const ghUrl = `https://api.github.com/repos/${GH.repo}/contents/${GH.pfad}`;
+  let ladeLaeuft = false;
+  async function hochladen() {
+    const offen = Object.keys(einm.c).length + Object.keys(einm.w).length;
+    if (!offen || ladeLaeuft) return;
+    const token = ghSchluessel();
+    if (!token) { $("messUpload").textContent = "Nur auf diesem Gerät gespeichert. Trage unten den GitHub-Schlüssel ein, dann geht es an alle Geräte."; return; }
+    ladeLaeuft = true; $("messUpload").textContent = "Wird hochgeladen …";
+    try {
+      for (let versuch = 0; ; versuch++) {
+        let sha, daten = { c: {}, w: {} };
+        const a = await fetch(ghUrl + "?ref=" + GH.zweig + "&t=" + Date.now(), { headers: ghKopf(token), cache: "no-store" });
+        if (a.status === 200) {
+          const j = await a.json(); sha = j.sha;
+          try { daten = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\s/g, ""))))); } catch (e) {}
+          daten.c = daten.c || {}; daten.w = daten.w || {};
+        } else if (a.status !== 404) throw new Error(String(a.status));
+        const gesendet = JSON.parse(JSON.stringify(einm));
+        Object.assign(daten.c, gesendet.c); Object.assign(daten.w, gesendet.w); daten.stand = new Date().toISOString();
+        const text = JSON.stringify(daten, null, 2) + "\n";
+        const b = await fetch(ghUrl, { method: "PUT", headers: ghKopf(token),
+          body: JSON.stringify({ message: "Schnitzeljagd: Richtungen eingemessen", content: btoa(unescape(encodeURIComponent(text))), sha, branch: GH.zweig }) });
+        if ((b.status === 409 || b.status === 422) && versuch < 2) continue;   // gerade von woanders geändert: noch einmal
+        if (!b.ok) throw new Error(String(b.status));
+        fern = daten;
+        for (const k in gesendet.c) if (einm.c[k] === gesendet.c[k]) delete einm.c[k];
+        for (const k in gesendet.w) if (einm.w[k] === gesendet.w[k]) delete einm.w[k];
+        emSpeichern();
+        $("messUpload").textContent = "Hochgeladen. Alle Geräte bekommen die Richtung in etwa einer Minute.";
+        break;
+      }
+    } catch (e) {
+      $("messUpload").textContent = (e.message === "401" || e.message === "403")
+        ? "Der GitHub-Schlüssel passt nicht. Trage ihn unten neu ein."
+        : "Nicht hochgeladen, vielleicht kein Netz. Beim nächsten Speichern versuche ich es erneut.";
+    }
+    ladeLaeuft = false; einmessListe();
+  }
+  function ghAnzeigen() {
+    const da = !!ghSchluessel();
+    $("ghText").textContent = da ? "Verbunden. Gespeicherte Richtungen gehen direkt an alle Geräte."
+      : "Damit alle Geräte die Richtungen bekommen, trage einmal deinen GitHub-Schlüssel ein. Er bleibt nur auf diesem Gerät.";
+    $("ghFeld").hidden = da; $("ghEntfernen").hidden = !da;
+  }
+  $("ghSpeichern").addEventListener("click", async () => {
+    const t = $("ghEingabe").value.trim(); if (!t) return;
+    $("ghText").textContent = "Wird geprüft …";
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH.repo}`, { headers: ghKopf(t), cache: "no-store" });
+      const j = r.ok ? await r.json() : null;
+      if (!r.ok) throw new Error(String(r.status));
+      if (j.permissions && !j.permissions.push) { $("ghText").textContent = "Mit diesem Schlüssel darf die Seite nicht schreiben. Erlaube beim Schlüssel „Contents: Read and write“."; return; }
+      try { localStorage.setItem(GH_SCHLUESSEL, t); } catch (e) {}
+      $("ghEingabe").value = ""; ghAnzeigen(); hochladen();
+    } catch (e) {
+      $("ghText").textContent = e.message === "401" ? "Der Schlüssel stimmt nicht. Kopiere ihn noch einmal." : "Prüfen hat nicht geklappt, vielleicht kein Netz. Versuche es noch einmal.";
+    }
+  });
+  $("ghEntfernen").addEventListener("click", () => { try { localStorage.removeItem(GH_SCHLUESSEL); } catch (e) {} ghAnzeigen(); });
 
   // ---------- Erkannt: grüner Ring und Ton ----------
   let tonKontext = null, zuletzt = { k: null, t: 0 };
@@ -652,8 +752,7 @@ window.schnitzeljagdStarten = function () {
       a.addEventListener("targetFound", () => {
         sichtbar = i;
         if (EINMESSEN) {
-          if (blattOffen()) return;
-          if (i === N - 1) { kurzLabel("Das ist das Ziel – hier gibt es nichts einzumessen."); return; }
+          if (i === N - 1) { messen = null; $("messName").textContent = "Das ist das Ziel – hier gibt es nichts einzumessen."; return; }
           treffer("c" + i); messenZeigen("c", i); return;
         }
         if (blattOffen()) return;
@@ -671,7 +770,7 @@ window.schnitzeljagdStarten = function () {
     szene.querySelectorAll(".anker-ww").forEach(a => {
       const j = Number(a.dataset.j), nach = WW[j].nach ?? null;
       a.addEventListener("targetFound", () => {
-        if (EINMESSEN) { if (blattOffen()) return; treffer("w" + j); messenZeigen("w", j); return; }
+        if (EINMESSEN) { treffer("w" + j); messenZeigen("w", j); return; }
         if (blattOffen()) return;
         const gesucht = stand.erledigt + 1;           // Nummer des Checkpoints, zu dem das Kind gerade unterwegs ist
         if (stand.erledigt < N && (nach === null || nach === gesucht)) {
@@ -693,8 +792,11 @@ window.schnitzeljagdStarten = function () {
   }
   let lageErfragt = false;
 
-  function startZurueck() { $("start").disabled = false; $("start").textContent = EINMESSEN ? "Kamera starten" : startText(); }
-  function fehler(t) { $("fehler").hidden = false; $("fehler").textContent = t; }
+  function startZurueck() { $("start").disabled = !bereit; $("start").textContent = EINMESSEN ? "Kamera starten" : startText(); }
+  function fehler(t) {
+    if (EINMESSEN) { $("messName").textContent = t; return; }
+    $("fehler").hidden = false; $("fehler").textContent = t;
+  }
 
   function arBeenden() {
     const szene = $("kamera").querySelector("a-scene");
@@ -705,12 +807,21 @@ window.schnitzeljagdStarten = function () {
       szene.remove();
     }
     $("kamera").innerHTML = ""; $("blatt").classList.remove("offen"); sichtbar = null; aktiveStation = -1;
-    messen = null; clearInterval(messTimer);
+    messen = null;
     $("ar").hidden = true; window.scrollTo(0, 0);
     zeigen(); kompassZeigen();
   }
 
   $("start").addEventListener("click", arStarten);
+  if (EINMESSEN) {
+    document.body.classList.add("einmessen");
+    $("messPanel").hidden = false; ghAnzeigen(); einmessListe();
+    arStarten();
+    // Kompass und Ton dürfen erst nach einem Tippen starten (iPhone/iPad)
+    const erlauben = () => { lageErlauben(); tonErlauben(); };
+    document.addEventListener("touchend", erlauben, { once: true }); document.addEventListener("click", erlauben, { once: true });
+    if (ghSchluessel()) setTimeout(hochladen, 1500);     // was noch nicht hochgeladen ist, nachholen
+  }
   $("arSchliessen").addEventListener("click", () => arBeenden());
 };
 </script>
