@@ -138,7 +138,11 @@
   #ar .weg { width: 100%; max-width: 34rem; padding: 12px 2px; }
   .rund-rahmen { position: relative; flex: none; width: min(62vw, 32vh, 300px); aspect-ratio: 1; margin: 16px auto auto; }
   #rund { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: #243746; -webkit-mask-image: -webkit-radial-gradient(white, black); isolation: isolate; }
-  #kamera { position: absolute; inset: 0; overflow: hidden; }
+  #kamera { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity .35s ease-out; }
+  #kamera.bereit { opacity: 1; }   /* erst zeigen, wenn die Kamera läuft – vorher nur der dunkle Kreis */
+  /* Kamerabild füllt den Kreis immer ganz aus, auch in der ersten Sekunde (MindAR zeigt sonst kurz ein kleines Rechteck).
+     Es wird nichts ins Bild gezeichnet, deshalb darf das Bild frei zugeschnitten werden – die Erkennung nutzt das volle Kamerabild. */
+  #kamera video { position: absolute !important; inset: 0 !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   #treffer { position: absolute; inset: -10px; border-radius: 50%; border: 12px solid #22b04b; filter: blur(7px); opacity: 0; pointer-events: none; }
   #treffer.an { animation: treffer 1.3s ease-out; }
   #treffer.rot { border-color: #e9152d; }
@@ -1039,6 +1043,15 @@ window.schnitzeljagdStarten = function () {
       </a-scene>`;
 
     const szene = $("kamera").querySelector("a-scene");
+    // Kamerabild einblenden, sobald es wirklich läuft (Erkennung bereit oder erstes Bild da); spätestens nach 4 s
+    const zeigeKamera = () => $("kamera").classList.add("bereit");
+    szene.addEventListener("arReady", zeigeKamera, { once: true });
+    const vWarten = setInterval(() => {
+      const v = $("kamera").querySelector("video");
+      if (!v || $("ar").hidden) { if ($("ar").hidden) clearInterval(vWarten); return; }
+      if (v.readyState >= 2 && v.videoWidth > 0) { clearInterval(vWarten); setTimeout(zeigeKamera, 150); }
+    }, 100);
+    setTimeout(() => { clearInterval(vWarten); zeigeKamera(); }, 4000);
     szene.querySelectorAll(".anker").forEach(a => {
       const i = Number(a.dataset.i);
       a.addEventListener("targetFound", () => {
@@ -1111,7 +1124,7 @@ window.schnitzeljagdStarten = function () {
       document.querySelectorAll("video").forEach(v => { try { v.srcObject && v.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {} v.remove(); });
       szene.remove();
     }
-    $("kamera").innerHTML = ""; $("blatt").classList.remove("offen"); sichtbar = null; aktiveStation = -1;
+    $("kamera").innerHTML = ""; $("kamera").classList.remove("bereit"); $("blatt").classList.remove("offen"); sichtbar = null; aktiveStation = -1;
     messen = null;
     $("ar").hidden = true; window.scrollTo(0, 0);
     zeigen(); kompassZeigen();
