@@ -36,6 +36,7 @@
 
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
+  #titel .l { color: var(--logo-orange); } #titel .w { color: var(--logo-blau); }
   /* Jede Gerätegröße: freie Höhe gleichmäßig über und unter den Inhalt verteilen (keine Leere unten, auch als Web-App im Vollbild).
      Ist der Inhalt länger als der Bildschirm, bleibt der normale Abstand und man scrollt. */
   main { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
@@ -67,7 +68,7 @@
   .weg .ort::after { animation-delay: 1.2s; }
   @keyframes radar { from { transform: scale(1); opacity: 1; } to { transform: scale(3.6); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .weg .ort::before, .weg .ort::after { animation: none; opacity: 0; } }
-  main > .weg { margin-top: 20px; }
+  main > .weg { margin-top: 34px; }   /* Abstand zur Linie unter der Kopfzeile größer als der Radar-Schleier um den Punkt */
   .taste { display: block; width: 100%; min-height: 54px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 19px; cursor: pointer; padding: 0 20px; }
   .taste.haupt { background: var(--logo-blau); color: #fff; }
   .taste:disabled { opacity: .6; }
@@ -194,11 +195,18 @@
   #blattWeiter { transition: background-color .25s, color .25s; }
   @keyframes wackeln { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
   .wackeln { animation: wackeln .25s ease 2; }
+  /* iPhone, Startseite: Text oben, Taste unten, das Beispielbild groß in der Mitte nimmt den freien Platz */
+  @media (max-width: 699px) {
+    body.start main > .luft, body.start main::after { display: none; }
+    body.start #beispiel { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
+    body.start .beispiel-bild { max-width: 100%; margin: 28px auto; }
+  }
   /* Kleine Handys (z. B. iPhone SE): alles ein wenig enger, damit „Schnitzeljagd starten“ ohne Scrollen sichtbar bleibt */
   @media (max-height: 720px) {
-    main > .weg { margin-top: 12px; } h1 { margin-top: 16px; }
+    main > .weg { margin-top: 26px; } h1 { margin-top: 16px; }
     .lead { margin-bottom: 16px; } .beispiel-bild { width: auto; height: 124px; margin: 24px auto; }
     .regel { margin-bottom: 16px; padding: 12px 16px; }
+    body.start .beispiel-bild { height: 110px; margin: 12px auto; }
   }
   /* iPad und große Android-Tablets (auch als Web-App im Vollbild): alles größer, Inhalt senkrecht mittig statt Leere unten */
   @media (min-width: 700px) and (min-height: 700px) {
@@ -249,7 +257,7 @@
     <img src="logo.png" alt="Lerncampus Wascherde">
     <div><div class="kopftitel">Schnitzeljagd</div><div class="wortmarke"><span class="l">LERNCAMPUS</span> <span class="w">WASCHERDE</span></div></div>
   </header>
-  <div class="weg" aria-hidden="true"><span>Start</span><div class="spur"><div class="gefahren"></div><div class="ort"><i></i></div></div><span>Ziel</span></div>
+  <div class="weg" id="wegStart" aria-hidden="true"><span>Start</span><div class="spur"><div class="gefahren"></div><div class="ort"><i></i></div></div><span>Ziel</span></div>
   <div class="luft" aria-hidden="true"></div>
   <h1 id="titel"></h1>
   <div class="ergebnis" id="ergebnis" hidden>
@@ -422,11 +430,13 @@ window.schnitzeljagdStarten = function () {
     if (EINMESSEN) { einmessListe(); return; }
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
-    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig beantwortet!" : "Geschafft.") : (e === 0 ? "Kennst du schon den Lerncampus Wascherde?" : "Weiter geht’s");
+    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig beantwortet!" : "Geschafft.") : (e === 0 ? "" : "Weiter geht’s");
+    if (!fertig && e === 0) $("titel").innerHTML = 'Kennst du schon den <span class="l">Lerncampus</span> <span class="w">Wascherde</span>?';
     $("lead").textContent = fertig ? daten.ende : (e === 0 ? [daten.start, daten.hilfe].filter(Boolean).join(" ") : "Folge dem Pfeil bis zum nächsten Checkpoint!");
     if (fertig && daten.endeFett) { const b = document.createElement("strong"); b.textContent = " " + daten.endeFett; $("lead").append(b); }
     $("regel").hidden = e !== 0;
     $("beispiel").hidden = e !== 0;
+    document.body.classList.toggle("start", e === 0);
     $("regelText").textContent = daten.regel;
     $("ergebnis").hidden = !fertig;
     if (fertig) {
