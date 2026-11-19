@@ -24,6 +24,7 @@
 const SCHNITZELJAGD = {
   start: "Finde die runden Checkpoints und beantworte die Fragen.",
   regel: "Am Ziel wartet eine kleine Überraschung auf dich.",
+  zielTitel: "Geschafft!",          // groß unter der Medaille am Ziel
   ende: "Zeige diesen Bildschirm hier am Ziel. Dann bekommst du eine kleine Überraschung. Ein Leih-iPad gibst du hier ab.",
   // Mindestzeit an jeder Station in Sekunden (ab dem Scannen). Erst danach gibt es „Weiter“ und den Pfeil.
   // 0 = keine Wartezeit (z. B. 180 = 3 Minuten). Mit ?test am Ende der Adresse sind es höchstens 5 Sekunden.
@@ -71,7 +72,7 @@ const SCHNITZELJAGD = {
     },
     {
       ort: "Ziel", motiv: 9,
-      text: "Geschafft. Du hast alle Checkpoints gefunden."
+      text: "Du hast alle Checkpoints gefunden!"
     }
   ],
   wegweiser: [

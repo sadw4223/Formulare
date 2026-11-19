@@ -29,7 +29,7 @@
 
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
-  .regel { display: flex; gap: 14px; align-items: flex-start; background: #fdeee2; border-radius: 12px; padding: 16px 18px; margin: 0 0 24px; color: var(--tinte); font-size: 17px; line-height: 1.4; font-weight: 700; }
+  .regel { display: flex; gap: 14px; align-items: center; background: #fdeee2; border-radius: 12px; padding: 16px 18px; margin: 0 0 24px; color: var(--tinte); font-size: 17px; line-height: 1.4; font-weight: 700; }
   .regel svg { flex: none; width: 32px; height: 32px; }
   .ergebnis { background: var(--flaeche); border: 2px solid var(--linie); border-radius: 12px; padding: 20px; margin: 0 0 16px; text-align: center; }
   .ergebnis .zahl { font-size: 44px; line-height: 1.1; font-weight: 800; color: var(--tinte); }
@@ -65,6 +65,44 @@
   .hinweisleiste { position: fixed; left: 20px; right: 20px; bottom: max(20px, env(safe-area-inset-bottom)); max-width: 34rem; margin: 0 auto; background: var(--tinte); color: #fff; border-radius: 12px; padding: 12px 12px 12px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 15px; z-index: 5; }
   .hinweisleiste button { background: none; border: 0; color: #fff; text-decoration: underline; font: inherit; font-weight: 700; padding: 4px 8px; cursor: pointer; }
   [hidden] { display: none !important; }
+
+  /* Ziel: Medaille fliegt mit Drehung herein, Konfetti (wie die Auszeichnungen in Apple Fitness) */
+  #feier { position: fixed; inset: 0; z-index: 50; background: var(--grund); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); text-align: center; overflow: hidden; }
+  #konfetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+  .feier-buehne { position: relative; z-index: 1; width: min(66vw, 38vh, 300px); aspect-ratio: 1; perspective: 1000px; margin-bottom: 32px; touch-action: none; cursor: grab; }
+  .medaille { position: absolute; inset: 0; transform-style: preserve-3d; }
+  .medaille.fliegt { animation: einfliegen 1.7s cubic-bezier(.16, .84, .3, 1) both; }
+  @keyframes einfliegen {
+    0%   { transform: translateY(-55vh) translateZ(-900px) rotateY(-1080deg) scale(.25); opacity: 0; }
+    35%  { opacity: 1; }
+    82%  { transform: translateY(0) translateZ(60px) rotateY(18deg) scale(1.06); }
+    100% { transform: none; }
+  }
+  .medaille .seite { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: conic-gradient(from 200deg, #f7cf63, #fff6d2, #e3a92c, #fbe5a0, #c88a14, #f3c552, #fff1c0, #f7cf63);
+    box-shadow: 0 20px 44px rgba(36, 55, 70, .28), inset 0 0 0 2px rgba(255, 255, 255, .55); }
+  /* Münzfeld: etwas vertieft, darauf Logo und Schrift erhaben geprägt (Licht oben links, Schatten unten rechts) */
+  .medaille .seite::before { content: ""; position: absolute; inset: 9%; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fbe39c, #e8b443 55%, #c98d18 100%);
+    box-shadow: inset 0 5px 12px rgba(110, 70, 0, .45), inset 0 -3px 6px rgba(255, 244, 200, .65), 0 0 0 3px rgba(165, 108, 10, .55); }
+  .praegung { position: relative; filter: drop-shadow(-1px -1.5px 0 rgba(255, 250, 228, .9)) drop-shadow(1.5px 2.5px 1.5px rgba(105, 62, 0, .6)); }
+  .praegung.logo { width: 38%; aspect-ratio: 1; }
+  .praegung.umschrift { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .umschrift text { font-family: inherit; font-weight: 800; font-size: 6.6px; letter-spacing: 1.3px; }
+  .praegung i { position: absolute; inset: 0; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
+  .praegung .pr-rahmen { -webkit-mask-image: url(medaille-rahmen.png); mask-image: url(medaille-rahmen.png); background: linear-gradient(145deg, #fff4c8 0%, #f1c04c 42%, #c78812 78%, #f3cd6c 100%); }
+  .praegung .pr-w { -webkit-mask-image: url(medaille-w.png); mask-image: url(medaille-w.png); background: linear-gradient(145deg, #ffe9a6 0%, #dea22a 50%, #b57709 100%); }
+  .medaille .hinten { transform: rotateY(180deg); }
+  .praegung.wm { font-weight: 800; letter-spacing: 1.5px; font-size: clamp(13px, 4vw, 20px); line-height: 1.25; }
+  .praegung.wm span { display: block; background: linear-gradient(160deg, #f9dc8a 0%, #d39a26 45%, #a56a05 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .medaille .vorne::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .7) 48%, transparent 60%); transform: translateX(-120%); animation: glanz 3.5s 1.9s ease-in-out infinite; }
+  @keyframes glanz { 0% { transform: translateX(-120%); } 35%, 100% { transform: translateX(120%); } }
+  .feier-titel { position: relative; z-index: 1; font-size: 34px; line-height: 1.15; font-weight: 800; color: var(--tinte); margin: 0 0 8px; }
+  .feier-text { position: relative; z-index: 1; font-size: 19px; line-height: 1.35; color: var(--text); margin: 0 0 28px; max-width: 22rem; }
+  #feierWeiter { position: relative; z-index: 3; width: 100%; max-width: 34rem; }
+  #feier.an .feier-titel, #feier.an .feier-text, #feier.an #feierWeiter { animation: auftauchen .6s 1.25s ease-out both; }
+  @keyframes auftauchen { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .medaille.fliegt { animation: none; } .medaille .vorne::after { animation: none; } #feier.an .feier-titel, #feier.an .feier-text, #feier.an #feierWeiter { animation-delay: 0s; } }
 
   /* Einmessen: Kamera oben, darunter Richtung und Taste, ganz unten die Liste */
   body.einmessen #ar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -164,6 +202,31 @@
     <button class="taste neben" id="neu" hidden>Neu starten</button>
   </section>
 </main>
+
+<div id="feier" hidden>
+  <canvas id="konfetti" aria-hidden="true"></canvas>
+  <div class="feier-buehne" id="feierBuehne" aria-hidden="true">
+    <div class="medaille" id="medaille">
+      <div class="seite vorne">
+        <svg class="praegung umschrift" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="goldSchrift" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f9dc8a"/><stop offset=".45" stop-color="#d39a26"/><stop offset="1" stop-color="#a56a05"/></linearGradient>
+            <path id="bogenOben" d="M 16.5 50 A 33.5 33.5 0 0 1 83.5 50"/>
+            <path id="bogenUnten" d="M 11.5 50 A 38.5 38.5 0 0 0 88.5 50"/>
+          </defs>
+          <text fill="url(#goldSchrift)" text-anchor="middle"><textPath href="#bogenOben" startOffset="50%">LERNCAMPUS</textPath></text>
+          <text fill="url(#goldSchrift)" text-anchor="middle"><textPath href="#bogenUnten" startOffset="50%">WASCHERDE</textPath></text>
+          <circle cx="13.8" cy="50" r="1.3" fill="url(#goldSchrift)"/><circle cx="86.2" cy="50" r="1.3" fill="url(#goldSchrift)"/>
+        </svg>
+        <div class="praegung logo"><i class="pr-rahmen"></i><i class="pr-w"></i></div>
+      </div>
+      <div class="seite hinten"><div class="praegung wm"><span>LERNCAMPUS</span><span>WASCHERDE</span></div></div>
+    </div>
+  </div>
+  <h1 class="feier-titel" id="feierTitel">Geschafft!</h1>
+  <p class="feier-text" id="feierText"></p>
+  <button class="taste haupt" id="feierWeiter">Ergebnis anzeigen</button>
+</div>
 
 <div class="hinweisleiste" id="rueck" hidden><span>Alles zurückgesetzt.</span><button id="rueckBtn">Rückgängig</button></div>
 
@@ -409,7 +472,7 @@ window.schnitzeljagdStarten = function () {
       $("frageFeld").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
         if (geloest || b.classList.contains("falsch")) return;
         const wahl = f.auswahl[Number(b.dataset.k)];
-        if (wahl === f.richtig) { b.classList.add("richtig"); frageGeloest(i, wahl, true); }
+        if (wahl === f.richtig) { b.classList.add("richtig"); tonRichtig(); frageGeloest(i, wahl, true); }
         else { b.classList.add("falsch"); falsch(); }
       }));
     } else {
@@ -418,7 +481,7 @@ window.schnitzeljagdStarten = function () {
         ev.preventDefault();
         if (geloest) return;
         const w = $("eingabe").value; if (!w.trim()) return;
-        if (f.antwort.some(a => normal(a) === normal(w))) { $("eingabe").blur(); frageGeloest(i, f.antwort[0], true); }
+        if (f.antwort.some(a => normal(a) === normal(w))) { $("eingabe").blur(); tonRichtig(); frageGeloest(i, f.antwort[0], true); }
         else falsch();
       });
     }
@@ -426,7 +489,7 @@ window.schnitzeljagdStarten = function () {
 
   // Falsche Antwort: nur rot durchstreichen und kurz wackeln, kein Text. Weiter geht es erst mit der richtigen Antwort.
   function falsch() {
-    versuche++;
+    versuche++; tonFalsch();
     const feld = $("frageFeld"); feld.classList.remove("wackeln"); void feld.offsetWidth; feld.classList.add("wackeln");
   }
 
@@ -595,25 +658,116 @@ window.schnitzeljagdStarten = function () {
       const b = tonKontext.createBuffer(1, 1, 22050), q = tonKontext.createBufferSource(); q.buffer = b; q.connect(tonKontext.destination); q.start(0);
     } catch (e) {}
   }
-  function ton() {                   // kurzer, heller Bestätigungston: zwei glockige Töne aufwärts (eigener Klang)
+  // Glockenklang: Grundton plus leise Obertöne. noten = [[Frequenz, Start in s], …]
+  function glocke(noten, lautst = 0.22, dauer = 0.55) {
     if (!tonKontext) return;
     try {
       const t0 = tonKontext.currentTime + 0.01, ziel = tonKontext.createGain();
-      ziel.gain.value = 0.22; ziel.connect(tonKontext.destination);
-      [[1174.7, 0], [1568.0, 0.085]].forEach(([f, d]) => {
-        // Grundton plus leise Obertöne → klingt wie eine kleine Glocke
-        [[1, 1], [2.0, 0.28], [3.01, 0.08]].forEach(([m, lautst]) => {
+      ziel.gain.value = lautst; ziel.connect(tonKontext.destination);
+      noten.forEach(([f, d, lang]) => {
+        [[1, 1], [2.0, 0.28], [3.01, 0.08]].forEach(([m, l]) => {
           const o = tonKontext.createOscillator(), g = tonKontext.createGain();
           o.type = "sine"; o.frequency.value = f * m;
-          const dauer = m === 1 ? 0.55 : 0.25;
+          const dd = (lang || dauer) * (m === 1 ? 1 : 0.45);
           g.gain.setValueAtTime(0.0001, t0 + d);
-          g.gain.exponentialRampToValueAtTime(lautst, t0 + d + 0.008);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + dauer);
-          o.connect(g); g.connect(ziel); o.start(t0 + d); o.stop(t0 + d + dauer + 0.02);
+          g.gain.exponentialRampToValueAtTime(l, t0 + d + 0.008);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + dd);
+          o.connect(g); g.connect(ziel); o.start(t0 + d); o.stop(t0 + d + dd + 0.02);
         });
       });
     } catch (e) {}
   }
+  const ton = () => glocke([[1174.7, 0], [1568.0, 0.085]]);                                   // erkannt
+  const tonRichtig = () => glocke([[1046.5, 0], [1318.5, 0.08], [1568.0, 0.16], [2093.0, 0.24, 0.8]], 0.2);   // richtig: hell aufwärts
+  function tonFalsch() {                                                                        // falsch: zwei weiche, tiefe Töne abwärts
+    if (!tonKontext) return;
+    try {
+      const t0 = tonKontext.currentTime + 0.01;
+      [[233.1, 0], [185.0, 0.17]].forEach(([f, d]) => {
+        const o = tonKontext.createOscillator(), g = tonKontext.createGain();
+        o.type = "triangle"; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0 + d);
+        g.gain.exponentialRampToValueAtTime(0.32, t0 + d + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.22);
+        o.connect(g); g.connect(tonKontext.destination); o.start(t0 + d); o.stop(t0 + d + 0.25);
+      });
+    } catch (e) {}
+  }
+  const tonFanfare = () => glocke([[523.25, 0, 0.4], [659.25, 0.12, 0.4], [783.99, 0.24, 0.4], [1046.5, 0.36, 0.5],
+    [523.25, 0.62, 1.4], [659.25, 0.62, 1.4], [783.99, 0.62, 1.4], [1046.5, 0.62, 1.6]], 0.16);
+
+  // ---------- Ziel: Feier mit Medaille und Konfetti ----------
+  const ruhig = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let medWinkel = 0, medV = 0, medZiehen = null, medLauf = false, medT0 = 0, konfettiLauf = false;
+  function zielFeiern() {
+    const i = N - 1;
+    if (stand.erledigt === i) { stand.erledigt = N; stand.antworten[i] = ""; speichern(); zeigen(); }
+    $("feierTitel").textContent = daten.zielTitel || "Geschafft!";
+    $("feierText").textContent = st[i].text;
+    const f = $("feier"); f.hidden = false; f.classList.remove("an"); void f.offsetWidth; f.classList.add("an");
+    const m = $("medaille"); m.style.transform = ""; m.classList.remove("fliegt"); void m.offsetWidth;
+    medWinkel = 0; medV = 0;
+    if (!ruhig()) {
+      m.classList.add("fliegt");
+      m.addEventListener("animationend", () => { m.classList.remove("fliegt"); medT0 = performance.now(); if (!medLauf) { medLauf = true; requestAnimationFrame(medTick); } }, { once: true });
+      setTimeout(konfetti, 1150);
+    } else { medT0 = performance.now(); }
+    setTimeout(tonFanfare, 1100);
+  }
+  // Nach dem Einfliegen: leicht hin und her schwingen; mit dem Finger drehen, schwingt zurück
+  function medTick(t) {
+    if ($("feier").hidden) { medLauf = false; return; }
+    if (!medZiehen) {
+      const ziel = Math.round(medWinkel / 360) * 360 + Math.sin((t - medT0) / 900) * 10;
+      medV += (ziel - medWinkel) * 0.012; medV *= 0.93; medWinkel += medV;
+    }
+    $("medaille").style.transform = `rotateY(${medWinkel.toFixed(2)}deg)`;
+    requestAnimationFrame(medTick);
+  }
+  $("feierBuehne").addEventListener("pointerdown", e => {
+    if ($("medaille").classList.contains("fliegt")) return;
+    medZiehen = { x: e.clientX, w: medWinkel, lx: e.clientX, lt: performance.now(), v: 0 };
+    $("feierBuehne").setPointerCapture(e.pointerId);
+    if (!medLauf) { medLauf = true; requestAnimationFrame(medTick); }
+  });
+  $("feierBuehne").addEventListener("pointermove", e => {
+    if (!medZiehen) return;
+    const jetzt = performance.now();
+    medWinkel = medZiehen.w + (e.clientX - medZiehen.x) * 0.9;
+    medZiehen.v = (e.clientX - medZiehen.lx) * 0.9 / Math.max(1, jetzt - medZiehen.lt) * 16;
+    medZiehen.lx = e.clientX; medZiehen.lt = jetzt;
+  });
+  const loslassen = () => { if (medZiehen) { medV = medZiehen.v; medZiehen = null; } };
+  $("feierBuehne").addEventListener("pointerup", loslassen); $("feierBuehne").addEventListener("pointercancel", loslassen);
+
+  // Konfetti in den Lerncampus-Farben: Ausbruch hinter der Medaille, dann Regen von oben
+  function konfetti() {
+    const c = $("konfetti"), x = c.getContext("2d"), dpr = window.devicePixelRatio || 1;
+    const B = c.clientWidth, H = c.clientHeight; c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+    const farben = ["#2f7bf6", "#f47b20", "#22b04b", "#f7cf63", "#e8508c", "#7a5cf0"];
+    const r = $("feierBuehne").getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
+    const teile = [];
+    for (let k = 0; k < 140; k++) {
+      const w = Math.random() * Math.PI * 2, v = 6 + Math.random() * 9;
+      teile.push({ x: mx, y: my, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 5, d: Math.random() * 6, dv: (Math.random() - .5) * .4, f: farben[k % 6], b: 6 + Math.random() * 6, h: 8 + Math.random() * 8, p: Math.random() * 6 });
+    }
+    for (let k = 0; k < 90; k++)
+      teile.push({ x: Math.random() * B, y: -20 - Math.random() * H * .6, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3, d: Math.random() * 6, dv: (Math.random() - .5) * .3, f: farben[k % 6], b: 6 + Math.random() * 5, h: 8 + Math.random() * 7, p: Math.random() * 6 });
+    const start = performance.now(); konfettiLauf = true;
+    (function schritt(t) {
+      if (!konfettiLauf || $("feier").hidden) { x.clearRect(0, 0, B, H); return; }
+      x.clearRect(0, 0, B, H);
+      const alter = (t - start) / 1000;
+      teile.forEach(q => {
+        q.vx *= 0.985; q.vy = q.vy * 0.985 + 0.32; q.x += q.vx + Math.sin(alter * 3 + q.p) * 0.6; q.y += q.vy; q.d += q.dv;
+        x.save(); x.translate(q.x, q.y); x.rotate(q.d); x.scale(1, Math.abs(Math.cos(alter * 6 + q.p)) * .9 + .1);
+        x.globalAlpha = Math.max(0, Math.min(1, 5.5 - alter)); x.fillStyle = q.f; x.fillRect(-q.b / 2, -q.h / 2, q.b, q.h); x.restore();
+      });
+      if (alter < 5.5) requestAnimationFrame(schritt); else { x.clearRect(0, 0, B, H); konfettiLauf = false; }
+    })(start);
+  }
+  $("feierWeiter").addEventListener("click", () => { konfettiLauf = false; $("feier").hidden = true; arBeenden(); });
+
   function treffer(k) {
     const jetzt = Date.now();
     if (zuletzt.k === k && jetzt - zuletzt.t < 4000) { zuletzt.t = jetzt; return; }   // derselbe Aufkleber: nicht dauernd piepen
@@ -776,7 +930,9 @@ window.schnitzeljagdStarten = function () {
           treffer("c" + i); messenZeigen("c", i); return;
         }
         if (blattOffen()) return;
-        if (i === stand.erledigt) {                 // der gesuchte Checkpoint: Info und Frage
+        if (i === stand.erledigt && i === N - 1) {  // Ziel: Feier mit Medaille
+          zielFeiern();
+        } else if (i === stand.erledigt) {          // der gesuchte Checkpoint: Info und Frage
           treffer("c" + i); blattZeigen(i);
         } else if (i < stand.erledigt) {            // schon besucht
           if (i === stand.erledigt - 1 && stand.erledigt < N && frei(i) && peilungCP(i) !== null) { stand.peilung = peilungCP(i); speichern(); kompassZeigen(); }
