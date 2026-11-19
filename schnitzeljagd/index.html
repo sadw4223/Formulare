@@ -29,7 +29,10 @@
 
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
-  #beispiel img { display: block; width: min(72%, 280px); height: auto; margin: 0 auto 24px; }
+  @font-face { font-family: "Anmerkung"; src: url(schrift/playpen-anmerkung.woff2) format("woff2"); font-weight: 500; font-display: block; }
+  .beispiel-bild { display: block; width: 100%; max-width: 330px; height: auto; margin: 0 auto 24px; overflow: visible; }
+  .anmerkung text { font-family: "Anmerkung", "Playpen Sans", cursive; font-weight: 500; font-size: 19px; fill: var(--tinte); }
+  .anmerkung path { fill: none; stroke: var(--tinte); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   .regel { display: flex; gap: 14px; align-items: center; background: #fdeee2; border-radius: 12px; padding: 16px 18px; margin: 0 0 24px; color: var(--tinte); font-size: 17px; line-height: 1.4; font-weight: 700; }
   .regel svg { flex: none; width: 32px; height: 32px; }
   .ergebnis { background: var(--flaeche); border: 2px solid var(--linie); border-radius: 12px; padding: 20px; margin: 0 0 16px; text-align: center; }
@@ -166,7 +169,7 @@
   /* Kleine Handys (z. B. iPhone SE): alles ein wenig enger, damit „Schnitzeljagd starten“ ohne Scrollen sichtbar bleibt */
   @media (max-height: 720px) {
     main > .weg { margin-top: 12px; } h1 { margin-top: 16px; }
-    .lead, #beispiel img { margin-bottom: 16px; } #beispiel img { width: auto; height: 118px; }
+    .lead, .beispiel-bild { margin-bottom: 16px; } .beispiel-bild { width: auto; height: 124px; }
     .regel { margin-bottom: 16px; padding: 12px 16px; }
   }
 </style>
@@ -185,8 +188,16 @@
   </div>
   <p class="lead" id="lead"></p>
   <div id="beispiel" hidden>
-    <img src="beispiel-checkpoint.png" alt="So sehen die Checkpoints aus: ein großer runder Aufkleber mit blauem Rand und ein kleiner mit orangem Rand.">
     <p class="lead" id="hilfe"></p>
+    <!-- Beispielbild mit handschriftlicher Anmerkung (Playpen Sans), Pfeil zeigt auf die Checkpoints -->
+    <svg class="beispiel-bild" viewBox="0 0 330 150" role="img" aria-label="So sehen die Checkpoints aus: ein großer runder Aufkleber mit blauem Rand und ein kleiner mit orangem Rand.">
+      <image href="beispiel-checkpoint.png" x="140" y="41" width="190" height="109.4"/>
+      <g class="anmerkung">
+        <text transform="rotate(-6 60 36)"><tspan x="2" y="22">So sehen die</tspan><tspan x="2" y="46">Checkpoints aus!</tspan></text>
+        <path d="M 28 62 C 26 100, 74 118, 134 104"/>
+        <path d="M 121.7 99.8 L 134 104 L 124.8 113.2"/>
+      </g>
+    </svg>
   </div>
   <div class="regel" id="regel" hidden>
     <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="13" width="22" height="15" rx="2" fill="#f47b20"/><rect x="3" y="9" width="26" height="6" rx="2" fill="#f47b20"/><rect x="14" y="9" width="4" height="19" fill="#fdeee2"/><path d="M16 9c-2-5-8-6-8-2 0 2 4 2 8 2zm0 0c2-5 8-6 8-2 0 2-4 2-8 2z" fill="none" stroke="#f47b20" stroke-width="2.4" stroke-linejoin="round"/></svg>
