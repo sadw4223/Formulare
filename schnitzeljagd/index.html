@@ -301,7 +301,6 @@ window.schnitzeljagdStarten = function () {
   // Einmess-Modus (Adresse mit ?einmessen): Richtung speichern → gilt sofort auf diesem Gerät und wird direkt
   // zu GitHub hochgeladen (peilungen.json). Von dort holen sich alle Geräte die Richtungen.
   const EINMESSEN = new URLSearchParams(location.search).has("einmessen");
-  const FEIERPROBE = new URLSearchParams(location.search).has("feier");   // ?feier: nur die Feier am Ziel ansehen, ohne Parcours und ohne den Spielstand zu ändern
   const EM_SCHLUESSEL = "schnitzeljagd-einmessen";
   // Schlüssel der Richtungen: „Aufkleber>nächster Aufkleber“ (blau) bzw. „Nummer:von>nach“ (orange).
   // So bleibt eine Richtung beim Umsortieren gültig, solange der Weg gleich bleibt – sonst wird sie neu eingemessen.
@@ -338,7 +337,7 @@ window.schnitzeljagdStarten = function () {
   const richtungsName = h => RICHTUNGEN[Math.round(norm360(h) / 45) % 8];
 
   // Taste: beim ersten Mal „starten“, danach „fortsetzen“ (die Gesamtzahl der Stationen wird nirgends genannt)
-  function startText() { if (FEIERPROBE) return "Feier ansehen"; return stand.erledigt === 0 ? "Schnitzeljagd starten" : "Schnitzeljagd fortsetzen"; }
+  function startText() { return stand.erledigt === 0 ? "Schnitzeljagd starten" : "Schnitzeljagd fortsetzen"; }
 
   // Wie viele Fragen wurden gleich beim ersten Versuch richtig beantwortet?
   function auswertung() {
@@ -1033,10 +1032,7 @@ window.schnitzeljagdStarten = function () {
     zeigen(); kompassZeigen();
   }
 
-  $("start").addEventListener("click", () => {
-    if (FEIERPROBE) { tonErlauben(); $("feier").hidden = false; medBilderBereit().then(() => requestAnimationFrame(feierStarten)); return; }
-    arStarten();
-  });
+  $("start").addEventListener("click", arStarten);
   if (EINMESSEN) {
     document.body.classList.add("einmessen");
     $("messPanel").hidden = false; ghAnzeigen(); einmessListe();
