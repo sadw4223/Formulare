@@ -993,13 +993,20 @@ window.schnitzeljagdStarten = function () {
         if (EINMESSEN) { treffer("w" + j); messenZeigen("w", j); return; }
         if (blattOffen()) return;
         const gesucht = stand.erledigt + 1;           // Nummer des Checkpoints, zu dem das Kind gerade unterwegs ist
-        if (stand.erledigt < N && (nach === null || nach === gesucht)) {
+        // Auch auf einem Weg gilt die Reihenfolge: erst der erste orange Checkpoint, dann der zweite
+        const wegListe = nach === null ? [] : WW.map((w, k) => w.nach === nach ? k : -1).filter(k => k >= 0);
+        const platz = wegListe.indexOf(j);
+        const geschafft = stand.wwWeg && stand.wwWeg.nach === gesucht ? stand.wwWeg.zahl : 0;
+        if (stand.erledigt < N && (nach === null || (nach === gesucht && platz === geschafft))) {
           if (stand.erledigt > 0 && !frei(stand.erledigt - 1)) return;   // Zeit am letzten Checkpoint noch nicht um
           const p = peilungWW(j);
           treffer("w" + j);                         // erkannt: immer Ring und Ton
-          if (p !== null) { stand.peilung = p; speichern(); label(sucheText()); kompassZeigen(); }
+          if (nach !== null) stand.wwWeg = { nach: gesucht, zahl: geschafft + 1 };
+          if (p !== null) stand.peilung = p;
+          speichern();
+          if (p !== null) { label(sucheText()); kompassZeigen(); }
           else kurzLabel("Dieser Checkpoint ist noch nicht eingemessen.");
-        } else if (nach !== null && nach > gesucht) {
+        } else if (nach !== null && (nach > gesucht || (nach === gesucht && platz > geschafft))) {
           treffer("w" + j, "spaeter"); kurzLabel("Dieser Checkpoint kommt erst später.");
         } else {
           treffer("w" + j, "schon"); kurzLabel("An diesem Checkpoint warst du schon.");
