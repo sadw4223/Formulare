@@ -142,7 +142,11 @@
   #kamera.bereit { opacity: 1; }   /* erst zeigen, wenn die Kamera läuft – vorher nur der dunkle Kreis */
   /* Kamerabild füllt den Kreis immer ganz aus, auch in der ersten Sekunde (MindAR zeigt sonst kurz ein kleines Rechteck).
      Es wird nichts ins Bild gezeichnet, deshalb darf das Bild frei zugeschnitten werden – die Erkennung nutzt das volle Kamerabild. */
-  #kamera video { position: absolute !important; inset: 0 !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
+  #kamera video { position: absolute !important; inset: 0 !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 50%; clip-path: circle(50%); }
+  /* Das Kamerabild selbst rund zuschneiden: Safari schneidet Videos über den runden Rahmen nicht immer sofort zu (vor allem in der Web-App).
+     Die 3D-Zeichenfläche der Erkennung bleibt unsichtbar – es wird ohnehin nichts darauf gezeichnet. */
+  #kamera { border-radius: 50%; -webkit-mask-image: -webkit-radial-gradient(white, black); }
+  #kamera canvas { visibility: hidden !important; }
   #treffer { position: absolute; inset: -10px; border-radius: 50%; border: 12px solid #22b04b; filter: blur(7px); opacity: 0; pointer-events: none; }
   #treffer.an { animation: treffer 1.3s ease-out; }
   #treffer.rot { border-color: #e9152d; }
