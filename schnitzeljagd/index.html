@@ -36,6 +36,10 @@
 
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
+  /* Jede Gerätegröße: freie Höhe gleichmäßig über und unter den Inhalt verteilen (keine Leere unten, auch als Web-App im Vollbild).
+     Ist der Inhalt länger als der Bildschirm, bleibt der normale Abstand und man scrollt. */
+  main { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+  main > .luft, main::after { content: ""; flex: 1 1 0; }
   @font-face { font-family: "Anmerkung"; src: url(schrift/playpen-anmerkung.woff2) format("woff2"); font-weight: 500; font-display: block; }
   .beispiel-bild { display: block; width: 100%; max-width: 330px; height: auto; margin: 36px auto 36px; overflow: visible; }
   .anmerkung text { font-family: "Anmerkung", "Playpen Sans", cursive; font-weight: 500; font-size: 19px; fill: var(--tinte); }
@@ -184,6 +188,47 @@
     .lead { margin-bottom: 16px; } .beispiel-bild { width: auto; height: 124px; margin: 24px auto; }
     .regel { margin-bottom: 16px; padding: 12px 16px; }
   }
+  /* iPad und große Android-Tablets (auch als Web-App im Vollbild): alles größer, Inhalt senkrecht mittig statt Leere unten */
+  @media (min-width: 700px) and (min-height: 700px) {
+    body { font-size: 20px; }
+    main { max-width: 42rem; padding-left: 32px; padding-right: 32px; padding-top: max(32px, env(safe-area-inset-top)); padding-bottom: max(32px, env(safe-area-inset-bottom)); }
+    main > h1 { margin-top: 32px; }
+    .kopf img { width: 56px; height: 56px; } .kopftitel { font-size: 28px; } .wortmarke { font-size: 13px; letter-spacing: 1.5px; }
+    .kopf { gap: 14px; padding-bottom: 16px; }
+    .weg { font-size: 15px; } main > .weg { margin-top: 24px; }
+    h1 { font-size: 46px; line-height: 1.1; margin-bottom: 14px; }
+    .lead { margin-bottom: 28px; }
+    .beispiel-bild { max-width: 460px; margin: 48px auto; }
+    .regel { font-size: 20px; padding: 20px 24px; border-radius: 16px; gap: 18px; margin-bottom: 28px; } .regel svg { width: 40px; height: 40px; }
+    .taste { min-height: 64px; font-size: 22px; border-radius: 16px; }
+    .ergebnis { padding: 28px; border-radius: 16px; } .ergebnis .zahl { font-size: 64px; } .ergebnis .was { font-size: 18px; }
+    h2 { font-size: 26px; }
+    .liste { border-radius: 16px; } .liste li { padding: 16px 20px; }
+    /* Feier */
+    .feier-buehne { width: min(50vw, 40vh, 440px); margin-bottom: 44px; }
+    .feier-titel { font-size: 48px; } .feier-text { font-size: 24px; max-width: 30rem; margin-bottom: 36px; }
+    #feierWeiter { max-width: 28rem; }
+    /* Unterwegs: Kamera-Ausschnitt und Pfeil größer, Blatt mittig statt über die ganze Breite */
+    #ar .weg { max-width: 42rem; }
+    .rund-rahmen { width: min(56vw, 34vh, 440px); }
+    .gross-kompass { width: min(48vw, 28vh, 380px); }
+    #arLabel { font-size: 24px; max-width: 32rem; min-height: 62px; }
+    #arHinweis { font-size: 18px; }
+    #arSchliessen { max-width: 28rem; }
+    #blatt { left: 50%; right: auto; width: min(100%, 42rem); margin-left: calc(min(100%, 42rem) / -2); }
+    .blatt-inhalt { padding: 16px 32px 8px; } .blatt-fuss { padding-left: 32px; padding-right: 32px; }
+    #blatt h3 { font-size: 30px; }
+    .auswahl { border-radius: 16px; } .auswahl button { min-height: 62px; padding: 14px 20px; gap: 16px; }
+    .kasten { width: 28px; height: 28px; } .kasten svg { inset: 3px; width: 18px; height: 18px; }
+    .eingabe input { height: 64px; font-size: 20px; }
+  }
+  /* iPad quer: etwas weniger Höhe – Beispielbild kleiner, damit „Schnitzeljagd starten“ sichtbar bleibt */
+  @media (min-width: 700px) and (min-height: 700px) and (max-height: 900px) {
+    .beispiel-bild { max-width: 360px; margin: 28px auto; }
+    h1 { font-size: 40px; }
+    .rund-rahmen { width: min(40vw, 30vh, 300px); } .gross-kompass { width: min(36vw, 24vh, 240px); }
+    .feier-buehne { width: min(40vw, 34vh, 340px); margin-bottom: 28px; }
+  }
 </style>
 </head>
 <body>
@@ -193,6 +238,7 @@
     <div><div class="kopftitel">Schnitzeljagd</div><div class="wortmarke"><span class="l">LERNCAMPUS</span> <span class="w">WASCHERDE</span></div></div>
   </header>
   <div class="weg" aria-hidden="true"><span>Start</span><div class="spur"><div class="gefahren"></div><div class="ort"><i></i></div></div><span>Ziel</span></div>
+  <div class="luft" aria-hidden="true"></div>
   <h1 id="titel"></h1>
   <div class="ergebnis" id="ergebnis" hidden>
     <div class="zahl" id="ergebnisZahl"></div>
