@@ -150,7 +150,7 @@
   .gross-kompass.wartet .pfeil-svg { opacity: 0; }
   #arLabel { text-align: center; color: var(--tinte); font-weight: 700; font-size: 19px; line-height: 1.3; margin: 0 0 4px; max-width: 24rem; min-height: 50px; }
   #arHinweis { text-align: center; font-size: 15px; margin: 12px 0 0; min-height: 21px; color: var(--tinte); font-weight: 700; }
-  #arHinweis:not(.an) > * { display: none; }
+  #arHinweis:not(.an) > * { display: none !important; }   /* sonst gewinnt die Regel für .acht und die Acht ist immer zu sehen */
   #arHinweis .acht { display: block; width: 84px; height: 40px; margin: 0 auto 4px; }
   #arHinweis p { margin: 0; }
   .lead strong { color: var(--tinte); }
