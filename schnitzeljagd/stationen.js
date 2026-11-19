@@ -70,7 +70,7 @@ const SCHNITZELJAGD = {
     {
       ort: "Lernbüro", motiv: 7,
       text: "Hier hat jedes Kind seinen eigenen Arbeitsplatz.",
-      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Lesen und Schreiben lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
+      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Blockflöte spielen lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
     },
     {
       ort: "Ziel", motiv: 9,
