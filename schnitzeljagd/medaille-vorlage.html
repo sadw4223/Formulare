@@ -11,6 +11,7 @@
     box-shadow: inset 0 5px 12px rgba(110, 70, 0, .45), inset 0 -3px 6px rgba(255, 244, 200, .65), 0 0 0 3px rgba(165, 108, 10, .55); }
   .praegung { position: relative; filter: drop-shadow(-1px -1.5px 0 rgba(255, 250, 228, .9)) drop-shadow(1.5px 2.5px 1.5px rgba(105, 62, 0, .6)); }
   .praegung.logo { width: 38%; aspect-ratio: 1; }
+  .praegung.monogramm { width: 52%; aspect-ratio: 296 / 300; }
   .praegung.umschrift { position: absolute; inset: 0; width: 100%; height: 100%; }
   .umschrift text { font-family: Inter, -apple-system, sans-serif; font-weight: 800; font-size: 6.6px; letter-spacing: 1.3px; }
   .praegung i { position: absolute; inset: 0; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
@@ -29,5 +30,11 @@
   </svg>
   <div class="praegung logo"><i class="pr-rahmen"></i><i class="pr-w"></i></div>
 </div>
-<div class="seite hinten"></div>
+<div class="seite hinten">
+  <!-- Rückseite: Monogramm dg (dg-logo-schwarz.svg) mittig eingeprägt -->
+  <svg class="praegung monogramm" viewBox="30 4 296 300">
+    <defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0bd"/><stop offset=".45" stop-color="#e2a935"/><stop offset="1" stop-color="#b07408"/></linearGradient></defs>
+    <path d="M 144.5 128.0 C 124 104, 62 112, 56 156 C 50 198, 98 208, 124 190 C 138 180, 142.0 166.0, 142.9 150.0 C 145.2 110.3, 151.6 64.2, 163.0 30.0 C 149.0 72.0, 142.5 132.0, 142.0 176.0 C 141.6 198, 160 205, 174 192 C 184 182, 194.7 161.6, 207.4 138.9 C 213.7 127.6, 225.1 120.0, 238.0 120.0 C 257.9 120.0, 274.0 137.9, 274.0 160.0 C 274.0 182.1, 257.9 200.0, 238.0 200.0 C 218.1 200.0, 202.0 182.1, 202.0 160.0 C 202.0 137.9, 218.1 120.0, 238.0 120.0 C 257.9 120.0, 274.0 137.9, 274.0 160.0 C 274 200, 275 238, 262 263 C 248 290, 210 288, 210 268 C 210 248, 252 234, 304 224" fill="none" stroke="url(#g2)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" gradientUnits="userSpaceOnUse"/>
+  </svg>
+</div>
 </body></html>
