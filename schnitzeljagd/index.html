@@ -30,7 +30,7 @@
   h1 { font-size: 30px; line-height: 1.16; font-weight: 700; color: var(--tinte); margin: 28px 0 10px; }
   .lead { margin: 0 0 24px; }
   @font-face { font-family: "Anmerkung"; src: url(schrift/playpen-anmerkung.woff2) format("woff2"); font-weight: 500; font-display: block; }
-  .beispiel-bild { display: block; width: 100%; max-width: 330px; height: auto; margin: 0 auto 24px; overflow: visible; }
+  .beispiel-bild { display: block; width: 100%; max-width: 330px; height: auto; margin: 36px auto 36px; overflow: visible; }
   .anmerkung text { font-family: "Anmerkung", "Playpen Sans", cursive; font-weight: 500; font-size: 19px; fill: var(--tinte); }
   .anmerkung path { fill: none; stroke: var(--tinte); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   .regel { display: flex; gap: 14px; align-items: center; background: #fdeee2; border-radius: 12px; padding: 16px 18px; margin: 0 0 24px; color: var(--tinte); font-size: 17px; line-height: 1.4; font-weight: 700; }
@@ -169,7 +169,7 @@
   /* Kleine Handys (z. B. iPhone SE): alles ein wenig enger, damit „Schnitzeljagd starten“ ohne Scrollen sichtbar bleibt */
   @media (max-height: 720px) {
     main > .weg { margin-top: 12px; } h1 { margin-top: 16px; }
-    .lead, .beispiel-bild { margin-bottom: 16px; } .beispiel-bild { width: auto; height: 124px; }
+    .lead { margin-bottom: 16px; } .beispiel-bild { width: auto; height: 124px; margin: 24px auto; }
     .regel { margin-bottom: 16px; padding: 12px 16px; }
   }
 </style>
@@ -188,7 +188,6 @@
   </div>
   <p class="lead" id="lead"></p>
   <div id="beispiel" hidden>
-    <p class="lead" id="hilfe"></p>
     <!-- Beispielbild mit handschriftlicher Anmerkung (Playpen Sans), Pfeil zeigt auf die Checkpoints -->
     <svg class="beispiel-bild" viewBox="0 0 330 150" role="img" aria-label="So sehen die Checkpoints aus: ein großer runder Aufkleber mit blauem Rand und ein kleiner mit orangem Rand.">
       <image href="beispiel-checkpoint.png" x="140" y="41" width="190" height="109.4"/>
@@ -347,9 +346,9 @@ window.schnitzeljagdStarten = function () {
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
     $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Geschafft.") : (e === 0 ? "Kennst du schon den Lerncampus Wascherde?" : "Weiter geht’s");
-    $("lead").textContent = fertig ? daten.ende : (e === 0 ? daten.start : "Folge dem Pfeil bis zum nächsten Checkpoint!");
+    $("lead").textContent = fertig ? daten.ende : (e === 0 ? [daten.start, daten.hilfe].filter(Boolean).join(" ") : "Folge dem Pfeil bis zum nächsten Checkpoint!");
     $("regel").hidden = e !== 0;
-    $("beispiel").hidden = e !== 0 || !daten.hilfe; $("hilfe").textContent = daten.hilfe || "";
+    $("beispiel").hidden = e !== 0;
     $("regelText").textContent = daten.regel;
     $("ergebnis").hidden = !fertig;
     if (fertig) {

@@ -1,7 +1,7 @@
 // Speichert die Schnitzeljagd beim ersten Öffnen komplett auf dem Gerät – danach läuft sie auch ohne Internet.
 // Texte (index.html, stationen.js, peilungen.json) kommen, wenn möglich, frisch aus dem Netz (höchstens 2,5 s warten), sonst aus dem Speicher.
 // Alles andere kommt aus dem Speicher. Ändert sich VERSION (setzt bauen.py), wird alles neu geladen.
-const VERSION = "6dd417a6d5";
+const VERSION = "97265aad8e";
 const CACHE = "schnitzeljagd-" + VERSION;
 const DATEIEN = ["./", "index.html", "stationen.js", "logo.png", "medaille-vorne.png", "medaille-hinten.png", "beispiel-checkpoint.png", "schrift/playpen-anmerkung.woff2", "vendor/aframe-v1.5.0.min.js", "vendor/mindar-image-aframe.prod.js", "targets/stationen.mind"];
 
