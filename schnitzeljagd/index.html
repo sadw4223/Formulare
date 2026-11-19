@@ -149,7 +149,11 @@
   .gross-kompass .pfeil-svg { transition: opacity .3s; }
   .gross-kompass.wartet .pfeil-svg { opacity: 0; }
   #arLabel { text-align: center; color: var(--tinte); font-weight: 700; font-size: 19px; line-height: 1.3; margin: 0 0 4px; max-width: 24rem; min-height: 50px; }
-  #arHinweis { text-align: center; font-size: 15px; margin: 12px 0 0; min-height: 21px; }
+  #arHinweis { text-align: center; font-size: 15px; margin: 12px 0 0; min-height: 21px; color: var(--tinte); font-weight: 700; }
+  #arHinweis:not(.an) > * { display: none; }
+  #arHinweis .acht { display: block; width: 84px; height: 40px; margin: 0 auto 4px; }
+  #arHinweis p { margin: 0; }
+  .lead strong { color: var(--tinte); }
   #arSchliessen { width: 100%; max-width: 34rem; margin-top: 12px; }
 
   /* halbhohes Blatt mit Infos und Frage */
@@ -213,7 +217,7 @@
     .rund-rahmen { width: min(56vw, 34vh, 440px); }
     .gross-kompass { width: min(48vw, 28vh, 380px); }
     #arLabel { font-size: 24px; max-width: 32rem; min-height: 62px; }
-    #arHinweis { font-size: 18px; }
+    #arHinweis { font-size: 18px; } #arHinweis .acht { width: 110px; height: 52px; }
     #arSchliessen { max-width: 28rem; }
     #blatt { left: 50%; right: auto; width: min(100%, 42rem); margin-left: calc(min(100%, 42rem) / -2); }
     .blatt-inhalt { padding: 16px 32px 8px; } .blatt-fuss { padding-left: 32px; padding-right: 32px; }
@@ -300,7 +304,14 @@
     <div id="treffer" aria-hidden="true"></div>
     <div id="rund"><div id="kamera"></div></div>
   </div>
-  <p id="arHinweis"></p>
+  <div id="arHinweis">
+    <!-- Kompass ungenau: liegende Acht, ein Punkt fährt sie ab – so bewegt man das Gerät -->
+    <svg class="acht" viewBox="0 0 120 56" aria-hidden="true">
+      <path id="achtWeg" d="M60 28 C 76 6, 112 6, 112 28 C 112 50, 76 50, 60 28 C 44 6, 8 6, 8 28 C 8 50, 44 50, 60 28 Z" fill="none" stroke="#dbe3ec" stroke-width="6" stroke-linecap="round"/>
+      <circle r="8" fill="#2f7bf6"><animateMotion dur="2.6s" repeatCount="indefinite" rotate="auto"><mpath href="#achtWeg"/></animateMotion></circle>
+    </svg>
+    <p>Bewege das Gerät kurz in Form einer Acht.</p>
+  </div>
   <button class="taste neben" id="arSchliessen">Pause machen</button>
   <section id="messPanel" hidden>
     <div class="mess-karte">
@@ -403,8 +414,9 @@ window.schnitzeljagdStarten = function () {
     if (EINMESSEN) { einmessListe(); return; }
     const e = stand.erledigt, fertig = e >= N;
     const ev = auswertung();
-    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig." : "Geschafft.") : (e === 0 ? "Kennst du schon den Lerncampus Wascherde?" : "Weiter geht’s");
+    $("titel").textContent = fertig ? (ev.alle ? "Alle Fragen richtig beantwortet!" : "Geschafft.") : (e === 0 ? "Kennst du schon den Lerncampus Wascherde?" : "Weiter geht’s");
     $("lead").textContent = fertig ? daten.ende : (e === 0 ? [daten.start, daten.hilfe].filter(Boolean).join(" ") : "Folge dem Pfeil bis zum nächsten Checkpoint!");
+    if (fertig && daten.endeFett) { const b = document.createElement("strong"); b.textContent = " " + daten.endeFett; $("lead").append(b); }
     $("regel").hidden = e !== 0;
     $("beispiel").hidden = e !== 0;
     $("regelText").textContent = daten.regel;
@@ -426,8 +438,17 @@ window.schnitzeljagdStarten = function () {
       html += `<li class="${ok ? "ok" : "nok"}"><span class="marke">${ok ? "✓" : "✗"}</span>${esc(s.ort)}</li>`;
     }
     $("karten").innerHTML = html;
+    wegZeigen();
+  }
+  // Fortschritt oben: jeder Checkpoint zählt als Schritt – die blauen und die orangen auf dem Weg.
+  // Wird ein oranger übersprungen, springt der Punkt beim nächsten blauen Checkpoint mit.
+  function wegZeigen() {
+    const e = stand.erledigt, aufWeg = WW.filter(w => w.nach != null);
+    const gesamt = N + aufWeg.length;
+    const z = stand.wwWeg && stand.wwWeg.nach === e + 1 ? stand.wwWeg.zahl : 0;
+    const geschafft = e >= N ? gesamt : e + aufWeg.filter(w => w.nach <= e).length + z;
+    const anteil = Math.min(1, geschafft / gesamt) * 100 + "%";
     document.querySelectorAll(".weg").forEach(w => {
-      const anteil = Math.min(1, e / N) * 100 + "%";
       w.querySelector(".gefahren").style.width = anteil; w.querySelector(".ort").style.left = anteil;
     });
   }
@@ -964,7 +985,7 @@ window.schnitzeljagdStarten = function () {
     $("grossKompass").classList.toggle("wartet", !wegAn);
     // Hinweis, falls der Kompass fehlt oder ungenau ist
     const fehlt = !$("ar").hidden && peil !== null && nord === null && Date.now() - kompassStart > 2500;
-    $("arHinweis").textContent = (fehlt || (wegAn && kompassGenau !== null && kompassGenau > 30)) ? "Bewege das Gerät kurz in Form einer Acht." : "";
+    $("arHinweis").classList.toggle("an", fehlt || (wegAn && kompassGenau !== null && kompassGenau > 30));
     if (!wegAn) return;
     // Blickrichtung waagerecht: Kamera nach vorn (Gerät aufrecht) plus Oberkante (Gerät flach)
     const v = drehe(lage, [0, 0, -1]), o = drehe(lage, bildschirm([0, 1, 0]));
@@ -1046,20 +1067,21 @@ window.schnitzeljagdStarten = function () {
         if (EINMESSEN) { treffer("w" + j); messenZeigen("w", j); return; }
         if (blattOffen()) return;
         const gesucht = stand.erledigt + 1;           // Nummer des Checkpoints, zu dem das Kind gerade unterwegs ist
-        // Auch auf einem Weg gilt die Reihenfolge: erst der erste orange Checkpoint, dann der zweite
+        // Auf einem Weg: der nächste orange Checkpoint zählt; wurde einer ausgelassen, zählt der danach trotzdem (Punkt springt mit),
+        // frühere sind dann „schon da gewesen“
         const wegListe = nach === null ? [] : WW.map((w, k) => w.nach === nach ? k : -1).filter(k => k >= 0);
         const platz = wegListe.indexOf(j);
         const geschafft = stand.wwWeg && stand.wwWeg.nach === gesucht ? stand.wwWeg.zahl : 0;
-        if (stand.erledigt < N && (nach === null || (nach === gesucht && platz === geschafft))) {
+        if (stand.erledigt < N && (nach === null || (nach === gesucht && platz >= geschafft))) {   // ausgelassene davor zählen als erledigt
           if (stand.erledigt > 0 && !frei(stand.erledigt - 1)) return;   // Zeit am letzten Checkpoint noch nicht um
           const p = peilungWW(j);
           treffer("w" + j);                         // erkannt: immer Ring und Ton
-          if (nach !== null) stand.wwWeg = { nach: gesucht, zahl: geschafft + 1 };
+          if (nach !== null) stand.wwWeg = { nach: gesucht, zahl: platz + 1 };
           if (p !== null) stand.peilung = p;
-          speichern();
+          speichern(); wegZeigen();
           if (p !== null) { label(sucheText()); kompassZeigen(); }
           else kurzLabel("Dieser Checkpoint ist noch nicht eingemessen.");
-        } else if (nach !== null && (nach > gesucht || (nach === gesucht && platz > geschafft))) {
+        } else if (nach !== null && nach > gesucht) {
           treffer("w" + j, "spaeter"); kurzLabel("Dieser Checkpoint kommt erst später.");
         } else {
           treffer("w" + j, "schon"); kurzLabel("An diesem Checkpoint warst du schon.");
