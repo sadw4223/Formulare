@@ -72,32 +72,37 @@
 
   /* Ziel: Medaille fliegt mit Drehung herein, Konfetti (wie die Auszeichnungen in Apple Fitness) */
   #feier { position: fixed; inset: 0; z-index: 50; background: var(--grund); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom)); text-align: center; overflow: hidden; }
-  #konfetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+  #konfetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
+  #konfetti i { position: absolute; left: 0; top: 0; will-change: transform, opacity; backface-visibility: hidden; }
   .feier-buehne { position: relative; z-index: 1; width: min(66vw, 38vh, 300px); aspect-ratio: 1; perspective: 1000px; margin-bottom: 32px; touch-action: none; cursor: grab; }
   .medaille { position: absolute; inset: 0; transform-style: preserve-3d; }
   .medaille.fliegt { animation: einfliegen 1.7s cubic-bezier(.16, .84, .3, 1) both; }
+  /* Einblenden an der Bühne, nicht an der Münze: Deckkraft an der Münze selbst macht sie flach (Rückseite falsch, ruckelt) */
+  #feier.an .feier-buehne { animation: einblenden .35s ease-out both; }
+  @keyframes einblenden { from { opacity: 0; } to { opacity: 1; } }
   @keyframes einfliegen {
-    0%   { transform: translateY(-55vh) translateZ(-900px) rotateY(-1080deg) scale(.25); opacity: 0; }
-    20%  { opacity: 1; }
+    0%   { transform: translateY(-55vh) translateZ(-900px) rotateY(-1080deg) scale(.25); }
     82%  { transform: translateY(0) translateZ(60px) rotateY(18deg) scale(1.06); }
     100% { transform: none; }
   }
   /* Die beiden Seiten sind fertige Bilder (medaille-vorne/-hinten.png, gerendert aus medaille-vorlage.html):
      drehen sich auf iPhone/iPad flüssig, weil beim Drehen nichts neu berechnet werden muss */
   .medaille .seite { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: center / 100% 100% no-repeat; }
+  .medaille .seite { border-radius: 0; overflow: visible; }   /* Bilder sind schon rund – kein Zuschneiden beim Drehen (das ruckelt auf dem iPhone) */
   .medaille .vorne { background-image: url(medaille-vorne.png); }
   .medaille .hinten { background-image: url(medaille-hinten.png); transform: rotateY(180deg); }
-  .medaille-schatten { position: absolute; left: 12%; right: 12%; bottom: -7%; height: 10%; border-radius: 50%; background: rgba(36, 55, 70, .22); filter: blur(10px); opacity: 0; transition: opacity .5s 1.2s; }
+  .medaille-schatten { position: absolute; left: 12%; right: 12%; bottom: -7%; height: 10%; border-radius: 50%; background: radial-gradient(closest-side, rgba(36, 55, 70, .28), rgba(36, 55, 70, 0)); opacity: 0; transition: opacity .5s 1.2s; }
   #feier.an .medaille-schatten { opacity: 1; }
   #feier:not(.an) > * { opacity: 0; }
-  .medaille .vorne::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .7) 48%, transparent 60%); transform: translateX(-120%); animation: glanz 3.5s 1.9s ease-in-out infinite; }
-  @keyframes glanz { 0% { transform: translateX(-120%); } 35%, 100% { transform: translateX(120%); } }
+  /* Nach dem Einfliegen schwingt die Münze leicht hin und her – als CSS-Animation, läuft auf der Grafikkarte */
+  .medaille.schwingt { animation: schwingen 5.4s ease-in-out infinite; }
+  @keyframes schwingen { 0%, 100% { transform: rotateY(0deg); } 25% { transform: rotateY(12deg); } 75% { transform: rotateY(-12deg); } }
   .feier-titel { position: relative; z-index: 1; font-size: 34px; line-height: 1.15; font-weight: 800; color: var(--tinte); margin: 0 0 8px; }
   .feier-text { position: relative; z-index: 1; font-size: 19px; line-height: 1.35; color: var(--text); margin: 0 0 28px; max-width: 22rem; }
   #feierWeiter { position: relative; z-index: 3; width: 100%; max-width: 34rem; }
   #feier.an .feier-titel, #feier.an .feier-text, #feier.an #feierWeiter { animation: auftauchen .6s 1.25s ease-out both; }
   @keyframes auftauchen { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .medaille.fliegt { animation: none; } .medaille .vorne::after { animation: none; } #feier.an .feier-titel, #feier.an .feier-text, #feier.an #feierWeiter { animation-delay: 0s; } }
+  @media (prefers-reduced-motion: reduce) { .medaille.fliegt { animation: none; } .medaille.schwingt { animation: none; } #feier.an .feier-titel, #feier.an .feier-text, #feier.an #feierWeiter { animation-delay: 0s; } }
 
   /* Einmessen: Kamera oben, darunter Richtung und Taste, ganz unten die Liste */
   body.einmessen #ar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -184,7 +189,7 @@
   <h1 id="titel"></h1>
   <div class="ergebnis" id="ergebnis" hidden>
     <div class="zahl" id="ergebnisZahl"></div>
-    <div class="was">Fragen gleich richtig</div>
+    <div class="was">Fragen gleich richtig beantwortet</div>
   </div>
   <p class="lead" id="lead"></p>
   <div id="beispiel" hidden>
@@ -217,7 +222,7 @@
 </main>
 
 <div id="feier" hidden>
-  <canvas id="konfetti" aria-hidden="true"></canvas>
+  <div id="konfetti" aria-hidden="true"></div>
   <div class="feier-buehne" id="feierBuehne" aria-hidden="true">
     <div class="medaille-schatten"></div>
     <div class="medaille" id="medaille">
@@ -705,7 +710,7 @@ window.schnitzeljagdStarten = function () {
 
   // ---------- Ziel: Feier mit Medaille und Konfetti ----------
   const ruhig = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let medWinkel = 0, medV = 0, medZiehen = null, medLauf = false, medT0 = 0, konfettiLauf = false;
+  let medWinkel = 0, medV = 0, medZiehen = null, medLauf = false;
   function zielFeiern() {
     const i = N - 1;
     if (stand.erledigt === i) { stand.erledigt = N; stand.antworten[i] = ""; speichern(); }
@@ -723,27 +728,32 @@ window.schnitzeljagdStarten = function () {
     $("feierTitel").textContent = daten.zielTitel || "Geschafft!";
     $("feierText").textContent = st[i].text;
     const f = $("feier"); f.hidden = false; f.classList.remove("an"); void f.offsetWidth; f.classList.add("an");
-    const m = $("medaille"); m.style.transform = ""; m.classList.remove("fliegt"); void m.offsetWidth;
-    medWinkel = 0; medV = 0;
+    const m = $("medaille"); m.style.transform = ""; m.classList.remove("fliegt", "schwingt"); void m.offsetWidth;
+    medWinkel = 0; medV = 0; medZiehen = null;
     if (!ruhig()) {
       m.classList.add("fliegt");
-      m.addEventListener("animationend", () => { m.classList.remove("fliegt"); medT0 = performance.now(); if (!medLauf) { medLauf = true; requestAnimationFrame(medTick); } }, { once: true });
+      m.addEventListener("animationend", () => { m.classList.remove("fliegt"); m.classList.add("schwingt"); }, { once: true });
       setTimeout(konfetti, 1150);
-    } else { medT0 = performance.now(); }
+    }
     setTimeout(tonFanfare, 1100);
   }
-  // Nach dem Einfliegen: leicht hin und her schwingen; mit dem Finger drehen, schwingt zurück
-  function medTick(t) {
+  // Mit dem Finger drehen: nur solange der Finger drauf ist, rechnet JavaScript mit; danach federt die Münze zurück und schwingt wieder
+  function medTick() {
     if ($("feier").hidden) { medLauf = false; return; }
     if (!medZiehen) {
-      const ziel = Math.round(medWinkel / 360) * 360 + Math.sin((t - medT0) / 900) * 10;
-      medV += (ziel - medWinkel) * 0.012; medV *= 0.93; medWinkel += medV;
+      const ziel = Math.round(medWinkel / 360) * 360;
+      medV += (ziel - medWinkel) * 0.02; medV *= 0.9; medWinkel += medV;
+      if (Math.abs(ziel - medWinkel) < 0.3 && Math.abs(medV) < 0.05) {      // zur Ruhe gekommen
+        medLauf = false; medWinkel = 0; const m = $("medaille"); m.style.transform = ""; m.classList.add("schwingt"); return;
+      }
     }
     $("medaille").style.transform = `rotateY(${medWinkel.toFixed(2)}deg)`;
     requestAnimationFrame(medTick);
   }
   $("feierBuehne").addEventListener("pointerdown", e => {
-    if ($("medaille").classList.contains("fliegt")) return;
+    const m = $("medaille");
+    if (m.classList.contains("fliegt")) return;
+    m.classList.remove("schwingt");
     medZiehen = { x: e.clientX, w: medWinkel, lx: e.clientX, lt: performance.now(), v: 0 };
     $("feierBuehne").setPointerCapture(e.pointerId);
     if (!medLauf) { medLauf = true; requestAnimationFrame(medTick); }
@@ -758,39 +768,45 @@ window.schnitzeljagdStarten = function () {
   const loslassen = () => { if (medZiehen) { medV = medZiehen.v; medZiehen = null; } };
   $("feierBuehne").addEventListener("pointerup", loslassen); $("feierBuehne").addEventListener("pointercancel", loslassen);
 
-  // Konfetti in den Lerncampus-Farben: Ausbruch hinter der Medaille, dann Regen von oben
+  // Konfetti in den Lerncampus-Farben: Ausbruch hinter der Medaille, dann Regen von oben.
+  // Jede Flugbahn wird vorab berechnet und als Animation an die Grafikkarte übergeben –
+  // so läuft sie flüssig, auch wenn das Gerät nebenbei etwas anderes zu tun hat.
   function konfetti() {
-    const c = $("konfetti"), x = c.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
-    const B = c.clientWidth, H = c.clientHeight; c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
+    const box = $("konfetti"); box.textContent = "";
+    if (!box.animate) return;
+    const B = box.clientWidth, H = box.clientHeight;
     const farben = ["#2f7bf6", "#f47b20", "#22b04b", "#f7cf63", "#e8508c", "#7a5cf0"];
     const r = $("feierBuehne").getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
-    const teile = [];
-    for (let k = 0; k < 110; k++) {
+    const DAUER = 7.5, TAKT = 1 / 60, PROBE = 6;      // 60 Rechenschritte pro Sekunde, jeder 6. wird ein Schlüsselbild
+    const neu = (k, q) => {
+      const el = document.createElement("i");
+      el.style.width = q.b.toFixed(1) + "px"; el.style.height = q.h.toFixed(1) + "px"; el.style.background = farben[k % 6];
+      const bilder = []; let t = 0, schritt = 0;
+      while (t <= DAUER) {
+        if (schritt % PROBE === 0) {
+          const flip = Math.abs(Math.cos(t * 4 + q.p)) * 80;                 // Papier dreht sich um sich selbst
+          bilder.push({ offset: t, opacity: Math.max(0, Math.min(1, DAUER - t)),
+            transform: `translate(${q.x.toFixed(1)}px, ${q.y.toFixed(1)}px) rotate(${q.d.toFixed(2)}rad) rotateX(${flip.toFixed(0)}deg)` });
+        }
+        const brems = 0.965;
+        q.vx *= brems; q.vy = Math.min(q.max, q.vy * brems + 0.12);
+        q.x += q.vx + Math.sin(t * 2 + q.p) * 0.7; q.y += q.vy; q.d += q.dv;
+        t += TAKT; schritt++;
+        if (q.y > H + 40) break;                                              // unten raus: fertig
+      }
+      bilder.forEach(b => b.offset = Math.min(1, b.offset / t)); bilder[bilder.length - 1].offset = 1;
+      box.appendChild(el);
+      const a = el.animate(bilder, { duration: Math.min(DAUER, t) * 1000, easing: "linear", fill: "both", delay: q.warte || 0 });
+      a.onfinish = () => el.remove();
+    };
+    for (let k = 0; k < 70; k++) {
       const w = Math.random() * Math.PI * 2, v = 4 + Math.random() * 7;
-      teile.push({ x: mx, y: my, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 4, d: Math.random() * 6, dv: (Math.random() - .5) * .2, f: farben[k % 6], b: 6 + Math.random() * 6, h: 8 + Math.random() * 8, p: Math.random() * 6, max: 1.6 + Math.random() * 1.4 });
+      neu(k, { x: mx, y: my, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 4, d: Math.random() * 6, dv: (Math.random() - .5) * .2, b: 7 + Math.random() * 5, h: 9 + Math.random() * 7, p: Math.random() * 6, max: 1.6 + Math.random() * 1.4 });
     }
-    for (let k = 0; k < 60; k++)
-      teile.push({ x: Math.random() * B, y: -20 - Math.random() * H, vx: (Math.random() - .5) * 1.2, vy: 1 + Math.random() * 1.2, d: Math.random() * 6, dv: (Math.random() - .5) * .15, f: farben[k % 6], b: 6 + Math.random() * 5, h: 8 + Math.random() * 7, p: Math.random() * 6, max: 1.4 + Math.random() * 1.2 });
-    const start = performance.now(), DAUER = 8; konfettiLauf = true; let letzt = start;
-    (function schritt(t) {
-      const dt = Math.min(3, Math.max(0.2, (t - letzt) / 16.667)); letzt = t;   // 1 = ein Bild bei 60 Hz
-      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, B, H);
-      if (!konfettiLauf || $("feier").hidden) return;
-      const alter = (t - start) / 1000;
-      x.globalAlpha = Math.max(0, Math.min(1, DAUER - alter));
-      const brems = Math.pow(0.965, dt);
-      teile.forEach(q => {
-        q.vx *= brems; q.vy = Math.min(q.max, q.vy * brems + 0.12 * dt);          // Papier: bremst stark, fällt langsam
-        q.x += (q.vx + Math.sin(alter * 2 + q.p) * 0.7) * dt; q.y += q.vy * dt; q.d += q.dv * dt;
-        if (q.y > H + 30) return;
-        const cs = Math.cos(q.d), sn = Math.sin(q.d), sy = Math.abs(Math.cos(alter * 4 + q.p)) * .9 + .1;
-        x.setTransform(dpr * cs, dpr * sn, -dpr * sn * sy, dpr * cs * sy, dpr * q.x, dpr * q.y);
-        x.fillStyle = q.f; x.fillRect(-q.b / 2, -q.h / 2, q.b, q.h);
-      });
-      if (alter < DAUER) requestAnimationFrame(schritt); else { x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, B, H); konfettiLauf = false; }
-    })(start);
+    for (let k = 0; k < 40; k++)
+      neu(k, { x: Math.random() * B, y: -20, warte: Math.random() * 3500, vx: (Math.random() - .5) * 1.2, vy: 1 + Math.random() * 1.2, d: Math.random() * 6, dv: (Math.random() - .5) * .15, b: 7 + Math.random() * 4, h: 9 + Math.random() * 6, p: Math.random() * 6, max: 1.4 + Math.random() * 1.2 });
   }
-  $("feierWeiter").addEventListener("click", () => { konfettiLauf = false; $("feier").hidden = true; zeigen(); window.scrollTo(0, 0); });
+  $("feierWeiter").addEventListener("click", () => { $("konfetti").textContent = ""; $("feier").hidden = true; zeigen(); window.scrollTo(0, 0); });
 
   // art: "neu" = grün mit Ton, "schon" = grün ohne Ton (schon besucht), "spaeter" = rot mit Falsch-Ton
   function treffer(k, art = "neu") {
@@ -1006,6 +1022,7 @@ window.schnitzeljagdStarten = function () {
     const szene = $("kamera").querySelector("a-scene");
     if (szene) {
       try { szene.systems["mindar-image-system"].stop(); } catch (e) {}
+      try { szene.pause(); szene.renderer.setAnimationLoop(null); szene.renderer.dispose(); szene.renderer.forceContextLoss(); } catch (e) {}   // 3D-Schleife sicher beenden
       resizeListener.forEach(fn => window.removeEventListener("resize", fn)); resizeListener = [];
       document.querySelectorAll("video").forEach(v => { try { v.srcObject && v.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {} v.remove(); });
       szene.remove();
