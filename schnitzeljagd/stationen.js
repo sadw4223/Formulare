@@ -3,6 +3,7 @@
 //
 // CHECKPOINTS MIT FRAGE (große Aufkleber Ø 19 cm, blauer Rand), in der Reihenfolge des Rundgangs:
 // ort        Name des Raums (Überschrift der Infokarte)
+// motiv      Nummer des gedruckten Aufklebers (Muster 1–9), der hier klebt – bleibt beim Umsortieren gleich
 // text       Infotext, der nach dem Scannen erscheint
 // peilung    Himmelsrichtung in Grad (0 = Nord, 90 = Ost …), in die die Kinder von hier loslaufen. Wird vor Ort
 //            mit dem Einmess-Modus gemessen (Adresse mit ?einmessen am Ende) – nicht von Hand ausdenken.
@@ -22,56 +23,55 @@
 
 const SCHNITZELJAGD = {
   start: "Finde die runden Checkpoints und beantworte die Fragen.",
-  regel: "Beantworte jede Frage gleich beim ersten Versuch richtig. Nur dann bekommst du am Ende eine kleine Überraschung.",
-  ende: "Zeige diesen Bildschirm am Eingang. Dort wartet eine kleine Überraschung.",
-  endeTeilweise: "Zeige diesen Bildschirm am Eingang.",
+  regel: "Am Ziel wartet eine kleine Überraschung auf dich.",
+  ende: "Zeige diesen Bildschirm hier am Ziel. Dann bekommst du eine kleine Überraschung. Ein Leih-iPad gibst du hier ab.",
   // Mindestzeit an jeder Station in Sekunden (ab dem Scannen). Erst danach gibt es „Weiter“ und den Pfeil.
   // 0 = keine Wartezeit (z. B. 180 = 3 Minuten). Mit ?test am Ende der Adresse sind es höchstens 5 Sekunden.
   warten: 0,
   stationen: [
     {
-      ort: "Eingangsbereich",
+      ort: "Eingangsbereich", motiv: 1,
       text: "Willkommen an der Wascherde. Hier beginnt der Schultag für die Kinder.",
       frage: { text: "Wie heißt der Schulleiter der Schule an der Wascherde?", auswahl: ["Herr Wellstein", "Herr Seim", "Herr Scherrer"], richtig: "Herr Wellstein" }
     },
     {
-      ort: "Kunst- und Musikraum",
+      ort: "Kunst- und Musikraum", motiv: 2,
       text: "Hier wird gemalt, gebaut oder Musik gemacht.",
       frage: { text: "Wie heißt die Schulband an der Wascherde?", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
-      ort: "Mensa",
+      ort: "Mensa", motiv: 3,
       text: "Hier gibt es Mittagessen und Snacks.",
       frage: { text: "Was kann man in der Pause in der Mensa machen?", auswahl: ["Essen, Karten spielen, sich unterhalten", "Am Handy schreiben oder spielen", "Eine Pizza bestellen"], richtig: "Essen, Karten spielen, sich unterhalten" }
     },
     {
-      ort: "Naturwissenschaften",
+      ort: "Naturwissenschaften", motiv: 4,
       text: "Hier wird geforscht, untersucht und experimentiert.",
       frage: { text: "Um welche Tiere kümmert sich eine AG?", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
     },
     {
-      ort: "Lernwelt",
-      text: "Hier arbeiten die Kinder zusammen, lesen oder üben.",
-      frage: { text: "Wofür ist die Lernwelt gedacht?", auswahl: ["Für Einzel- und Gruppenarbeiten", "Für Klassenunterricht", "Für handwerkliche Projekte"], richtig: "Für Einzel- und Gruppenarbeiten" }
-    },
-    {
-      ort: "Lernflur",
+      ort: "Lernflur", motiv: 6,
       text: "Auch auf dem Flur wird bei uns gelernt.",
       frage: { text: "Wann darf man im Flur arbeiten?", auswahl: ["In der Lernzeit und während Inputs", "Nur in den Pausen", "Nur vor und nach dem Unterricht"], richtig: "In der Lernzeit und während Inputs" }
     },
     {
-      ort: "Lernbüro",
-      text: "Hier hat jedes Kind seinen eigenen Arbeitsplatz.",
-      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Lesen und Schreiben lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
+      ort: "Lernwelt", motiv: 5,
+      text: "Hier arbeiten die Kinder zusammen, lesen oder üben.",
+      frage: { text: "Wofür ist die Lernwelt gedacht?", auswahl: ["Für Einzel- und Gruppenarbeiten", "Für Klassenunterricht", "Für handwerkliche Projekte"], richtig: "Für Einzel- und Gruppenarbeiten" }
     },
     {
-      ort: "Inputräume",
+      ort: "Inputräume", motiv: 8,
       text: "Hier lernen die Kinder in Inputs neue Lerninhalte.",
       frage: { text: "In welchen Fächern gibt es Inputs?", auswahl: ["Deutsch, Mathe und Englisch", "Sport, Kunst und Musik", "Biologie, Erdkunde und Geschichte"], richtig: "Deutsch, Mathe und Englisch" }
     },
     {
-      ort: "Eingangsbereich",
-      text: "Du bist wieder am Eingang. Jetzt kennst du die wichtigsten Räume.",
+      ort: "Lernbüro", motiv: 7,
+      text: "Hier hat jedes Kind seinen eigenen Arbeitsplatz.",
+      frage: { text: "Wofür sind die Einzelplätze im Lernbüro gedacht?", auswahl: ["Arbeiten an Lernpaketen und Lernzielen", "Lesen und Schreiben lernen", "Partnerarbeit an Nachbartischen"], richtig: "Arbeiten an Lernpaketen und Lernzielen" }
+    },
+    {
+      ort: "Ziel", motiv: 9,
+      text: "Geschafft. Du hast alle Checkpoints gefunden."
     }
   ],
   wegweiser: [
