@@ -810,7 +810,10 @@ window.schnitzeljagdStarten = function () {
   // art: "neu" = grün mit Ton, "schon" = grün ohne Ton (schon besucht), "spaeter" = rot mit Falsch-Ton
   function treffer(k, art = "neu") {
     const jetzt = Date.now();
-    if (zuletzt.k === k && jetzt - zuletzt.t < 4000) { zuletzt.t = jetzt; return; }   // derselbe Aufkleber: nicht dauernd piepen
+    // Derselbe Aufkleber gleich noch einmal erkannt (Kamera verliert ihn kurz und findet ihn wieder): nicht dauernd piepen.
+    // Bei „kommt erst später“ nur kurz sperren – jedes neue Scannen soll wieder rot werden und den Fehler-Ton spielen.
+    const sperre = art === "spaeter" ? 1200 : 4000;
+    if (zuletzt.k === k && jetzt - zuletzt.t < sperre) { zuletzt.t = jetzt; return; }
     zuletzt = { k, t: jetzt };
     const r = $("treffer"); r.classList.remove("an"); r.classList.toggle("rot", art === "spaeter"); void r.offsetWidth; r.classList.add("an");
     if (art === "neu") { ton(); if (navigator.vibrate) navigator.vibrate(30); }
