@@ -23,6 +23,7 @@
 
 const SCHNITZELJAGD = {
   start: "Finde die runden Checkpoints und beantworte die Fragen.",
+  hilfe: "Unsere Lehrkräfte und Kinder vom Lerncampus helfen dir.",
   regel: "Am Ziel wartet eine kleine Überraschung auf dich.",
   zielTitel: "Geschafft!",          // groß unter der Medaille am Ziel
   ende: "Zeige diesen Bildschirm hier am Ziel. Dann bekommst du eine kleine Überraschung. Ein Leih-iPad gibst du hier ab.",
