@@ -735,7 +735,7 @@ window.schnitzeljagdStarten = function () {
       m.addEventListener("animationend", () => { m.classList.remove("fliegt"); m.classList.add("schwingt"); }, { once: true });
       setTimeout(konfetti, 1150);
     }
-    setTimeout(tonFanfare, 1100);
+    setTimeout(tonFanfare, 200);    // Auftakt während des Einflugs, Schlussakkord trifft den Konfetti-Ausbruch
   }
   // Mit dem Finger drehen: nur solange der Finger drauf ist, rechnet JavaScript mit; danach federt die Münze zurück und schwingt wieder
   function medTick() {
