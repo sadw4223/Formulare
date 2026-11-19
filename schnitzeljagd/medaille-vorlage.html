@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@800&display=swap" rel="stylesheet">
+<style>
+  /* Vorlage für die Medaille am Ziel – wird von medaille_bild.py zu zwei PNG-Bildern gerendert, nicht von der App geladen */
+  body { margin: 0; background: transparent; font-family: Inter, -apple-system, sans-serif; display: flex; gap: 20px; padding: 10px; }
+  .seite { position: relative; width: 300px; height: 300px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: conic-gradient(from 200deg, #f7cf63, #fff6d2, #e3a92c, #fbe5a0, #c88a14, #f3c552, #fff1c0, #f7cf63);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55); }
+  .seite::before { content: ""; position: absolute; inset: 9%; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fbe39c, #e8b443 55%, #c98d18 100%);
+    box-shadow: inset 0 5px 12px rgba(110, 70, 0, .45), inset 0 -3px 6px rgba(255, 244, 200, .65), 0 0 0 3px rgba(165, 108, 10, .55); }
+  .praegung { position: relative; filter: drop-shadow(-1px -1.5px 0 rgba(255, 250, 228, .9)) drop-shadow(1.5px 2.5px 1.5px rgba(105, 62, 0, .6)); }
+  .praegung.logo { width: 38%; aspect-ratio: 1; }
+  .praegung.umschrift { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .umschrift text { font-family: Inter, -apple-system, sans-serif; font-weight: 800; font-size: 6.6px; letter-spacing: 1.3px; }
+  .praegung i { position: absolute; inset: 0; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
+  .praegung .pr-rahmen { -webkit-mask-image: url(medaille-rahmen.png); mask-image: url(medaille-rahmen.png); background: linear-gradient(145deg, #fff4c8 0%, #f1c04c 42%, #c78812 78%, #f3cd6c 100%); }
+  .praegung .pr-w { -webkit-mask-image: url(medaille-w.png); mask-image: url(medaille-w.png); background: linear-gradient(145deg, #ffe9a6 0%, #dea22a 50%, #b57709 100%); }
+</style></head><body>
+<div class="seite vorne">
+  <svg class="praegung umschrift" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f9dc8a"/><stop offset=".45" stop-color="#d39a26"/><stop offset="1" stop-color="#a56a05"/></linearGradient>
+      <path id="o" d="M 16.5 50 A 33.5 33.5 0 0 1 83.5 50"/><path id="u" d="M 11.5 50 A 38.5 38.5 0 0 0 88.5 50"/>
+    </defs>
+    <text fill="url(#g)" text-anchor="middle"><textPath href="#o" startOffset="50%">LERNCAMPUS</textPath></text>
+    <text fill="url(#g)" text-anchor="middle"><textPath href="#u" startOffset="50%">WASCHERDE</textPath></text>
+    <circle cx="13.8" cy="50" r="1.3" fill="url(#g)"/><circle cx="86.2" cy="50" r="1.3" fill="url(#g)"/>
+  </svg>
+  <div class="praegung logo"><i class="pr-rahmen"></i><i class="pr-w"></i></div>
+</div>
+<div class="seite hinten"></div>
+</body></html>

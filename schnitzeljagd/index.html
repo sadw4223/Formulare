@@ -78,23 +78,15 @@
     82%  { transform: translateY(0) translateZ(60px) rotateY(18deg) scale(1.06); }
     100% { transform: none; }
   }
-  .medaille .seite { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; align-items: center; justify-content: center; overflow: hidden;
-    background: conic-gradient(from 200deg, #f7cf63, #fff6d2, #e3a92c, #fbe5a0, #c88a14, #f3c552, #fff1c0, #f7cf63);
-    box-shadow: 0 20px 44px rgba(36, 55, 70, .28), inset 0 0 0 2px rgba(255, 255, 255, .55); }
-  /* Münzfeld: etwas vertieft, darauf Logo und Schrift erhaben geprägt (Licht oben links, Schatten unten rechts) */
-  .medaille .seite::before { content: ""; position: absolute; inset: 9%; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fbe39c, #e8b443 55%, #c98d18 100%);
-    box-shadow: inset 0 5px 12px rgba(110, 70, 0, .45), inset 0 -3px 6px rgba(255, 244, 200, .65), 0 0 0 3px rgba(165, 108, 10, .55); }
-  .praegung { position: relative; filter: drop-shadow(-1px -1.5px 0 rgba(255, 250, 228, .9)) drop-shadow(1.5px 2.5px 1.5px rgba(105, 62, 0, .6)); }
-  .praegung.logo { width: 38%; aspect-ratio: 1; }
-  .praegung.umschrift { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .umschrift text { font-family: inherit; font-weight: 800; font-size: 6.6px; letter-spacing: 1.3px; }
-  .praegung i { position: absolute; inset: 0; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
-  .praegung .pr-rahmen { -webkit-mask-image: url(medaille-rahmen.png); mask-image: url(medaille-rahmen.png); background: linear-gradient(145deg, #fff4c8 0%, #f1c04c 42%, #c78812 78%, #f3cd6c 100%); }
-  .praegung .pr-w { -webkit-mask-image: url(medaille-w.png); mask-image: url(medaille-w.png); background: linear-gradient(145deg, #ffe9a6 0%, #dea22a 50%, #b57709 100%); }
-  .medaille .hinten { transform: rotateY(180deg); }
-  .praegung.wm { font-weight: 800; letter-spacing: 1.5px; font-size: clamp(13px, 4vw, 20px); line-height: 1.25; }
-  .praegung.wm span { display: block; background: linear-gradient(160deg, #f9dc8a 0%, #d39a26 45%, #a56a05 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  /* Die beiden Seiten sind fertige Bilder (medaille-vorne/-hinten.png, gerendert aus medaille-vorlage.html):
+     drehen sich auf iPhone/iPad flüssig, weil beim Drehen nichts neu berechnet werden muss */
+  .medaille { will-change: transform; }
+  .medaille .seite { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: center / 100% 100% no-repeat; transform: translateZ(0); }
+  .medaille .vorne { background-image: url(medaille-vorne.png); }
+  .medaille .hinten { background-image: url(medaille-hinten.png); transform: rotateY(180deg); }
+  .medaille-schatten { position: absolute; left: 12%; right: 12%; bottom: -7%; height: 10%; border-radius: 50%; background: rgba(36, 55, 70, .22); filter: blur(10px); opacity: 0; transition: opacity .5s 1.2s; }
+  #feier.an .medaille-schatten { opacity: 1; }
+  #feier:not(.an) > * { opacity: 0; }
   .medaille .vorne::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .7) 48%, transparent 60%); transform: translateX(-120%); animation: glanz 3.5s 1.9s ease-in-out infinite; }
   @keyframes glanz { 0% { transform: translateX(-120%); } 35%, 100% { transform: translateX(120%); } }
   .feier-titel { position: relative; z-index: 1; font-size: 34px; line-height: 1.15; font-weight: 800; color: var(--tinte); margin: 0 0 8px; }
@@ -206,21 +198,10 @@
 <div id="feier" hidden>
   <canvas id="konfetti" aria-hidden="true"></canvas>
   <div class="feier-buehne" id="feierBuehne" aria-hidden="true">
+    <div class="medaille-schatten"></div>
     <div class="medaille" id="medaille">
-      <div class="seite vorne">
-        <svg class="praegung umschrift" viewBox="0 0 100 100" aria-hidden="true">
-          <defs>
-            <linearGradient id="goldSchrift" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f9dc8a"/><stop offset=".45" stop-color="#d39a26"/><stop offset="1" stop-color="#a56a05"/></linearGradient>
-            <path id="bogenOben" d="M 16.5 50 A 33.5 33.5 0 0 1 83.5 50"/>
-            <path id="bogenUnten" d="M 11.5 50 A 38.5 38.5 0 0 0 88.5 50"/>
-          </defs>
-          <text fill="url(#goldSchrift)" text-anchor="middle"><textPath href="#bogenOben" startOffset="50%">LERNCAMPUS</textPath></text>
-          <text fill="url(#goldSchrift)" text-anchor="middle"><textPath href="#bogenUnten" startOffset="50%">WASCHERDE</textPath></text>
-          <circle cx="13.8" cy="50" r="1.3" fill="url(#goldSchrift)"/><circle cx="86.2" cy="50" r="1.3" fill="url(#goldSchrift)"/>
-        </svg>
-        <div class="praegung logo"><i class="pr-rahmen"></i><i class="pr-w"></i></div>
-      </div>
-      <div class="seite hinten"><div class="praegung wm"><span>LERNCAMPUS</span><span>WASCHERDE</span></div></div>
+      <div class="seite vorne"></div>
+      <div class="seite hinten"></div>
     </div>
   </div>
   <h1 class="feier-titel" id="feierTitel">Geschafft!</h1>
@@ -701,7 +682,13 @@ window.schnitzeljagdStarten = function () {
   let medWinkel = 0, medV = 0, medZiehen = null, medLauf = false, medT0 = 0, konfettiLauf = false;
   function zielFeiern() {
     const i = N - 1;
-    if (stand.erledigt === i) { stand.erledigt = N; stand.antworten[i] = ""; speichern(); zeigen(); }
+    if (stand.erledigt === i) { stand.erledigt = N; stand.antworten[i] = ""; speichern(); }
+    // Kamera und Erkennung zuerst ausschalten – sonst ruckelt die Animation
+    $("feier").hidden = false; arBeenden();
+    setTimeout(feierStarten, 120);
+  }
+  function feierStarten() {
+    const i = N - 1;
     $("feierTitel").textContent = daten.zielTitel || "Geschafft!";
     $("feierText").textContent = st[i].text;
     const f = $("feier"); f.hidden = false; f.classList.remove("an"); void f.offsetWidth; f.classList.add("an");
@@ -742,31 +729,34 @@ window.schnitzeljagdStarten = function () {
 
   // Konfetti in den Lerncampus-Farben: Ausbruch hinter der Medaille, dann Regen von oben
   function konfetti() {
-    const c = $("konfetti"), x = c.getContext("2d"), dpr = window.devicePixelRatio || 1;
+    const c = $("konfetti"), x = c.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
     const B = c.clientWidth, H = c.clientHeight; c.width = B * dpr; c.height = H * dpr; x.scale(dpr, dpr);
     const farben = ["#2f7bf6", "#f47b20", "#22b04b", "#f7cf63", "#e8508c", "#7a5cf0"];
     const r = $("feierBuehne").getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
     const teile = [];
-    for (let k = 0; k < 140; k++) {
+    for (let k = 0; k < 110; k++) {
       const w = Math.random() * Math.PI * 2, v = 6 + Math.random() * 9;
       teile.push({ x: mx, y: my, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 5, d: Math.random() * 6, dv: (Math.random() - .5) * .4, f: farben[k % 6], b: 6 + Math.random() * 6, h: 8 + Math.random() * 8, p: Math.random() * 6 });
     }
-    for (let k = 0; k < 90; k++)
+    for (let k = 0; k < 60; k++)
       teile.push({ x: Math.random() * B, y: -20 - Math.random() * H * .6, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3, d: Math.random() * 6, dv: (Math.random() - .5) * .3, f: farben[k % 6], b: 6 + Math.random() * 5, h: 8 + Math.random() * 7, p: Math.random() * 6 });
     const start = performance.now(); konfettiLauf = true;
     (function schritt(t) {
-      if (!konfettiLauf || $("feier").hidden) { x.clearRect(0, 0, B, H); return; }
-      x.clearRect(0, 0, B, H);
+      x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, B, H);
+      if (!konfettiLauf || $("feier").hidden) return;
       const alter = (t - start) / 1000;
+      x.globalAlpha = Math.max(0, Math.min(1, 5.5 - alter));
       teile.forEach(q => {
         q.vx *= 0.985; q.vy = q.vy * 0.985 + 0.32; q.x += q.vx + Math.sin(alter * 3 + q.p) * 0.6; q.y += q.vy; q.d += q.dv;
-        x.save(); x.translate(q.x, q.y); x.rotate(q.d); x.scale(1, Math.abs(Math.cos(alter * 6 + q.p)) * .9 + .1);
-        x.globalAlpha = Math.max(0, Math.min(1, 5.5 - alter)); x.fillStyle = q.f; x.fillRect(-q.b / 2, -q.h / 2, q.b, q.h); x.restore();
+        if (q.y > H + 30) return;
+        const cs = Math.cos(q.d), sn = Math.sin(q.d), sy = Math.abs(Math.cos(alter * 6 + q.p)) * .9 + .1;
+        x.setTransform(dpr * cs, dpr * sn, -dpr * sn * sy, dpr * cs * sy, dpr * q.x, dpr * q.y);
+        x.fillStyle = q.f; x.fillRect(-q.b / 2, -q.h / 2, q.b, q.h);
       });
-      if (alter < 5.5) requestAnimationFrame(schritt); else { x.clearRect(0, 0, B, H); konfettiLauf = false; }
+      if (alter < 5.5) requestAnimationFrame(schritt); else { x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, B, H); konfettiLauf = false; }
     })(start);
   }
-  $("feierWeiter").addEventListener("click", () => { konfettiLauf = false; $("feier").hidden = true; arBeenden(); });
+  $("feierWeiter").addEventListener("click", () => { konfettiLauf = false; $("feier").hidden = true; zeigen(); window.scrollTo(0, 0); });
 
   function treffer(k) {
     const jetzt = Date.now();
@@ -952,7 +942,9 @@ window.schnitzeljagdStarten = function () {
         if (stand.erledigt < N && (nach === null || nach === gesucht)) {
           if (stand.erledigt > 0 && !frei(stand.erledigt - 1)) return;   // Zeit am letzten Checkpoint noch nicht um
           const p = peilungWW(j);
-          if (p !== null) { treffer("w" + j); stand.peilung = p; speichern(); label(sucheText()); kompassZeigen(); }
+          treffer("w" + j);                         // erkannt: immer Ring und Ton
+          if (p !== null) { stand.peilung = p; speichern(); label(sucheText()); kompassZeigen(); }
+          else kurzLabel("Dieser Checkpoint ist noch nicht eingemessen.");
         } else if (nach !== null && nach > gesucht) {
           kurzLabel("Dieser Checkpoint kommt erst später.");
         } else {
