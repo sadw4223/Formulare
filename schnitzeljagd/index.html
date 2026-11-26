@@ -117,6 +117,9 @@
   @media (prefers-reduced-motion: reduce) { .medaille.fliegt { animation: none; } .medaille.schwingt { animation: none; } #feier.an .feier-titel, #feier.an .feier-text, #feier.an #feierWeiter { animation-delay: 0s; } }
 
   /* Einmessen: Kamera oben, darunter Richtung und Taste, ganz unten die Liste */
+  body.erkennung #messJetzt, body.erkennung #messStand, body.erkennung #messGenau, body.erkennung #messSpeichern, body.erkennung #messUpload,
+  body.erkennung #messPanel h2, body.erkennung #messListe, body.erkennung #ghText, body.erkennung #ghFeld, body.erkennung #ghEntfernen { display: none !important; }
+  body.erkennung .mess-name { font-size: 26px; min-height: 2.6em; display: flex; align-items: center; justify-content: center; text-align: center; }
   body.einmessen #ar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
   body.einmessen #ar .weg, body.einmessen #grossKompass, body.einmessen #arLabel, body.einmessen #arSchliessen, body.einmessen #blatt { display: none; }
   body.einmessen .rund-rahmen { width: min(62vw, 34vh, 280px); margin: 8px auto 0; }
@@ -380,7 +383,9 @@ window.schnitzeljagdStarten = function () {
   // ---------- Eingemessene Himmelsrichtungen ----------
   // Einmess-Modus (Adresse mit ?einmessen): Richtung speichern → gilt sofort auf diesem Gerät und wird direkt
   // zu GitHub hochgeladen (peilungen.json). Von dort holen sich alle Geräte die Richtungen.
-  const EINMESSEN = new URLSearchParams(location.search).has("einmessen");
+  // ?erkennung: nur scannen – zeigt, welcher Aufkleber gerade vor der Kamera ist (zum Beschriften und Sortieren). Nutzt den Einmess-Bildschirm ohne Speichern.
+  const ERKENNUNG = new URLSearchParams(location.search).has("erkennung");
+  const EINMESSEN = ERKENNUNG || new URLSearchParams(location.search).has("einmessen");
   const EM_SCHLUESSEL = "schnitzeljagd-einmessen";
   // Schlüssel der Richtungen: „Aufkleber>nächster Aufkleber“ (blau) bzw. „Nummer:von>nach“ (orange).
   // So bleibt eine Richtung beim Umsortieren gültig, solange der Weg gleich bleibt – sonst wird sie neu eingemessen.
@@ -655,7 +660,7 @@ window.schnitzeljagdStarten = function () {
   function messWert() { return messen.art === "c" ? peilungCP(messen.k) : peilungWW(messen.k); }
   function messAnzeige() {
     const h = blickAbsolut();
-    $("messName").textContent = messen ? (messen.art === "c" ? `Checkpoint ${messen.k + 1} · ${st[messen.k].ort}` : wwName(messen.k)) : "Scanne einen Checkpoint.";
+    $("messName").textContent = messen ? (messen.art === "c" ? `Checkpoint ${messen.k + 1} · ${st[messen.k].ort}` : wwName(messen.k)) : (ERKENNUNG ? "Halte die Kamera auf einen Aufkleber." : "Scanne einen Checkpoint.");
     $("messJetzt").textContent = h === null ? "" : Math.round(h) + "° " + richtungsName(h);
     const alt = messen ? messWert() : null;
     $("messStand").textContent = !messen ? "" : messen.gespeichert ? "Gespeichert." : (alt === null ? "Noch nicht eingemessen." : "Bisher: " + Math.round(alt) + "° " + richtungsName(alt));
@@ -1071,7 +1076,7 @@ window.schnitzeljagdStarten = function () {
       a.addEventListener("targetFound", () => {
         sichtbar = i;
         if (EINMESSEN) {
-          if (i === N - 1) { messen = null; $("messName").textContent = "Das ist das Ziel – hier gibt es nichts einzumessen."; return; }
+          if (i === N - 1 && !ERKENNUNG) { messen = null; $("messName").textContent = "Das ist das Ziel – hier gibt es nichts einzumessen."; return; }
           treffer("c" + i); messenZeigen("c", i); return;
         }
         if (blattOffen()) return;
@@ -1086,7 +1091,7 @@ window.schnitzeljagdStarten = function () {
           treffer("c" + i, "spaeter"); kurzLabel("Dieser Checkpoint kommt erst später.");
         }
       });
-      a.addEventListener("targetLost", () => { if (sichtbar === i) sichtbar = null; });
+      a.addEventListener("targetLost", () => { if (sichtbar === i) sichtbar = null; if (ERKENNUNG && messen && messen.art === "c" && messen.k === i) messen = null; });
     });
     szene.querySelectorAll(".anker-ww").forEach(a => {
       const j = Number(a.dataset.j), nach = WW[j].nach ?? null;
@@ -1114,6 +1119,7 @@ window.schnitzeljagdStarten = function () {
           treffer("w" + j, "schon"); kurzLabel("An diesem Checkpoint warst du schon.");
         }
       });
+      a.addEventListener("targetLost", () => { if (ERKENNUNG && messen && messen.art === "w" && messen.k === j) messen = null; });
     });
     szene.addEventListener("arError", () => {
       arBeenden();
@@ -1146,13 +1152,13 @@ window.schnitzeljagdStarten = function () {
 
   $("start").addEventListener("click", arStarten);
   if (EINMESSEN) {
-    document.body.classList.add("einmessen");
+    document.body.classList.add("einmessen"); if (ERKENNUNG) document.body.classList.add("erkennung");
     $("messPanel").hidden = false; ghAnzeigen(); einmessListe();
     arStarten();
     // Kompass und Ton dürfen erst nach einem Tippen starten (iPhone/iPad)
     const erlauben = () => { lageErlauben(); tonErlauben(); };
     document.addEventListener("touchend", erlauben, { once: true }); document.addEventListener("click", erlauben, { once: true });
-    if (ghSchluessel()) setTimeout(hochladen, 1500);     // was noch nicht hochgeladen ist, nachholen
+    if (ghSchluessel() && !ERKENNUNG) setTimeout(hochladen, 1500);     // was noch nicht hochgeladen ist, nachholen
   }
   $("arSchliessen").addEventListener("click", () => arBeenden());
 };

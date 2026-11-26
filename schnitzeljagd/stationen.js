@@ -3,7 +3,7 @@
 //
 // CHECKPOINTS MIT FRAGE (große Aufkleber Ø 19 cm, blauer Rand), in der Reihenfolge des Rundgangs:
 // ort        Name des Raums (Überschrift der Infokarte)
-// motiv      Nummer des gedruckten Aufklebers (Muster 1–9), der hier klebt – bleibt beim Umsortieren gleich
+// motiv      Nummer des gedruckten Aufklebers (Muster 1–10), der hier klebt – bleibt beim Umsortieren gleich
 // text       Infotext, der nach dem Scannen erscheint
 // peilung    Himmelsrichtung in Grad (0 = Nord, 90 = Ost …), in die die Kinder von hier loslaufen. Wird vor Ort
 //            mit dem Einmess-Modus gemessen (Adresse mit ?einmessen am Ende) – nicht von Hand ausdenken.
@@ -35,12 +35,17 @@ const SCHNITZELJAGD = {
     {
       ort: "Eingangsbereich", motiv: 1,
       text: "Willkommen an der Wascherde. Hier beginnt der Schultag für die Kinder.",
-      frage: { text: "Wie heißt die Schulband an der Wascherde?", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
+      frage: { text: "Wie heißt der Schulleiter der Schule an der Wascherde?", auswahl: ["Herr Wellstein", "Herr Seim", "Herr Scherrer"], richtig: "Herr Wellstein" }
     },
     {
       ort: "Mensa", motiv: 3,
       text: "Hier gibt es Mittagessen und Snacks.",
       frage: { text: "Was kann man in der Pause in der Mensa machen?", auswahl: ["Essen, Karten spielen, sich unterhalten", "Am Handy schreiben oder spielen", "Eine Pizza bestellen"], richtig: "Essen, Karten spielen, sich unterhalten" }
+    },
+    {
+      ort: "Aula", motiv: 10,                // neuer Aufkleber Muster 10
+      text: "Hier finden manchmal Konzerte unserer Schulband statt.",
+      frage: { text: "Wie heißt die Schulband an der Wascherde?", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
       ort: "Pausenhalle", motiv: 2,          // Aufkleber Muster 2 (klebte früher am Kunst- und Musikraum)
@@ -78,13 +83,15 @@ const SCHNITZELJAGD = {
     }
   ],
   wegweiser: [
-    { nr: 1, nach: 2 }, { nr: 2, nach: 2 },
-    { nr: 3, nach: 3 }, { nr: 4, nach: 3 },
-    { nr: 5, nach: 4 }, { nr: 6, nach: 4 },
-    { nr: 7, nach: 5 }, { nr: 8, nach: 5 },
-    { nr: 9, nach: 6 }, { nr: 10, nach: 6 },
-    { nr: 11, nach: 7 }, { nr: 12, nach: 7 },
-    { nr: 13, nach: 8 }, { nr: 14, nach: 8 },
-    { nr: 15, nach: 9 }, { nr: 16, nach: 9 }
+    // Die Liste bleibt nach Nummern sortiert (Nummer = gedrucktes Muster); neue Aufkleber kommen hinten dazu.
+    { nr: 1, nach: 2 }, { nr: 2, nach: 2 },      // Eingangsbereich → Mensa
+    { nr: 3, nach: 3 }, { nr: 4, nach: 3 },      // Mensa → Aula
+    { nr: 5, nach: 5 }, { nr: 6, nach: 5 },      // Pausenhalle → Naturwissenschaften
+    { nr: 7, nach: 6 }, { nr: 8, nach: 6 },      // Naturwissenschaften → Lernflur
+    { nr: 9, nach: 7 }, { nr: 10, nach: 7 },     // Lernflur → Lernwelt
+    { nr: 11, nach: 8 }, { nr: 12, nach: 8 },    // Lernwelt → Inputräume
+    { nr: 13, nach: 9 }, { nr: 14, nach: 9 },    // Inputräume → Lernbüro
+    { nr: 15, nach: 10 }, { nr: 16, nach: 10 },  // Lernbüro → Ziel
+    { nr: 17, nach: 4 }, { nr: 18, nach: 4 }     // Aula → Pausenhalle (neu)
   ]
 };
