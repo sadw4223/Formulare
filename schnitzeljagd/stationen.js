@@ -35,11 +35,6 @@ const SCHNITZELJAGD = {
     {
       ort: "Eingangsbereich", motiv: 1,
       text: "Willkommen an der Wascherde. Hier beginnt der Schultag für die Kinder.",
-      frage: { text: "Wie heißt der Schulleiter der Schule an der Wascherde?", auswahl: ["Herr Wellstein", "Herr Seim", "Herr Scherrer"], richtig: "Herr Wellstein" }
-    },
-    {
-      ort: "Kunst- und Musikraum", motiv: 2,
-      text: "Hier wird gemalt, gebaut oder Musik gemacht.",
       frage: { text: "Wie heißt die Schulband an der Wascherde?", auswahl: ["WaschBlech", "Blechbande", "Tröten-Team"], richtig: "WaschBlech" }
     },
     {
@@ -48,9 +43,14 @@ const SCHNITZELJAGD = {
       frage: { text: "Was kann man in der Pause in der Mensa machen?", auswahl: ["Essen, Karten spielen, sich unterhalten", "Am Handy schreiben oder spielen", "Eine Pizza bestellen"], richtig: "Essen, Karten spielen, sich unterhalten" }
     },
     {
+      ort: "Pausenhalle", motiv: 2,          // Aufkleber Muster 2 (klebte früher am Kunst- und Musikraum)
+      text: "Hier treffen sich die Kinder in den Pausen.",
+      frage: { text: "Um welche Tiere kümmert sich eine AG?", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
+    },
+    {
       ort: "Naturwissenschaften", motiv: 4,
       text: "Hier wird geforscht, untersucht und experimentiert.",
-      frage: { text: "Um welche Tiere kümmert sich eine AG?", auswahl: ["Bienen", "Hühner", "Fische"], richtig: "Bienen" }
+      frage: { text: "Wofür steht MINT?", auswahl: ["Mathematik, Informatik, Naturwissenschaften und Technik", "Musik, Informatik, Natur und Turnen", "Ein Kaugummi mit Pfefferminz"], richtig: "Mathematik, Informatik, Naturwissenschaften und Technik" }
     },
     {
       ort: "Lernflur", motiv: 6,
